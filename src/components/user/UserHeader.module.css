@@ -1,0 +1,77 @@
+/* User Header Styles */
+.userHeader {
+    background-color: #FFFFFF;
+    padding: 16px 0;
+    border-bottom: 1px solid #E6E6E6;
+}
+
+.headerContainer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.breadcrumbSection {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.breadcrumbLink {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #737373;
+    text-decoration: none;
+    font-size: 12.8px;
+}
+
+.breadcrumbLink:hover {
+    color: #262626;
+}
+
+.breadcrumbSeparator {
+    color: #737373;
+    font-size: 12.8px;
+}
+
+.breadcrumbCurrent {
+    color: #262626;
+    font-weight: 600;
+    font-size: 13.2px;
+}
+
+.statusSection {
+    display: flex;
+    gap: 8px;
+}
+
+.statusBadge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2.8px 10.8px;
+    border-radius: 9999px;
+    font-size: 11.1px;
+    font-weight: 600;
+}
+
+.statusBadgeVerified {
+    background-color: #16A249;
+    color: #FFFFFF;
+}
+
+.statusBadgeActive {
+    background-color: #F5F5F5;
+    color: #333333;
+}
+
+.statusDot {
+    width: 8px;
+    height: 8px;
+    background-color: #FFFFFF;
+    border-radius: 50%;
+}

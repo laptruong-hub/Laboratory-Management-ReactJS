@@ -1,0 +1,21 @@
+/* User Layout Styles */
+.userLayout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #FAFAFA;
+}
+
+.userBody {
+    display: flex;
+    flex: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.userMainContent {
+    flex: 1;
+    padding: 32px;
+    background-color: #FAFAFA;
+}
