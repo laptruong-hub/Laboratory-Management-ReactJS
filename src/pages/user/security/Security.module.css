@@ -175,6 +175,11 @@
     background-color: #FAFAFA;
     font-size: 13.3px;
     box-sizing: border-box;
+    color: #262626;
+}
+
+.formGroup input::placeholder {
+    color: #737373;
 }
 
 .formGroup input:focus {
