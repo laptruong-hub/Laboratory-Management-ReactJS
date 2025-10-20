@@ -11,6 +11,7 @@ import {
 import Home from './pages/home/Homepage.tsx'; 
 import Login from './pages/authentication/Login.tsx';
 import ForgotPassword from './pages/authentication/ForgotPassword.tsx';
+import Signup from './pages/authentication/Signup.tsx';
 import NotFound from './pages/error/NotFound.tsx';
 import Forbidden from './pages/error/Forbidden.tsx';
 import MainLayout from './components/layout/MainLayout.tsx';
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
       {
         path: 'forgot-password',
         element: <ForgotPassword />
+      },
+      {
+        path: 'signup',
+        element: <Signup />
       }
     ]
   },
