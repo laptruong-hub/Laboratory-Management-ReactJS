@@ -193,7 +193,7 @@ const SignUp: React.FC = () => {
         <div style={styles.footer}>
           <p style={styles.footerText}>
             Đã có tài khoản?{' '}
-            <a href="/login" style={styles.link}>
+            <a href="/auth/login" style={styles.link}>
               Đăng nhập
             </a>
           </p>
