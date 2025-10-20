@@ -1,15 +1,29 @@
 import { Outlet } from 'react-router-dom';
 import UserSidebar from '../../components/user/UserSidebar';
 import UserHeader from '../../components/user/UserHeader';
-import styles from './UserLayout.module.css';
 
 const UserLayout = () => {
     return (
-        <div className={styles.userLayout}>
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: '100vh',
+            backgroundColor: '#FAFAFA'
+        }}>
             <UserHeader />
-            <div className={styles.userBody}>
+            <div style={{
+                display: 'flex',
+                flex: 1,
+                maxWidth: '1200px',
+                margin: '0 auto',
+                width: '100%'
+            }}>
                 <UserSidebar />
-                <main className={styles.userMainContent}>
+                <main style={{
+                    flex: 1,
+                    padding: '32px',
+                    backgroundColor: '#FAFAFA'
+                }}>
                     <Outlet />
                 </main>
             </div>

@@ -13,7 +13,7 @@ import Login from './pages/authentication/Login.tsx';
 import ForgotPassword from './pages/authentication/ForgotPassword.tsx';
 import NotFound from './pages/error/NotFound.tsx';
 import Forbidden from './pages/error/Forbidden.tsx';
-import Security from './pages/user/security/Security.tsx';
+import Security from './components/user/Security.tsx';
 import MainLayout from './components/layout/MainLayout.tsx';
 import AuthLayout from './components/layout/AuthLayout.tsx';
 import UserLayout from './components/layout/UserLayout.tsx';
@@ -49,7 +49,7 @@ const router = createBrowserRouter([
     element: <UserLayout />,
     children: [
       {
-        path: 'security',
+        path: '',
         element: <Security />
       }
     ]
