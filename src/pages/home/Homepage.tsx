@@ -604,33 +604,6 @@ const HomePage: React.FC = () => (
       <ProcessSection />
       <ContactSection />
     </main>
-
-    <FooterWrap>
-      <Container>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 12,
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <h3 style={{ margin: 0 }}>Lab Xét Nghiệm</h3>
-            <div style={{ color: "rgba(255,255,255,0.9)", marginTop: 6 }}>
-              Phòng lab hiện đại, kết quả chính xác.
-            </div>
-          </div>
-          <div style={{ color: "rgba(255,255,255,0.9)" }}>
-            © {new Date().getFullYear()} Lab Xét Nghiệm. Tất cả quyền được bảo
-            lưu.
-          </div>
-        </div>
-      </Container>
-    </FooterWrap>
-
-    <Footer />
   </div>
 );
 
