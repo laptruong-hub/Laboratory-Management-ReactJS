@@ -1,80 +1,63 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import './index.css';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
 
 import {
   createBrowserRouter,
   RouterProvider,
   Navigate,
-} from 'react-router-dom';
+} from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-import Home from './pages/home/Homepage.tsx';
-import Login from './pages/authentication/Login.tsx';
-import ForgotPassword from './pages/authentication/ForgotPassword.tsx';
-import Signup from './pages/authentication/Signup.tsx';
-import NotFound from './pages/error/NotFound.tsx';
-import Forbidden from './pages/error/Forbidden.tsx';
-import Security from './components/user/Security.tsx';
-import MainLayout from './components/layout/MainLayout.tsx';
-import AuthLayout from './components/layout/AuthLayout.tsx';
-import UserLayout from './components/layout/UserLayout.tsx';
-
+import Home from "./pages/home/Homepage.tsx";
+import Login from "./pages/authentication/Login.tsx";
+import ForgotPassword from "./pages/authentication/ForgotPassword.tsx";
+import NotFound from "./pages/error/NotFound.tsx";
+import Forbidden from "./pages/error/Forbidden.tsx";
+import MainLayout from "./components/layout/MainLayout.tsx";
+import AuthLayout from "./components/layout/AuthLayout.tsx";
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <MainLayout />,
     children: [
       {
-        path: '/',
+        path: "/",
         element: <Home />,
       },
-    ]
+    ],
   },
   {
-    path: '/auth',
+    path: "/auth",
     element: <AuthLayout />,
     children: [
       {
-        path: 'login',
-        element: <Login />
+        path: "login",
+        element: <Login />,
       },
       {
-        path: 'forgot-password',
-        element: <ForgotPassword />
+        path: "forgot-password",
+        element: <ForgotPassword />,
       },
-      {
-        path: 'signup',
-        element: <Signup />
-      }
-    ]
+    ],
   },
   {
-    path: '/user',
-    element: <UserLayout />,
-    children: [
-      {
-        path: '',
-        element: <Security />
-      }
-    ]
-  },
-  {
-    path: '/forbidden',
+    path: "/forbidden",
     element: <Forbidden />,
   },
   {
-    path: '/not-found',
+    path: "/not-found",
     element: <NotFound />,
   },
   {
-    path: '*',
-    element: <Navigate to="/not-found" replace />
-  }
+    path: "*",
+    element: <Navigate to="/not-found" replace />,
+  },
 ]);
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <RouterProvider router={router} />
-  </StrictMode>,
+  </StrictMode>
 );
