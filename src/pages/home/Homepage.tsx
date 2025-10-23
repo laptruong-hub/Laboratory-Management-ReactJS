@@ -1,7 +1,6 @@
 import React from "react";
 import styled, { css } from "styled-components";
-import Header from "../../components/common/Header";
-import Footer from "../../components/common/Footer";
+
 import {
   FaFlask,
   FaStethoscope,
@@ -36,7 +35,7 @@ const theme = {
 };
 
 const Container = styled.div`
-  max-width: 1200px;
+  max-width: 110%;
   margin: 0 auto;
   padding: 0 1.25rem;
 `;
@@ -380,12 +379,6 @@ const AsideCard = styled.div`
   margin-bottom: 0.9rem;
 `;
 
-const FooterWrap = styled.footer`
-  background: ${theme.colors.primary};
-  color: ${theme.colors.white};
-  padding: 3rem 0 2rem;
-`;
-
 const HeroSection: React.FC = () => (
   <HeroWrapper>
     <HeroContent>
@@ -596,7 +589,6 @@ const ContactSection: React.FC = () => (
 
 const HomePage: React.FC = () => (
   <div>
-    <Header />
     <main>
       <HeroSection />
       <ServicesSection />

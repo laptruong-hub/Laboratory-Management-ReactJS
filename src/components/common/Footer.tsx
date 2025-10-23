@@ -194,7 +194,7 @@ const Footer = () => {
           </FooterColumn>
         </FooterContent>
 
-        <Copyright>© 2024 Lab Xét Nghiệm. Tất cả quyền được bảo lưu.</Copyright>
+        <Copyright>© 2025 Lab Xét Nghiệm. Tất cả quyền được bảo lưu.</Copyright>
       </Container>
     </FooterWrapper>
   );
