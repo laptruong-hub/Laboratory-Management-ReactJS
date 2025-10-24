@@ -11,11 +11,14 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 import Home from "./pages/home/Homepage.tsx";
 import Login from "./pages/authentication/Login.tsx";
+import Signup from "./pages/authentication/Signup.tsx";
 import ForgotPassword from "./pages/authentication/ForgotPassword.tsx";
 import NotFound from "./pages/error/NotFound.tsx";
 import Forbidden from "./pages/error/Forbidden.tsx";
+import Security from './components/user/Security.tsx';
 import MainLayout from "./components/layout/MainLayout.tsx";
 import AuthLayout from "./components/layout/AuthLayout.tsx";
+import UserLayout from './components/layout/UserLayout.tsx';
 
 const router = createBrowserRouter([
   {
@@ -40,8 +43,23 @@ const router = createBrowserRouter([
         path: "forgot-password",
         element: <ForgotPassword />,
       },
+      {
+        path: "signup",
+        element: <Signup />,
+      },
     ],
   },
+  {
+    path: '/user',
+    element: <UserLayout />,
+    children: [
+      {
+        path: '',
+        element: <Security />
+      }
+    ]
+  },
+
   {
     path: "/forbidden",
     element: <Forbidden />,
