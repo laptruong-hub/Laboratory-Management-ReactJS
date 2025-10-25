@@ -6,7 +6,20 @@ import Navbar from "react-bootstrap/Navbar";
 import styled from "styled-components";
 
 const StyledNavbar = styled(Navbar)`
-  .navbar-brand {
+
+  .btn{
+  margin-right: 5px;
+  font-size: 10px;                 
+  padding: 5px 30px;               
+  border-radius: 8px; 
+      border: 2px solid #cbabab59;
+      &: hover{
+      background-color: #f99f9fff;
+      color: #ffffff !important;
+      opacity: 0.75;
+      }
+  }
+.navbar-brand {
     font-size: 1.2rem;
     font-weight: 600;
   }
@@ -21,6 +34,10 @@ const StyledNavbar = styled(Navbar)`
   }
 
   .nav-link[href="/auth/login"] {
+    font-weight: 600;
+  }
+
+  .nav-link[href="/auth/signup"] {
     font-weight: 600;
   }
 `;
@@ -43,10 +60,25 @@ const Header: React.FC = () => {
           </Nav>
 
           <Nav>
-            <Nav.Link as={Link} to="/auth/login">
+            <Nav.Link
+              as={Link}
+              to="/auth/login"
+              className="btn btn-outline-primary text-white px-2"
+            >
               Đăng nhập
             </Nav.Link>
           </Nav>
+
+          <Nav>
+            <Nav.Link
+              as={Link}
+              to="/auth/signup"
+              className="btn btn-outline-primary text-white px-2"
+            >
+              Đăng ký
+            </Nav.Link>
+          </Nav>
+
         </Navbar.Collapse>
       </Container>
     </StyledNavbar>

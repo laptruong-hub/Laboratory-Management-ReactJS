@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import loginImg from '../../assets/img/login.jpg';
+import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
+
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -28,6 +31,37 @@ const Login: React.FC = () => {
 
   return (
     <div style={styles.authContent}>
+      <div style={styles.side}>
+        <div style={styles.sideInfor}>
+          <img
+            src={loginImg}
+            alt="Picture"
+            style={{ width: '360px', marginBottom: '10px', borderRadius: '10px', }}/>
+
+          <div style={styles.sideTitles}>
+          <h2 style={styles.sideTitleH2}>Phòng Lab Xét Nghiệm Máu</h2>
+          <p style={styles.sideTitleP}>Nơi cung cấp kết quả chính xác và nhanh chóng</p>
+          <p> giúp bạn theo dõi sức khỏe hiệu quả mỗi ngày.</p>
+          </div>
+
+          <div style={styles.sideAddress}><div style={styles.contactItem}>
+          <FaMapMarkerAlt style={styles.icon} />
+          <span>123 Đường ABC, Quận 1, TP.HCM</span>
+        </div>
+        <div style={styles.contactItem}>
+          <FaPhoneAlt style={styles.icon} />
+          <span>1900 xxxx</span>
+        </div>
+        <div style={styles.contactItem}>
+          <FaEnvelope style={styles.icon} />
+          <span>info@labxetnghiem.vn</span>
+        </div>
+          </div>
+          
+        </div>
+
+
+      </div>
       <div style={styles.loginCard}>
         <div style={styles.loginIcon}>
           <div style={styles.iconWrapper}>
@@ -140,6 +174,7 @@ const Login: React.FC = () => {
 };
 
 const styles: { [key: string]: React.CSSProperties } = {
+  
   authContent: {
     minHeight: '100vh',
     display: 'flex',
@@ -148,6 +183,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'linear-gradient(135deg, #fce4e4 0%, #f8d7da 50%, #fadbd8 100%)',
   },
   loginCard: {
+
     marginTop: '50px',
     marginBottom: '50px',
     background: 'white',
@@ -157,6 +193,46 @@ const styles: { [key: string]: React.CSSProperties } = {
     maxWidth: '400px',
     boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08)',
   },
+  
+  contactItem: {
+    display: 'flex',
+    gap: '8px',
+    marginBottom: '6px',
+  },
+  icon: {
+    color: '#d32f2f',
+  },
+  sideAddress: {
+    fontWeight: '500',
+    lineHeight: '0.2',
+    paddingLeft: '10px',
+  },
+
+  side: {
+    marginTop: '80px',
+    marginBottom: '430px',
+    marginRight: '30px',
+    background: 'white',
+    borderRadius: '12px',
+    padding: '20px',
+    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08)',
+  },
+
+  sideTitleH2: {
+    paddingLeft: '60px',
+    fontSize: '18px',
+    color: '#c00',
+    fontWeight: '600',
+    marginBottom: '8px',
+  },
+  sideTitleP: {
+    paddingLeft: '10px',
+    fontSize: '16px',
+    color: '#333',
+    margin: '0',
+    lineHeight: '1',
+  },
+  
   loginIcon: {
     display: 'flex',
     justifyContent: 'center',
