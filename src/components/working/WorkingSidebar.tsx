@@ -1,14 +1,14 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import styled from 'styled-components';
-import { 
-  FaUsers, 
-  FaUserShield, 
+import React from "react";
+import { NavLink } from "react-router-dom";
+import styled from "styled-components";
+import {
+  FaUsers,
+  FaUserShield,
   FaClipboardList,
   FaFlask,
   FaCog,
-  FaChartBar
-} from 'react-icons/fa';
+  FaChartBar,
+} from "react-icons/fa";
 
 const SidebarContainer = styled.div`
   flex: 1;
@@ -74,13 +74,13 @@ const WorkingSidebar: React.FC = () => {
   return (
     <SidebarContainer>
       <SidebarTitle>Quản lý hệ thống</SidebarTitle>
-      
+
       <NavList>
-        <NavItem to="/features/dashboard">
+        <NavItem to="/features/admin-dashboard">
           <FaChartBar />
           <span>Dashboard</span>
         </NavItem>
-        
+
         <NavItem to="/features/users">
           <FaUsers />
           <span>Danh sách tài khoản</span>
@@ -95,7 +95,7 @@ const WorkingSidebar: React.FC = () => {
       <Divider />
 
       <SidebarTitle>Quản lý xét nghiệm</SidebarTitle>
-      
+
       <NavList>
         <NavItem to="/features/tests">
           <FaFlask />
@@ -111,7 +111,7 @@ const WorkingSidebar: React.FC = () => {
       <Divider />
 
       <SidebarTitle>Cài đặt</SidebarTitle>
-      
+
       <NavList>
         <NavItem to="/working/settings">
           <FaCog />
