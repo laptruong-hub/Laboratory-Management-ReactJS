@@ -27,6 +27,7 @@ import RolesPage from "./pages/role/RolesPage.tsx";
 
 // Components - User
 import Security from "./components/user/Security.tsx";
+import UserProfile from "./pages/user/UserProfile.tsx";
 
 // Pages - Error
 import NotFound from "./pages/error/NotFound.tsx";
@@ -71,6 +72,10 @@ const router = createBrowserRouter([
       {
         path: "",
         element: <Security />,
+      },
+      {
+        path: "profile",
+        element: <UserProfile />,
       },
     ],
   },
