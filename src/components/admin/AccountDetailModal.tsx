@@ -130,7 +130,6 @@ export default function AccountDetailModal({
     };
   }, [open, onClose]);
 
-  // nhận user mới mỗi lần mở
   useEffect(() => {
     setStatus(actual.status);
   }, [actual.status]);
@@ -138,8 +137,8 @@ export default function AccountDetailModal({
   const handleSuspendToggle = () => {
     const next: UserStatus = status === "suspended" ? "active" : "suspended";
     setStatus(next);
-    if (userId && onStatusChange) onStatusChange(userId, next); // ← thông báo cho parent
-    // TODO: gọi API thật ở đây (optimistic update)
+    if (userId && onStatusChange) onStatusChange(userId, next);
+    // TODO: gọi API thật nếu cần
   };
 
   return (
@@ -148,7 +147,9 @@ export default function AccountDetailModal({
         <div className="breadcrumb">Dashboard / Người dùng / Chi tiết tài khoản</div>
         <h2 className="title">Chi tiết tài khoản</h2>
         <div className="actions">
-          <button className="btn outline" onClick={onClose}>Đóng</button>
+          <button className="btn outline" onClick={onClose}>
+            Đóng
+          </button>
           <button className="btn outline">Chỉnh sửa</button>
           <button
             className={"btn " + (status === "suspended" ? "primary" : "danger")}
