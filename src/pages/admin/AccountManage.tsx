@@ -342,32 +342,30 @@ export default function AccountManage() {
       />
 
       {/* Confirm Delete Modal */}
-      <dialog
-        ref={confirmRef}
-        className="am-modal am-confirm"
-        onCancel={(e) => {
-          e.preventDefault();
-          closeDeleteConfirm();
-        }}
-      >
-        <div className="am-modal__header">
-          <h2 className="title">Xác nhận xoá</h2>
-        </div>
-        <div className="am-modal__body">
-          <p>
-            Bạn liệu có muốn xoá người dùng
-            {deleteTarget ? <strong> “{deleteTarget.name}”</strong> : ""}?
-          </p>
-        </div>
-        <div className="am-modal__footer">
-          <button className="btn outline" onClick={closeDeleteConfirm}>
-            Huỷ
-          </button>
-          <button className="btn danger" onClick={confirmDelete}>
-            Xoá
-          </button>
-        </div>
-      </dialog>
+<dialog
+  ref={confirmRef}
+  className="am-modal am-confirm"
+  onCancel={(e) => {
+    e.preventDefault();
+    closeDeleteConfirm();
+  }}
+>
+  <div className="am-modal__header">
+    <h2 className="title">Xác nhận xoá</h2>
+  </div>
+
+  {/* BODY — luôn hiển thị câu hỏi */}
+  <div className="am-modal__body">
+   <p className="am-confirm-text">
+  Bạn có chắc muốn xoá{deleteTarget && <> người dùng <strong>{deleteTarget.name}</strong></>}?
+</p>
+  </div>
+
+  <div className="am-modal__footer">
+    <button className="btn outline" onClick={closeDeleteConfirm}>Huỷ</button>
+    <button className="btn danger" onClick={confirmDelete}>Xoá</button>
+  </div>
+</dialog>
     </div>
   );
 }

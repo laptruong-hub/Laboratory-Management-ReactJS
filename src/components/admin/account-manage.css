@@ -92,3 +92,12 @@
   .am-tools{ justify-content:flex-start; flex-wrap:wrap; }
   .am-search-input{ min-width:240px; }
 }
+
+/* body của modal dùng màu chữ tối mặc định */
+.am-modal__body{ color:#0f172a; }
+
+/* dòng xác nhận xoá */
+.am-confirm .am-confirm-text{
+  margin: 6px 2px 0;
+  font-weight: 600;
+}
