@@ -7,12 +7,15 @@ import {
   FaTrash,
   FaFilter,
   FaDownload,
+  FaChevronLeft,
+  FaChevronRight,
 } from "react-icons/fa";
 
 const PageContainer = styled.div`
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
+  padding: 1.5rem;
 `;
 
 const PageHeader = styled.div`
@@ -121,7 +124,6 @@ const Button = styled.button<{ $variant?: "primary" | "secondary" }>`
       : `background:white;color:#4b5563;border:1px solid #e5e7eb; &:hover{background:#f9fafb}`}
 `;
 
-// New layout styled components for Discord-like roles list
 const FlexLayout = styled.div`
   display: flex;
   gap: 1.5rem;
@@ -130,6 +132,12 @@ const FlexLayout = styled.div`
 
 const Sidebar = styled.aside`
   width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const SidebarSection = styled.div`
   background: white;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
@@ -147,6 +155,30 @@ const SidebarHeader = styled.div`
   border-bottom: 1px solid #eef2f6;
 `;
 
+const AddRoleButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #b91c1c;
+  }
+
+  svg {
+    font-size: 0.75rem;
+  }
+`;
+
 const CountBadge = styled.span`
   background: #f3f4f6;
   color: #374151;
@@ -161,6 +193,7 @@ const RoleList = styled.div`
   flex-direction: column;
   gap: 0.25rem;
   margin-top: 0.75rem;
+  min-height: 240px;
 `;
 
 const RoleItem = styled.div<{ $active?: boolean; roleColor?: string }>`
@@ -208,35 +241,79 @@ const RoleActions = styled.div`
   color: #6b7280;
   svg {
     cursor: pointer;
+    &:hover {
+      color: #dc2626;
+    }
   }
+`;
+
+const PaginationControls = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #eef2f6;
+`;
+
+const PaginationButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #f9fafb;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const PageInfo = styled.span`
+  font-size: 0.85rem;
+  color: #6b7280;
 `;
 
 const Content = styled.main`
   flex: 1;
   background: white;
   border-radius: 12px;
-  padding: 1rem;
+  padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  overflow: auto;
 `;
 
 const ContentHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 `;
 
 const Panel = styled.section`
   background: white;
   border-radius: 8px;
-  padding: 0.75rem;
+  padding: 1rem;
   border: 1px solid #eef2f6;
 `;
 
 const SectionTitle = styled.h3`
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 1rem 0;
   font-size: 1rem;
   color: #111827;
+  font-weight: 700;
 `;
 
 const MemberList = styled.div`
@@ -249,7 +326,7 @@ const MemberRow = styled.div`
   display: flex;
   gap: 0.75rem;
   align-items: center;
-  padding: 0.5rem;
+  padding: 0.75rem;
   border-radius: 8px;
   transition: background 0.12s ease;
 
@@ -268,9 +345,9 @@ const Avatar = styled.div`
   justify-content: center;
   color: #111827;
   font-weight: 700;
+  flex-shrink: 0;
 `;
 
-// Modal and permission editor styles
 const ModalOverlay = styled.div`
   position: fixed;
   inset: 0;
@@ -294,6 +371,8 @@ const ModalHeader = styled.div`
   padding: 1rem 1.25rem;
   font-weight: 800;
   border-bottom: 1px solid #eef2f6;
+  font-size: 1.1rem;
+  color: #111827;
 `;
 
 const ModalBody = styled.div`
@@ -319,14 +398,17 @@ const PermissionGroup = styled.div`
 const GroupTitle = styled.div`
   font-weight: 700;
   margin-bottom: 0.5rem;
+  color: #374151;
 `;
 
 const PermissionRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.4rem 0.5rem;
+  padding: 0.5rem;
   border-radius: 6px;
+  font-size: 0.9rem;
+  color: #4b5563;
 `;
 
 const ToggleSwitch = styled.label`
@@ -369,26 +451,6 @@ const ToggleSwitch = styled.label`
   }
 `;
 
-const DefaultsColumn = styled.div`
-  flex: 1;
-  border-left: 1px solid #eef2f6;
-  padding-left: 1rem;
-`;
-
-const ChipRow = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-`;
-
-const RoleChip = styled.div<{ small?: boolean }>`
-  background: #f3f4f6;
-  padding: ${(props) => (props.small ? "0.25rem 0.5rem" : "0.35rem 0.8rem")};
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: ${(props) => (props.small ? "0.75rem" : "0.85rem")};
-`;
-
 const ModalFooter = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -396,12 +458,54 @@ const ModalFooter = styled.div`
   margin-top: 1rem;
 `;
 
+const EmptyState = styled.div`
+  padding: 2rem;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.9rem;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+`;
+
+const Label = styled.label`
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.9rem;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    border-color: #dc2626;
+  }
+`;
+
+const ColorInput = styled.input`
+  width: 80px;
+  height: 40px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+`;
 
 interface Role {
   id: number;
   name: string;
-  color: string; // hex or name used for stripe
+  color: string;
   members: number;
+  isDefault?: boolean;
 }
 
 interface Member {
@@ -410,6 +514,8 @@ interface Member {
   email?: string;
 }
 
+const ROLES_PER_PAGE = 3;
+const MEMBERS_PER_PAGE = 5;
 
 const RolesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -423,21 +529,46 @@ const RolesPage: React.FC = () => {
   );
   const [roleNameInput, setRoleNameInput] = useState("");
   const [roleColorInput, setRoleColorInput] = useState("#5865F2");
-  const [editingRoleId, setEditingRoleId] = useState<number | null>(null);
-  const filterRef = useRef<HTMLDivElement | null>(null);
+  const [customRolesPage, setCustomRolesPage] = useState(0);
+  const [membersPage, setMembersPage] = useState(0);
 
-  // Mock roles 
+  const filterRef = useRef<HTMLDivElement | null>(null);
+  const memberListRef = useRef<HTMLDivElement | null>(null);
+  const defaultRolesRef = useRef<HTMLDivElement | null>(null);
+  const customRolesRef = useRef<HTMLDivElement | null>(null);
+
+  const [memberListHeight, setMemberListHeight] = useState("auto");
+
   const initialRoles: Role[] = [
-    { id: 1, name: "Administrator", color: "#5865F2", members: 2 },
-    { id: 2, name: "Laboratory Manager", color: "#43B581", members: 3 },
-    { id: 3, name: "Service", color: "#FAA61A", members: 1 },
-    { id: 4, name: "Lab User", color: "#EB459E", members: 7 },
-    { id: 5, name: "User", color: "#747F8D", members: 12 },
+    {
+      id: 1,
+      name: "Administrator",
+      color: "#5865F2",
+      members: 2,
+      isDefault: true,
+    },
+    {
+      id: 2,
+      name: "Laboratory Manager",
+      color: "#43B581",
+      members: 3,
+      isDefault: true,
+    },
+    { id: 3, name: "Service", color: "#FAA61A", members: 1, isDefault: true },
+    {
+      id: 4,
+      name: "Lab User",
+      color: "#EB459E",
+      members: 7,
+      isDefault: true,
+    },
   ];
 
   const [rolesState, setRolesState] = useState<Role[]>(initialRoles);
 
-  // Mock members for the selected role (by role id)
+  const defaultRoles = rolesState.filter((r) => r.isDefault);
+  const customRoles = rolesState.filter((r) => !r.isDefault);
+
   const membersMap: Record<number, Member[]> = {
     1: [
       { id: 1, name: "Nguyen Van A", email: "a@example.com" },
@@ -458,13 +589,8 @@ const RolesPage: React.FC = () => {
       { id: 12, name: "User 6" },
       { id: 13, name: "User 7" },
     ],
-    5: Array.from({ length: 12 }).map((_, i) => ({
-      id: 20 + i,
-      name: `Member ${i + 1}`,
-    })),
   };
 
-  // Permission groups used inside the modal (mock)
   const permissionGroups: { title: string; items: string[] }[] = [
     { title: "Quyền hạn cơ bản", items: ["Read only"] },
     {
@@ -482,9 +608,8 @@ const RolesPage: React.FC = () => {
     rolesState.find((r) => r.id === selectedRoleId) ?? rolesState[0];
   const members = selectedRoleId ? membersMap[selectedRoleId] ?? [] : [];
 
-
-  const sortedRoles = React.useMemo(() => {
-    const copy = [...rolesState];
+  const sortRoles = (roles: Role[]) => {
+    const copy = [...roles];
     if (sortOption === "role") {
       return copy.sort((a, b) =>
         a.name.localeCompare(b.name, "en", { sensitivity: "base" })
@@ -494,7 +619,49 @@ const RolesPage: React.FC = () => {
       return copy.sort((a, b) => b.members - a.members);
     }
     return copy;
-  }, [rolesState, sortOption]);
+  };
+
+  const sortedDefaultRoles = sortRoles(defaultRoles);
+  const sortedCustomRoles = sortRoles(customRoles);
+
+  // Pagination for custom roles
+  const totalCustomPages = Math.ceil(sortedCustomRoles.length / ROLES_PER_PAGE);
+  const paginatedCustomRoles = sortedCustomRoles.slice(
+    customRolesPage * ROLES_PER_PAGE,
+    (customRolesPage + 1) * ROLES_PER_PAGE
+  );
+
+  // Pagination for members
+  const totalMemberPages = Math.ceil(members.length / MEMBERS_PER_PAGE);
+  const paginatedMembers = members.slice(
+    membersPage * MEMBERS_PER_PAGE,
+    (membersPage + 1) * MEMBERS_PER_PAGE
+  );
+
+  const handleRoleSelect = (roleId: number) => {
+    setSelectedRoleId(roleId);
+    setMembersPage(0);
+    // Scroll member list to top
+    if (memberListRef.current) {
+      memberListRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  // Calculate member list height based on sidebar sections
+  useEffect(() => {
+    const calculateHeight = () => {
+      if (defaultRolesRef.current && customRolesRef.current) {
+        const defaultHeight = defaultRolesRef.current.offsetHeight;
+        const customHeight = customRolesRef.current.offsetHeight;
+        const totalHeight = defaultHeight + customHeight + 16; // 16px is the gap
+        setMemberListHeight(`${totalHeight}px`);
+      }
+    };
+
+    calculateHeight();
+    window.addEventListener("resize", calculateHeight);
+    return () => window.removeEventListener("resize", calculateHeight);
+  }, [sortedDefaultRoles.length, sortedCustomRoles.length, customRolesPage]);
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -581,56 +748,134 @@ const RolesPage: React.FC = () => {
             <FaDownload />
             Xuất
           </Button>
-          <Button
-            $variant="primary"
-            onClick={() => {
-              // Open create modal in create mode (not editing)
-              setEditingRoleId(null);
-              setRoleNameInput("");
-              setRoleColorInput("#5865F2");
-              setShowCreateModal(true);
-            }}
-          >
-            <FaPlus />
-            Thêm vai trò
-          </Button>
         </ActionButtons>
       </ControlBar>
 
-      {/* Discord-like two-column */}
       <FlexLayout>
         <Sidebar>
-          <SidebarHeader>
-            Roles
-            <CountBadge>{rolesState.length}</CountBadge>
-          </SidebarHeader>
-          <RoleList>
-            {sortedRoles.map((role) => (
-              <RoleItem
-                key={role.id}
-                onClick={() => setSelectedRoleId(role.id)}
-                $active={role.id === selectedRoleId}
-                roleColor={role.color}
-                title={`${role.name} — ${role.members} thành viên`}
+          <SidebarSection ref={defaultRolesRef}>
+            <SidebarHeader>
+              Default Roles
+              <CountBadge>{defaultRoles.length}</CountBadge>
+            </SidebarHeader>
+            <RoleList>
+              {sortedDefaultRoles.map((role) => (
+                <RoleItem
+                  key={role.id}
+                  onClick={() => handleRoleSelect(role.id)}
+                  $active={role.id === selectedRoleId}
+                  roleColor={role.color}
+                  title={`${role.name} — ${role.members} thành viên`}
+                >
+                  <RoleLeftStripe style={{ backgroundColor: role.color }} />
+                  <RoleLabel>
+                    <RoleName>{role.name}</RoleName>
+                    <RoleMeta>{role.members} thành viên</RoleMeta>
+                  </RoleLabel>
+                </RoleItem>
+              ))}
+            </RoleList>
+          </SidebarSection>
+
+          <SidebarSection ref={customRolesRef}>
+            <SidebarHeader>
+              Custom Roles
+              <div
+                style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}
               >
-                <RoleLeftStripe style={{ backgroundColor: role.color }} />
-                <RoleLabel>
-                  <RoleName>{role.name}</RoleName>
-                  <RoleMeta>{role.members} thành viên</RoleMeta>
-                </RoleLabel>
-                <RoleActions>
-                  {/* left-item delete removed per design */}
-                </RoleActions>
-              </RoleItem>
-            ))}
-          </RoleList>
+                <CountBadge>{customRoles.length}</CountBadge>
+                <AddRoleButton
+                  onClick={() => {
+                    setRoleNameInput("");
+                    setRoleColorInput("#5865F2");
+                    setShowCreateModal(true);
+                  }}
+                >
+                  <FaPlus />
+                </AddRoleButton>
+              </div>
+            </SidebarHeader>
+            <RoleList>
+              {customRoles.length === 0 ? (
+                <EmptyState>Chưa có vai trò tùy chỉnh</EmptyState>
+              ) : (
+                <>
+                  {paginatedCustomRoles.map((role) => (
+                    <RoleItem
+                      key={role.id}
+                      onClick={() => handleRoleSelect(role.id)}
+                      $active={role.id === selectedRoleId}
+                      roleColor={role.color}
+                      title={`${role.name} — ${role.members} thành viên`}
+                    >
+                      <RoleLeftStripe
+                        style={{ backgroundColor: role.color }}
+                      />
+                      <RoleLabel>
+                        <RoleName>{role.name}</RoleName>
+                        <RoleMeta>{role.members} thành viên</RoleMeta>
+                      </RoleLabel>
+                      <RoleActions onClick={(e) => e.stopPropagation()}>
+                        <FaEdit
+                          size={14}
+                          onClick={() => {
+                            setRoleNameInput(role.name);
+                            setRoleColorInput(role.color);
+                            setShowCreateModal(true);
+                          }}
+                        />
+                        <FaTrash
+                          size={14}
+                          onClick={() => {
+                            setSelectedRoleId(role.id);
+                            setShowDeleteConfirm(true);
+                          }}
+                        />
+                      </RoleActions>
+                    </RoleItem>
+                  ))}
+
+                  {totalCustomPages > 1 && (
+                    <PaginationControls>
+                      <PaginationButton
+                        onClick={() =>
+                          setCustomRolesPage((p) => Math.max(0, p - 1))
+                        }
+                        disabled={customRolesPage === 0}
+                      >
+                        <FaChevronLeft />
+                      </PaginationButton>
+                      <PageInfo>
+                        {customRolesPage + 1} / {totalCustomPages}
+                      </PageInfo>
+                      <PaginationButton
+                        onClick={() =>
+                          setCustomRolesPage((p) =>
+                            Math.min(totalCustomPages - 1, p + 1)
+                          )
+                        }
+                        disabled={customRolesPage >= totalCustomPages - 1}
+                      >
+                        <FaChevronRight />
+                      </PaginationButton>
+                    </PaginationControls>
+                  )}
+                </>
+              )}
+            </RoleList>
+          </SidebarSection>
         </Sidebar>
 
-        <Content>
+        <Content
+          ref={memberListRef}
+          style={{ maxHeight: memberListHeight }}
+        >
           <ContentHeader>
             <div>
-              <h2 style={{ margin: 0 }}>{selectedRole?.name}</h2>
-              <div style={{ color: "#6b7280", fontSize: 14 }}>
+              <h2 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 700 }}>
+                {selectedRole?.name}
+              </h2>
+              <div style={{ color: "#6b7280", fontSize: 14, marginTop: 4 }}>
                 {selectedRole?.members} thành viên
               </div>
             </div>
@@ -638,18 +883,19 @@ const RolesPage: React.FC = () => {
               <Button
                 $variant="secondary"
                 onClick={() => {
-                  // restore previous behavior: open permissions modal
                   setShowModal(true);
                 }}
               >
-                <FaEdit /> Chỉnh sửa
+                <FaEdit /> Chỉnh sửa quyền
               </Button>
-              <Button
-                $variant="secondary"
-                onClick={() => setShowDeleteConfirm(true)}
-              >
-                <FaTrash /> Xóa
-              </Button>
+              {!selectedRole?.isDefault && (
+                <Button
+                  $variant="secondary"
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  <FaTrash /> Xóa
+                </Button>
+              )}
             </div>
           </ContentHeader>
 
@@ -657,9 +903,11 @@ const RolesPage: React.FC = () => {
             <SectionTitle>Thành viên</SectionTitle>
             <MemberList>
               {members.length === 0 && (
-                <div style={{ color: "#9ca3af" }}>Không có thành viên</div>
+                <div style={{ color: "#9ca3af", textAlign: "center", padding: "1rem" }}>
+                  Không có thành viên
+                </div>
               )}
-              {members.map((m) => (
+              {paginatedMembers.map((m) => (
                 <MemberRow key={m.id}>
                   <Avatar>
                     {m.name.split(" ").pop()?.charAt(0) ?? m.name.charAt(0)}
@@ -675,13 +923,38 @@ const RolesPage: React.FC = () => {
                 </MemberRow>
               ))}
             </MemberList>
+
+            {totalMemberPages > 1 && (
+              <PaginationControls>
+                <PaginationButton
+                  onClick={() => setMembersPage((p) => Math.max(0, p - 1))}
+                  disabled={membersPage === 0}
+                >
+                  <FaChevronLeft />
+                </PaginationButton>
+                <PageInfo>
+                  {membersPage + 1} / {totalMemberPages}
+                </PageInfo>
+                <PaginationButton
+                  onClick={() =>
+                    setMembersPage((p) => Math.min(totalMemberPages - 1, p + 1))
+                  }
+                  disabled={membersPage >= totalMemberPages - 1}
+                >
+                  <FaChevronRight />
+                </PaginationButton>
+              </PaginationControls>
+            )}
           </Panel>
         </Content>
       </FlexLayout>
+
       {showModal && (
         <ModalOverlay onClick={() => setShowModal(false)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>Chỉnh sửa quyền hạn</ModalHeader>
+            <ModalHeader>
+              Chỉnh sửa quyền hạn - {selectedRole?.name}
+            </ModalHeader>
             <ModalBody>
               <ModalColumns>
                 <PermissionsColumn style={{ flex: 1 }}>
@@ -710,16 +983,13 @@ const RolesPage: React.FC = () => {
               </ModalColumns>
 
               <ModalFooter>
-                <Button
-                  $variant="secondary"
-                  onClick={() => setShowModal(false)}
-                >
+                <Button $variant="secondary" onClick={() => setShowModal(false)}>
                   Hủy
                 </Button>
                 <Button
                   $variant="primary"
                   onClick={() => {
-                    /* TODO: save */ setShowModal(false);
+                    setShowModal(false);
                   }}
                 >
                   Cập nhật
@@ -729,6 +999,7 @@ const RolesPage: React.FC = () => {
           </ModalContent>
         </ModalOverlay>
       )}
+
       {showDeleteConfirm && (
         <ModalOverlay onClick={() => setShowDeleteConfirm(false)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
@@ -754,7 +1025,6 @@ const RolesPage: React.FC = () => {
                       const next = prev.filter(
                         (r) => r.id !== (selectedRole?.id ?? -1)
                       );
-                      // choose the next selected id
                       const nextId = next.length > 0 ? next[0].id : null;
                       setSelectedRoleId(nextId);
                       return next;
@@ -773,25 +1043,25 @@ const RolesPage: React.FC = () => {
       {showCreateModal && (
         <ModalOverlay onClick={() => setShowCreateModal(false)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>Tạo vai trò mới</ModalHeader>
+            <ModalHeader>Tạo vai trò tùy chỉnh</ModalHeader>
             <ModalBody>
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 12 }}
-              >
-                <label>Tên vai trò</label>
-                <input
+              <FormGroup>
+                <Label>Tên vai trò</Label>
+                <Input
                   value={roleNameInput}
                   onChange={(e) => setRoleNameInput(e.target.value)}
-                  placeholder="Tên vai trò"
+                  placeholder="Nhập tên vai trò"
                 />
+              </FormGroup>
 
-                <label>Màu vai trò</label>
-                <input
+              <FormGroup>
+                <Label>Màu vai trò</Label>
+                <ColorInput
                   type="color"
                   value={roleColorInput}
                   onChange={(e) => setRoleColorInput(e.target.value)}
                 />
-              </div>
+              </FormGroup>
 
               <ModalFooter>
                 <Button
@@ -803,7 +1073,7 @@ const RolesPage: React.FC = () => {
                 <Button
                   $variant="primary"
                   onClick={() => {
-                    const name = roleNameInput.trim() || "New Role";
+                    const name = roleNameInput.trim() || "New Custom Role";
                     const maxId = rolesState.reduce(
                       (acc, r) => Math.max(acc, r.id),
                       0
@@ -813,6 +1083,7 @@ const RolesPage: React.FC = () => {
                       name,
                       color: roleColorInput,
                       members: 0,
+                      isDefault: false,
                     };
                     setRolesState((prev) => [...prev, newRole]);
                     setRoleNameInput("");
