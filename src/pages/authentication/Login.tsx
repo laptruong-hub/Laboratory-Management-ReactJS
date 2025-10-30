@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import loginImg from '../../assets/img/login.jpg';
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 
 const Login: React.FC = () => {
@@ -11,15 +13,41 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const navigate = useNavigate();
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
     try {
-      console.log('Đăng nhập với:', { email, password });
+      const response = await axios.post('http://localhost:8090/api/auth/login', {
+        email: email, // Lấy từ state
+        password: password // Lấy từ state
+      });
+
+      // thành công (200 OK)
+      if (response.data && response.data.accessToken) {
+        //  (JWT Token)
+        const accessToken = response.data.accessToken;
+
+        //Lưu token vào localStorage
+        localStorage.setItem('accessToken', accessToken);
+
+        navigate('/user');
+      } else {
+        // Nếu BE trả về 200 OK nhưng không có token thì coi như lỗi
+        setError('Lỗi đăng nhập không mong muốn.');
+      }
+
     } catch (err: any) {
-      setError(err.message || 'Đăng nhập thất bại');
+      //Xử lý lỗi (BE trả về 401, 404, 500...)
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data.message || 'Email hoặc mật khẩu không chính xác.');
+      } else {
+        setError('Đăng nhập thất bại, không thể kết nối tới server.');
+      }
+      console.error("Lỗi đăng nhập:", err);
     } finally {
       setIsLoading(false);
     }
@@ -36,28 +64,28 @@ const Login: React.FC = () => {
           <img
             src={loginImg}
             alt="Picture"
-            style={{ width: '360px', marginBottom: '10px', borderRadius: '10px', }}/>
+            style={{ width: '360px', marginBottom: '10px', borderRadius: '10px', }} />
 
           <div style={styles.sideTitles}>
-          <h2 style={styles.sideTitleH2}>Phòng Lab Xét Nghiệm Máu</h2>
-          <p style={styles.sideTitleP}>Nơi cung cấp kết quả chính xác và nhanh chóng</p>
-          <p> giúp bạn theo dõi sức khỏe hiệu quả mỗi ngày.</p>
+            <h2 style={styles.sideTitleH2}>Phòng Lab Xét Nghiệm Máu</h2>
+            <p style={styles.sideTitleP}>Nơi cung cấp kết quả chính xác và nhanh chóng</p>
+            <p> giúp bạn theo dõi sức khỏe hiệu quả mỗi ngày.</p>
           </div>
 
           <div style={styles.sideAddress}><div style={styles.contactItem}>
-          <FaMapMarkerAlt style={styles.icon} />
-          <span>123 Đường ABC, Quận 1, TP.HCM</span>
-        </div>
-        <div style={styles.contactItem}>
-          <FaPhoneAlt style={styles.icon} />
-          <span>1900 xxxx</span>
-        </div>
-        <div style={styles.contactItem}>
-          <FaEnvelope style={styles.icon} />
-          <span>info@labxetnghiem.vn</span>
-        </div>
+            <FaMapMarkerAlt style={styles.icon} />
+            <span>123 Đường ABC, Quận 1, TP.HCM</span>
           </div>
-          
+            <div style={styles.contactItem}>
+              <FaPhoneAlt style={styles.icon} />
+              <span>1900 xxxx</span>
+            </div>
+            <div style={styles.contactItem}>
+              <FaEnvelope style={styles.icon} />
+              <span>info@labxetnghiem.vn</span>
+            </div>
+          </div>
+
         </div>
 
 
@@ -174,7 +202,7 @@ const Login: React.FC = () => {
 };
 
 const styles: { [key: string]: React.CSSProperties } = {
-  
+
   authContent: {
     minHeight: '100vh',
     display: 'flex',
@@ -193,7 +221,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     maxWidth: '400px',
     boxShadow: '0 10px 40px rgba(0, 0, 0, 0.08)',
   },
-  
+
   contactItem: {
     display: 'flex',
     gap: '8px',
@@ -232,7 +260,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0',
     lineHeight: '1',
   },
-  
+
   loginIcon: {
     display: 'flex',
     justifyContent: 'center',
