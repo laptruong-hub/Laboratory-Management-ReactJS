@@ -1,24 +1,16 @@
-//chỉnh cái này thành pop up của account manage trong page/admin
-
-
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./account-manage.css";
 
+/** Dùng kiểu "string" rộng để tránh lỗi index khi có role lạ từ API */
 type Gender = "male" | "female" | "other";
 type BloodGroup = "A" | "B" | "AB" | "O";
 type RhFactor = "+" | "-" | "unknown";
-type Status = "active" | "pending" | "suspended";
-type Role =
-  | "Administrator"
-  | "Lab Manager"
-  | "Lab User"
-  | "Service"
-  | "User"
-  | (string & {}); // fallbacks
+type UserStatus = "active" | "pending" | "suspended";
+type Role = string;
 
-export interface AccountDetailModal {
+export type AccountDetailData = {
   fullName: string;
-  dob?: string;             // ISO string: "2003-07-12"
+  dob?: string;
   gender?: Gender;
   bloodGroup?: BloodGroup;
   rhFactor?: RhFactor;
@@ -26,15 +18,15 @@ export interface AccountDetailModal {
   role: Role;
   email: string;
   phone?: string;
-  status: Status;
-}
+  status: UserStatus;
+};
 
 const vi = {
   gender(g?: Gender) {
     if (!g) return "—";
     return { male: "Nam", female: "Nữ", other: "Khác" }[g];
   },
-  status(s: Status) {
+  status(s: UserStatus) {
     return { active: "Hoạt động", pending: "Chờ duyệt", suspended: "Tạm ngưng" }[s];
   },
   date(iso?: string) {
@@ -46,7 +38,7 @@ const vi = {
     if (!r) return "—";
     if (r === "+") return "Dương (+)";
     if (r === "-") return "Âm (-)";
-    return "Không rõ";  
+    return "Không rõ";
   },
 };
 
@@ -59,18 +51,18 @@ const tone = {
   secondary: { bg: "#f1f5f9", fg: "#475569" },
 };
 
-const roleTone = (role: Role): typeof tone.secondary => {
-  const toneMap: Record<string, typeof tone.secondary> = {
-    Administrator: tone.primary,
-    "Lab Manager": tone.info,
-    "Lab User": tone.success,
-    Service: tone.warning,
-    User: tone.secondary,
-  };
-  return toneMap[role] ?? tone.secondary;
+/** Map role -> màu; dùng Record<string, ...> để tránh TS7053 */
+const roleMap: Record<string, { bg: string; fg: string }> = {
+  Administrator: tone.primary,
+  "Lab Manager": tone.info,
+  "Laboratory Manager": tone.info,
+  "Lab User": tone.success,
+  Service: tone.warning,
+  User: tone.secondary,
 };
+const roleTone = (role: Role) => roleMap[role] ?? tone.secondary;
 
-const statusTone = (s: Status) =>
+const statusTone = (s: UserStatus) =>
   ({ active: tone.success, pending: tone.warning, suspended: tone.danger }[s]);
 
 function Badge({
@@ -81,22 +73,13 @@ function Badge({
   colors: { bg: string; fg: string };
 }) {
   return (
-    <span
-      className="badge-pill"
-      style={{ backgroundColor: colors.bg, color: colors.fg }}
-    >
+    <span className="badge-pill" style={{ backgroundColor: colors.bg, color: colors.fg }}>
       {children}
     </span>
   );
 }
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children?: React.ReactNode;
-}) {
+function Field({ label, children }: { label: string; children?: React.ReactNode }) {
   return (
     <div className="field">
       <div className="field-label">{label}</div>
@@ -105,90 +88,97 @@ function Field({
   );
 }
 
-export default function AccountDetailModal({ user }: { user?: AccountDetailModal }) {
-  // Provide a harmless fallback so the page can be mounted via a route
-  const demoUser: AccountDetailModal = {
+export default function AccountDetailModal({
+  open,
+  onClose,
+  user,
+}: {
+  open: boolean;
+  onClose: () => void;
+  user?: AccountDetailData;
+}) {
+  const demo: AccountDetailData = {
     fullName: "Người dùng mẫu",
-    dob: undefined,
-    gender: undefined,
-    bloodGroup: undefined,
-    rhFactor: "unknown",
-    medicalHistory: "Chưa có tiền sử bệnh rõ ràng.",
     role: "User",
     email: "user@example.com",
-    phone: undefined,
     status: "active",
+    rhFactor: "unknown",
+    medicalHistory: "Chưa có tiền sử bệnh rõ ràng.",
   };
+  const actual = user ?? demo;
 
-  const actualUser = user ?? demoUser;
+  const [status, setStatus] = useState<UserStatus>(actual.status);
+  const ref = useRef<HTMLDialogElement>(null);
 
-  // Local status state so UI can optimistically reflect suspend/reactivate actions.
-  // In a real app replace these handlers with API calls and show loading/errors.
-  const [status, setStatus] = useState<Status>(actualUser.status);
+  useEffect(() => {
+    const d = ref.current;
+    if (!d) return;
+    if (open && !d.open) d.showModal();
+    if (!open && d.open) d.close();
 
-  const handleSuspendToggle = async () => {
-    if (status === "suspended") {
-      const ok = window.confirm("Kích hoạt lại tài khoản này?");
-      if (!ok) return;
-      // TODO: call API to activate account
-      console.log("Reactivating account...");
-      setStatus("active");
-      return;
-    }
+    const onCancel = (e: Event) => {
+      e.preventDefault();
+      onClose();
+    };
+    const onBackdrop = (e: MouseEvent) => {
+      if (e.target === d) onClose();
+    };
+    d.addEventListener("cancel", onCancel);
+    d.addEventListener("click", onBackdrop);
+    return () => {
+      d.removeEventListener("cancel", onCancel);
+      d.removeEventListener("click", onBackdrop);
+    };
+  }, [open, onClose]);
 
-    const ok = window.confirm("Bạn có chắc muốn tạm ngừng tài khoản này?");
-    if (!ok) return;
-    // TODO: call API to suspend account
-    console.log("Suspending account...");
-    setStatus("suspended");
+  const handleSuspendToggle = () => {
+    setStatus((s) => (s === "suspended" ? "active" : "suspended"));
+    // TODO: call API
   };
 
   return (
-    <div className="page">
+    <dialog ref={ref} className="am-modal">
       {/* Header */}
-      <div className="page-head">
-        <div>
-          <div className="breadcrumb">Dashboard / Người dùng / Thông tin tài khoản</div>
-          <h1 className="title">Thông tin tài khoản</h1>
-        </div>
-        {/* action buttons: change password, edit, suspend/reactivate */}
+      <div className="am-modal__header">
+        <div className="breadcrumb">Dashboard / Người dùng / Chi tiết tài khoản</div>
+        <h2 className="title">Chi tiết tài khoản</h2>
         <div className="actions">
-  <button className="btn outline">Chỉnh sửa</button>
-  <button
-    className={"btn " + (status === "suspended" ? "primary" : "danger")}
-    onClick={handleSuspendToggle}
-    title={status === "suspended" ? "Kích hoạt lại tài khoản" : "Tạm ngừng tài khoản"}
-  >
-    {status === "suspended" ? "Kích hoạt" : "Tạm ngưng"}
-  </button>
-</div>
-      </div>
-
-      {/* Card */}
-      <div className="card">
-        <div className="grid">
-
-          <Field label="Họ và tên">{actualUser.fullName}</Field>
-          <Field label="Ngày sinh">{vi.date(actualUser.dob)}</Field>
-
-          <Field label="Giới tính">{vi.gender(actualUser.gender)}</Field>
-          <Field label="Nhóm máu">{actualUser.bloodGroup ?? "—"}</Field>
-          <Field label="Yếu tố Rh">{vi.rh(actualUser.rhFactor)}</Field>
-
-          <Field label="Vai trò">
-            <Badge colors={roleTone(actualUser.role)}>{actualUser.role}</Badge>
-          </Field>
-          <Field label="Email">{actualUser.email}</Field>
-
-          <Field label="Số điện thoại">{actualUser.phone ?? "—"}</Field>
-          <Field label="Trạng thái">
-            <Badge colors={statusTone(actualUser.status)}>{vi.status(actualUser.status)}</Badge>
-          </Field>
-          <Field label="Tiền sử bệnh">{actualUser.medicalHistory ?? "—"}</Field>
+          <button className="btn outline" onClick={onClose}>Đóng</button>
+          <button className="btn outline">Chỉnh sửa</button>
+          <button
+            className={"btn " + (status === "suspended" ? "primary" : "danger")}
+            onClick={handleSuspendToggle}
+          >
+            {status === "suspended" ? "Kích hoạt" : "Tạm ngưng"}
+          </button>
         </div>
       </div>
-    </div>
+
+      {/* Body */}
+      <div className="am-modal__body">
+        <div className="card" style={{ boxShadow: "none" }}>
+          <div className="am-grid">
+            <Field label="Họ và tên">{actual.fullName}</Field>
+            <Field label="Ngày sinh">{vi.date(actual.dob)}</Field>
+
+            <Field label="Giới tính">{vi.gender(actual.gender)}</Field>
+            <Field label="Nhóm máu">{actual.bloodGroup ?? "—"}</Field>
+
+            <Field label="Yếu tố Rh">{vi.rh(actual.rhFactor)}</Field>
+            <Field label="Vai trò">
+              <Badge colors={roleTone(actual.role)}>{actual.role}</Badge>
+            </Field>
+
+            <Field label="Email">{actual.email}</Field>
+            <Field label="Số điện thoại">{actual.phone ?? "—"}</Field>
+
+            <Field label="Trạng thái">
+              <Badge colors={statusTone(status)}>{vi.status(status)}</Badge>
+            </Field>
+            <Field label="Tiền sử bệnh">{actual.medicalHistory ?? "—"}</Field>
+          </div>
+        </div>
+      </div>
+    </dialog>
   );
 }
-
-
