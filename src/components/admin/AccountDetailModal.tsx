@@ -1,5 +1,8 @@
+//chỉnh cái này thành pop up của account manage trong page/admin
+
+
 import React, { useState } from "react";
-import "./user-profile.css";
+import "./account-manage.css";
 
 type Gender = "male" | "female" | "other";
 type BloodGroup = "A" | "B" | "AB" | "O";
@@ -13,7 +16,7 @@ type Role =
   | "User"
   | (string & {}); // fallbacks
 
-export interface UserProfile {
+export interface AccountDetailModal {
   fullName: string;
   dob?: string;             // ISO string: "2003-07-12"
   gender?: Gender;
@@ -43,7 +46,7 @@ const vi = {
     if (!r) return "—";
     if (r === "+") return "Dương (+)";
     if (r === "-") return "Âm (-)";
-    return "Không rõ";
+    return "Không rõ";  
   },
 };
 
@@ -102,9 +105,9 @@ function Field({
   );
 }
 
-export default function UserProfilePage({ user }: { user?: UserProfile }) {
+export default function AccountDetailModal({ user }: { user?: AccountDetailModal }) {
   // Provide a harmless fallback so the page can be mounted via a route
-  const demoUser: UserProfile = {
+  const demoUser: AccountDetailModal = {
     fullName: "Người dùng mẫu",
     dob: undefined,
     gender: undefined,

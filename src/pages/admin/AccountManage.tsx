@@ -362,7 +362,7 @@ interface User {
 
 // ============= COMPONENT =============
 
-const UsersPage: React.FC = () => {
+const AccountManage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -577,4 +577,4 @@ const UsersPage: React.FC = () => {
   );
 };
 
-export default UsersPage;
+export default AccountManage;
