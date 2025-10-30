@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./account-manage.css";
 
-/** Dùng kiểu "string" rộng để tránh lỗi index khi có role lạ từ API */
 type Gender = "male" | "female" | "other";
 type BloodGroup = "A" | "B" | "AB" | "O";
 type RhFactor = "+" | "-" | "unknown";
-type UserStatus = "active" | "pending" | "suspended";
+export type UserStatus = "active" | "pending" | "suspended";
 type Role = string;
 
 export type AccountDetailData = {
@@ -50,8 +49,6 @@ const tone = {
   danger: { bg: "#ffeaea", fg: "#dc2626" },
   secondary: { bg: "#f1f5f9", fg: "#475569" },
 };
-
-/** Map role -> màu; dùng Record<string, ...> để tránh TS7053 */
 const roleMap: Record<string, { bg: string; fg: string }> = {
   Administrator: tone.primary,
   "Lab Manager": tone.info,
@@ -61,7 +58,6 @@ const roleMap: Record<string, { bg: string; fg: string }> = {
   User: tone.secondary,
 };
 const roleTone = (role: Role) => roleMap[role] ?? tone.secondary;
-
 const statusTone = (s: UserStatus) =>
   ({ active: tone.success, pending: tone.warning, suspended: tone.danger }[s]);
 
@@ -78,7 +74,6 @@ function Badge({
     </span>
   );
 }
-
 function Field({ label, children }: { label: string; children?: React.ReactNode }) {
   return (
     <div className="field">
@@ -92,10 +87,14 @@ export default function AccountDetailModal({
   open,
   onClose,
   user,
+  userId,
+  onStatusChange,
 }: {
   open: boolean;
   onClose: () => void;
   user?: AccountDetailData;
+  userId?: string;
+  onStatusChange?: (id: string, next: UserStatus) => void;
 }) {
   const demo: AccountDetailData = {
     fullName: "Người dùng mẫu",
@@ -131,14 +130,20 @@ export default function AccountDetailModal({
     };
   }, [open, onClose]);
 
+  // nhận user mới mỗi lần mở
+  useEffect(() => {
+    setStatus(actual.status);
+  }, [actual.status]);
+
   const handleSuspendToggle = () => {
-    setStatus((s) => (s === "suspended" ? "active" : "suspended"));
-    // TODO: call API
+    const next: UserStatus = status === "suspended" ? "active" : "suspended";
+    setStatus(next);
+    if (userId && onStatusChange) onStatusChange(userId, next); // ← thông báo cho parent
+    // TODO: gọi API thật ở đây (optimistic update)
   };
 
   return (
     <dialog ref={ref} className="am-modal">
-      {/* Header */}
       <div className="am-modal__header">
         <div className="breadcrumb">Dashboard / Người dùng / Chi tiết tài khoản</div>
         <h2 className="title">Chi tiết tài khoản</h2>
@@ -154,24 +159,19 @@ export default function AccountDetailModal({
         </div>
       </div>
 
-      {/* Body */}
       <div className="am-modal__body">
         <div className="card" style={{ boxShadow: "none" }}>
           <div className="am-grid">
             <Field label="Họ và tên">{actual.fullName}</Field>
             <Field label="Ngày sinh">{vi.date(actual.dob)}</Field>
-
             <Field label="Giới tính">{vi.gender(actual.gender)}</Field>
             <Field label="Nhóm máu">{actual.bloodGroup ?? "—"}</Field>
-
             <Field label="Yếu tố Rh">{vi.rh(actual.rhFactor)}</Field>
             <Field label="Vai trò">
               <Badge colors={roleTone(actual.role)}>{actual.role}</Badge>
             </Field>
-
             <Field label="Email">{actual.email}</Field>
             <Field label="Số điện thoại">{actual.phone ?? "—"}</Field>
-
             <Field label="Trạng thái">
               <Badge colors={statusTone(status)}>{vi.status(status)}</Badge>
             </Field>
