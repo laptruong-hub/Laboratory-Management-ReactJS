@@ -76,17 +76,17 @@ const WorkingSidebar: React.FC = () => {
       <SidebarTitle>Quản lý hệ thống</SidebarTitle>
 
       <NavList>
-        <NavItem to="/features/admin-dashboard">
+        <NavItem to="/admin/admin-dashboard">
           <FaChartBar />
           <span>Dashboard</span>
         </NavItem>
 
-        <NavItem to="/features/users">
+        <NavItem to="/admin/account">
           <FaUsers />
           <span>Danh sách tài khoản</span>
         </NavItem>
 
-        <NavItem to="/features/roles">
+        <NavItem to="/admin/roles">
           <FaUserShield />
           <span>Quản lý vai trò</span>
         </NavItem>

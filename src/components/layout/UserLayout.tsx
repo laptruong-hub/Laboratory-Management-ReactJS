@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
-import UserSidebar from '../../components/user/UserSidebar';
-import UserHeader from '../../components/user/UserHeader';
+import UserSidebar from '../user/UserSidebar';
+import UserHeader from '../user/UserHeader';
 
 const UserLayout = () => {
     return (

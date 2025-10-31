@@ -18,16 +18,15 @@ import Login from "./pages/authentication/Login.tsx";
 import Signup from "./pages/authentication/Signup.tsx";
 import ForgotPassword from "./pages/authentication/ForgotPassword.tsx";
 
-// Pages - Dashboard
+// Pages - Admin
 import AdminDashboardPage from "./pages/dashboard/AdminDashboard.tsx";
 
-// Pages - User & Role
-import UsersPage from "./pages/user/UsersPage.tsx";
+
+import AccountManage from "./pages/admin/AccountManage.tsx";
 import RolesPage from "./pages/role/RolesPage.tsx";
 
 // Components - User
 import Security from "./components/user/Security.tsx";
-import UserProfile from "./pages/user/UserProfile.tsx";
 
 // Pages - Error
 import NotFound from "./pages/error/NotFound.tsx";
@@ -73,27 +72,25 @@ const router = createBrowserRouter([
         path: "",
         element: <Security />,
       },
-      {
-        path: "profile",
-        element: <UserProfile />,
-      },
+      
     ],
   },
   {
-    path: "/features",
+    path: "/admin",
     element: <WorkingLayout />,
     children: [
       {
         path: "admin-dashboard",
         element: <AdminDashboardPage />,
       },
-      {
-        path: "users",
-        element: <UsersPage />,
-      },
+      
       {
         path: "roles",
         element: <RolesPage />,
+      },
+      {
+        path: "account",
+        element: <AccountManage />,
       },
     ],
   },
