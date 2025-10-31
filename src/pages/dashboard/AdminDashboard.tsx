@@ -3,6 +3,14 @@ import styled from 'styled-components';
 import OrdersTable, { OrderRow } from '../../components/dashboard/OrdersTable';
 import UsersTable, { UserRow } from '../../components/dashboard/UsersTable';
 import { FaUsers, FaClipboardList, FaFlask, FaChartLine } from 'react-icons/fa';
+import StatCard from '../../components/dashboard/DashboardCards/StatCard';
+import MiniBarChart from '../../components/dashboard/DashboardCards/MiniBarChart';
+import Trend from '../../components/dashboard/Charts/TrendChart';
+import { dashboardStats, trendData, parameterDistribution, roleDistribution, heatmapData } from '../../utils/mockData';
+import HorizontalBarChart from '../../components/dashboard/Charts/HorizontalBarChart';
+import DonutChart from '../../components/dashboard/Charts/DonutChart';
+import HeatmapCalendar from '../../components/dashboard/Charts/HeatmapCalendar';
+import TopBarActions from '../../components/dashboard/TopBar/TopBarActions';
 
 const Container = styled.div`
   width: 100%;
@@ -130,24 +138,25 @@ const AdminDashboardPage: React.FC = () => {
           <PageTitle>Admin Dashboard</PageTitle>
           <Subtle>Hệ thống quản lý phòng xét nghiệm máu (Hematology Lab)</Subtle>
         </TitleBlock>
-        <Subtle>
-          {new Date().toLocaleDateString('vi-VN', {
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-          })}
-        </Subtle>
+        <TopBarActions />
       </Header>
 
       <KPIGrid>
-        {kpis.map((k, i) => (
-          <KPICard key={i}>
-            <KPIIcon>{k.icon}</KPIIcon>
-            <KPIInfo>
-              <KPILabel>{k.label}</KPILabel>
-              <KPIValue>{k.value}</KPIValue>
-            </KPIInfo>
-          </KPICard>
-        ))}
+        <StatCard title={dashboardStats.totalUsers.title} value={dashboardStats.totalUsers.value} icon={<FaUsers />} color="#dc2626" description={dashboardStats.totalUsers.description} />
+        <StatCard title={dashboardStats.todayTests.title} value={dashboardStats.todayTests.value} icon={<FaFlask />} color="#dc2626">
+          <MiniBarChart data={dashboardStats.todayTests.breakdown} />
+        </StatCard>
+        <StatCard title={dashboardStats.completedTests.title} value={dashboardStats.completedTests.value} icon={<FaClipboardList />} color="#dc2626" description={dashboardStats.completedTests.description} />
+        <StatCard title={dashboardStats.growthRate.title} value={dashboardStats.growthRate.value} icon={<FaChartLine />} color="#dc2626" />
       </KPIGrid>
+
+      <Trend title={trendData.title} subtitle={trendData.period} data={trendData.data} />
+
+      <SectionGrid>
+        <HorizontalBarChart title={parameterDistribution.title} data={parameterDistribution.data} />
+        <DonutChart title={roleDistribution.title} totalLabel="Tổng tài khoản" total={roleDistribution.total} data={roleDistribution.data} />
+        <HeatmapCalendar title="Heatmap lịch hẹn" month={heatmapData.month} data={heatmapData.data} />
+      </SectionGrid>
 
       <SectionGrid>
         <OrdersTable rows={orderRows} />
