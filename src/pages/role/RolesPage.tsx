@@ -143,6 +143,8 @@ const SidebarSection = styled.div`
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   padding: 0.75rem;
   height: auto;
+  display: flex;
+  flex-direction: column;
 `;
 
 const SidebarHeader = styled.div`
@@ -194,6 +196,8 @@ const RoleList = styled.div`
   gap: 0.25rem;
   margin-top: 0.75rem;
   min-height: 240px;
+  flex: 1 1 auto;
+  overflow: auto;
 `;
 
 const RoleItem = styled.div<{ $active?: boolean; roleColor?: string }>`
@@ -235,17 +239,17 @@ const RoleMeta = styled.div`
   color: #6b7280;
 `;
 
-const RoleActions = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  color: #6b7280;
-  svg {
-    cursor: pointer;
-    &:hover {
-      color: #dc2626;
-    }
-  }
-`;
+// const RoleActions = styled.div`
+//   display: flex;
+//   gap: 0.5rem;
+//   color: #6b7280;
+//   svg {
+//     cursor: pointer;
+//     &:hover {
+//       color: #dc2626;
+//     }
+//   }
+// `;
 
 const PaginationControls = styled.div`
   display: flex;
@@ -506,6 +510,11 @@ interface Role {
   color: string;
   members: number;
   isDefault?: boolean;
+  // new fields for sorting/filtering
+  createdAt?: string; // ISO date
+  lastEditedAt?: string; // ISO date
+  permCount?: number; // number of permissions assigned
+  permissions?: string[]; // explicit permission keys assigned to this role
 }
 
 interface Member {
@@ -515,7 +524,7 @@ interface Member {
 }
 
 const ROLES_PER_PAGE = 3;
-const MEMBERS_PER_PAGE = 5;
+const MEMBERS_PER_PAGE = 7;
 
 const RolesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -524,11 +533,16 @@ const RolesPage: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [sortOption, setSortOption] = useState<"none" | "role" | "members">(
-    "none"
-  );
+  const [sortOption, setSortOption] = useState<
+    "none" | "role" | "members" | "created" | "permissions" | "edited"
+  >("none");
   const [roleNameInput, setRoleNameInput] = useState("");
   const [roleColorInput, setRoleColorInput] = useState("#5865F2");
+  const [editRoleId, setEditRoleId] = useState<number | null>(null);
+  // permissions selected in the create/edit modal
+  const [createPermissions, setCreatePermissions] = useState<
+    Record<string, boolean>
+  >({});
   const [customRolesPage, setCustomRolesPage] = useState(0);
   const [membersPage, setMembersPage] = useState(0);
 
@@ -545,6 +559,9 @@ const RolesPage: React.FC = () => {
       name: "Administrator",
       color: "#5865F2",
       members: 2,
+      createdAt: "2024-01-10",
+      lastEditedAt: "2024-04-01",
+      permCount: 12,
       isDefault: true,
     },
     {
@@ -552,14 +569,29 @@ const RolesPage: React.FC = () => {
       name: "Laboratory Manager",
       color: "#43B581",
       members: 3,
+      createdAt: "2024-02-05",
+      lastEditedAt: "2024-03-20",
+      permCount: 8,
       isDefault: true,
     },
-    { id: 3, name: "Service", color: "#FAA61A", members: 1, isDefault: true },
+    {
+      id: 3,
+      name: "Service",
+      color: "#FAA61A",
+      members: 1,
+      createdAt: "2024-02-15",
+      lastEditedAt: "2024-02-20",
+      permCount: 4,
+      isDefault: true,
+    },
     {
       id: 4,
       name: "Lab User",
       color: "#EB459E",
       members: 7,
+      createdAt: "2024-01-20",
+      lastEditedAt: "2024-04-10",
+      permCount: 3,
       isDefault: true,
     },
   ];
@@ -610,15 +642,26 @@ const RolesPage: React.FC = () => {
 
   const sortRoles = (roles: Role[]) => {
     const copy = [...roles];
-    if (sortOption === "role") {
-      return copy.sort((a, b) =>
-        a.name.localeCompare(b.name, "en", { sensitivity: "base" })
-      );
+    switch (sortOption) {
+      case "role":
+        return copy.sort((a, b) =>
+          a.name.localeCompare(b.name, "en", { sensitivity: "base" })
+        );
+      case "members":
+        return copy.sort((a, b) => b.members - a.members);
+      case "created":
+        return copy.sort((a, b) =>
+          (b.createdAt ?? "").localeCompare(a.createdAt ?? "")
+        );
+      case "permissions":
+        return copy.sort((a, b) => (b.permCount ?? 0) - (a.permCount ?? 0));
+      case "edited":
+        return copy.sort((a, b) =>
+          (b.lastEditedAt ?? "").localeCompare(a.lastEditedAt ?? "")
+        );
+      default:
+        return copy;
     }
-    if (sortOption === "members") {
-      return copy.sort((a, b) => b.members - a.members);
-    }
-    return copy;
   };
 
   const sortedDefaultRoles = sortRoles(defaultRoles);
@@ -633,9 +676,13 @@ const RolesPage: React.FC = () => {
 
   // Pagination for members
   const totalMemberPages = Math.ceil(members.length / MEMBERS_PER_PAGE);
-  const paginatedMembers = members.slice(
+  const rawPaginatedMembers = members.slice(
     membersPage * MEMBERS_PER_PAGE,
     (membersPage + 1) * MEMBERS_PER_PAGE
+  );
+  // pad to ensure exactly MEMBERS_PER_PAGE slots are rendered (placeholders keep layout height stable)
+  const paginatedMembers: (Member | null)[] = rawPaginatedMembers.concat(
+    Array(Math.max(0, MEMBERS_PER_PAGE - rawPaginatedMembers.length)).fill(null)
   );
 
   const handleRoleSelect = (roleId: number) => {
@@ -715,21 +762,39 @@ const RolesPage: React.FC = () => {
               <FilterDropdown>
                 <FilterItem
                   onClick={() => {
-                    setSortOption("role");
-                    setShowFilterDropdown(false);
-                  }}
-                >
-                  <div>Sắp xếp theo tên vai trò (A → Z)</div>
-                  <div>{sortOption === "role" ? "✓" : ""}</div>
-                </FilterItem>
-                <FilterItem
-                  onClick={() => {
                     setSortOption("members");
                     setShowFilterDropdown(false);
                   }}
                 >
-                  <div>Sắp xếp theo số thành viên (Giảm dần)</div>
+                  <div>Lọc theo số thành viên (Giảm dần)</div>
                   <div>{sortOption === "members" ? "✓" : ""}</div>
+                </FilterItem>
+                <FilterItem
+                  onClick={() => {
+                    setSortOption("created");
+                    setShowFilterDropdown(false);
+                  }}
+                >
+                  <div>Lọc theo thời gian tạo (Mới → Cũ)</div>
+                  <div>{sortOption === "created" ? "✓" : ""}</div>
+                </FilterItem>
+                <FilterItem
+                  onClick={() => {
+                    setSortOption("permissions");
+                    setShowFilterDropdown(false);
+                  }}
+                >
+                  <div>Lọc theo quyền hạn (Giảm dần)</div>
+                  <div>{sortOption === "permissions" ? "✓" : ""}</div>
+                </FilterItem>
+                <FilterItem
+                  onClick={() => {
+                    setSortOption("edited");
+                    setShowFilterDropdown(false);
+                  }}
+                >
+                  <div>Lọc theo lần cuối chỉnh sửa (Mới → Cũ)</div>
+                  <div>{sortOption === "edited" ? "✓" : ""}</div>
                 </FilterItem>
                 <FilterItem
                   onClick={() => {
@@ -737,7 +802,7 @@ const RolesPage: React.FC = () => {
                     setShowFilterDropdown(false);
                   }}
                 >
-                  <div>Không sắp xếp</div>
+                  <div>Không lọc / Mặc định</div>
                   <div>{sortOption === "none" ? "✓" : ""}</div>
                 </FilterItem>
               </FilterDropdown>
@@ -786,8 +851,17 @@ const RolesPage: React.FC = () => {
                 <CountBadge>{customRoles.length}</CountBadge>
                 <AddRoleButton
                   onClick={() => {
+                    setEditRoleId(null);
                     setRoleNameInput("");
                     setRoleColorInput("#5865F2");
+                    // initialize permissions map: default Read only = true, others false
+                    const initMap: Record<string, boolean> = {};
+                    permissionGroups.forEach((g) =>
+                      g.items.forEach(
+                        (it) => (initMap[it] = it === "Read only")
+                      )
+                    );
+                    setCreatePermissions(initMap);
                     setShowCreateModal(true);
                   }}
                 >
@@ -808,30 +882,11 @@ const RolesPage: React.FC = () => {
                       roleColor={role.color}
                       title={`${role.name} — ${role.members} thành viên`}
                     >
-                      <RoleLeftStripe
-                        style={{ backgroundColor: role.color }}
-                      />
+                      <RoleLeftStripe style={{ backgroundColor: role.color }} />
                       <RoleLabel>
                         <RoleName>{role.name}</RoleName>
                         <RoleMeta>{role.members} thành viên</RoleMeta>
                       </RoleLabel>
-                      <RoleActions onClick={(e) => e.stopPropagation()}>
-                        <FaEdit
-                          size={14}
-                          onClick={() => {
-                            setRoleNameInput(role.name);
-                            setRoleColorInput(role.color);
-                            setShowCreateModal(true);
-                          }}
-                        />
-                        <FaTrash
-                          size={14}
-                          onClick={() => {
-                            setSelectedRoleId(role.id);
-                            setShowDeleteConfirm(true);
-                          }}
-                        />
-                      </RoleActions>
                     </RoleItem>
                   ))}
 
@@ -866,10 +921,7 @@ const RolesPage: React.FC = () => {
           </SidebarSection>
         </Sidebar>
 
-        <Content
-          ref={memberListRef}
-          style={{ maxHeight: memberListHeight }}
-        >
+        <Content ref={memberListRef} style={{ maxHeight: memberListHeight }}>
           <ContentHeader>
             <div>
               <h2 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 700 }}>
@@ -903,25 +955,44 @@ const RolesPage: React.FC = () => {
             <SectionTitle>Thành viên</SectionTitle>
             <MemberList>
               {members.length === 0 && (
-                <div style={{ color: "#9ca3af", textAlign: "center", padding: "1rem" }}>
+                <div
+                  style={{
+                    color: "#9ca3af",
+                    textAlign: "center",
+                    padding: "1rem",
+                  }}
+                >
                   Không có thành viên
                 </div>
               )}
-              {paginatedMembers.map((m) => (
-                <MemberRow key={m.id}>
-                  <Avatar>
-                    {m.name.split(" ").pop()?.charAt(0) ?? m.name.charAt(0)}
-                  </Avatar>
-                  <div>
-                    <div style={{ fontWeight: 600 }}>{m.name}</div>
-                    {m.email && (
-                      <div style={{ color: "#6b7280", fontSize: 13 }}>
-                        {m.email}
-                      </div>
-                    )}
-                  </div>
-                </MemberRow>
-              ))}
+              {paginatedMembers.map((m, idx) =>
+                m ? (
+                  <MemberRow key={m.id}>
+                    <Avatar>
+                      {m.name.split(" ").pop()?.charAt(0) ?? m.name.charAt(0)}
+                    </Avatar>
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{m.name}</div>
+                      {m.email && (
+                        <div style={{ color: "#6b7280", fontSize: 13 }}>
+                          {m.email}
+                        </div>
+                      )}
+                    </div>
+                  </MemberRow>
+                ) : (
+                  <MemberRow
+                    key={`empty-member-${idx}`}
+                    style={{ opacity: 0, pointerEvents: "none" }}
+                  >
+                    <Avatar />
+                    <div>
+                      <div style={{ height: 18 }} />
+                      <div style={{ height: 14 }} />
+                    </div>
+                  </MemberRow>
+                )
+              )}
             </MemberList>
 
             {totalMemberPages > 1 && (
@@ -983,7 +1054,10 @@ const RolesPage: React.FC = () => {
               </ModalColumns>
 
               <ModalFooter>
-                <Button $variant="secondary" onClick={() => setShowModal(false)}>
+                <Button
+                  $variant="secondary"
+                  onClick={() => setShowModal(false)}
+                >
                   Hủy
                 </Button>
                 <Button
@@ -1063,6 +1137,56 @@ const RolesPage: React.FC = () => {
                 />
               </FormGroup>
 
+              {/* Permissions selection for new/edit custom role */}
+              <PermissionsColumn style={{ marginTop: 12 }}>
+                {permissionGroups.map((group) => (
+                  <PermissionGroup key={group.title}>
+                    <GroupTitle>{group.title}</GroupTitle>
+                    {group.items.map((item) => {
+                      const hasOther = Object.keys(createPermissions).some(
+                        (k) => k !== "Read only" && createPermissions[k]
+                      );
+                      const checked =
+                        item === "Read only"
+                          ? hasOther
+                            ? !!createPermissions[item]
+                            : true
+                          : !!createPermissions[item];
+                      const disabled = item === "Read only" ? !hasOther : false;
+
+                      return (
+                        <PermissionRow key={item}>
+                          <div>{item}</div>
+                          <ToggleSwitch>
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              disabled={disabled}
+                              onChange={() => {
+                                if (item === "Read only") {
+                                  if (!disabled) {
+                                    setCreatePermissions((prev) => ({
+                                      ...prev,
+                                      [item]: !prev[item],
+                                    }));
+                                  }
+                                } else {
+                                  setCreatePermissions((prev) => ({
+                                    ...prev,
+                                    [item]: !prev[item],
+                                  }));
+                                }
+                              }}
+                            />
+                            <span />
+                          </ToggleSwitch>
+                        </PermissionRow>
+                      );
+                    })}
+                  </PermissionGroup>
+                ))}
+              </PermissionsColumn>
+
               <ModalFooter>
                 <Button
                   $variant="secondary"
@@ -1078,17 +1202,52 @@ const RolesPage: React.FC = () => {
                       (acc, r) => Math.max(acc, r.id),
                       0
                     );
-                    const newRole: Role = {
-                      id: maxId + 1,
-                      name,
-                      color: roleColorInput,
-                      members: 0,
-                      isDefault: false,
-                    };
-                    setRolesState((prev) => [...prev, newRole]);
-                    setRoleNameInput("");
-                    setShowCreateModal(false);
-                    setSelectedRoleId(newRole.id);
+                    const now = new Date().toISOString();
+                    // collect selected permissions; ensure Read only is present when no other perms selected
+                    const hasOther = Object.keys(createPermissions).some(
+                      (k) => k !== "Read only" && createPermissions[k]
+                    );
+                    const selectedPerms = Object.keys(createPermissions).filter(
+                      (k) =>
+                        createPermissions[k] || (!hasOther && k === "Read only")
+                    );
+
+                    if (editRoleId) {
+                      // update existing role
+                      setRolesState((prev) =>
+                        prev.map((r) =>
+                          r.id === editRoleId
+                            ? {
+                                ...r,
+                                name,
+                                color: roleColorInput,
+                                lastEditedAt: now,
+                                permissions: selectedPerms,
+                                permCount: selectedPerms.length,
+                              }
+                            : r
+                        )
+                      );
+                      setShowCreateModal(false);
+                      setEditRoleId(null);
+                      setSelectedRoleId(editRoleId);
+                    } else {
+                      const newRole: Role = {
+                        id: maxId + 1,
+                        name,
+                        color: roleColorInput,
+                        members: 0,
+                        isDefault: false,
+                        createdAt: now,
+                        lastEditedAt: now,
+                        permissions: selectedPerms,
+                        permCount: selectedPerms.length,
+                      };
+                      setRolesState((prev) => [...prev, newRole]);
+                      setRoleNameInput("");
+                      setShowCreateModal(false);
+                      setSelectedRoleId(newRole.id);
+                    }
                   }}
                 >
                   Tạo
