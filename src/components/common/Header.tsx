@@ -47,7 +47,7 @@ const StyledNavbar = styled(Navbar)`
 `;
 
 const Header: React.FC = () => {
-  // 2. MỞ "KHO" ĐỂ LẤY DỮ LIỆU
+
   const { user, loading } = useAuth();
 
   // 3. ĐỊNH NGHĨA HÀM LOGOUT
@@ -60,7 +60,7 @@ const Header: React.FC = () => {
     } catch (error) {
       console.error("Lỗi khi gọi API logout:", error);
     } finally {
-      // Luôn xóa token ở FE và tải lại trang để reset "Kho"
+
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       window.location.href = '/';
@@ -81,22 +81,24 @@ const Header: React.FC = () => {
             <Nav.Link as={Link} to="/">
               Trang chủ
             </Nav.Link>
-            {/* Bạn có thể thêm link admin ở đây nếu user.roleName == 'ADMIN' */}
+            <Nav.Link as={Link} to="/admin/admin-dashboard">
+              Admin dashboard
+            </Nav.Link>
           </Nav>
 
           {/* 4. LOGIC HIỂN THỊ ĐỘNG (THAY ĐỔI TẠI ĐÂY) */}
           <Nav>
             {loading ? (
-              // Nếu đang tải (check token), hiển thị "Đang tải..."
+
               <Navbar.Text>Đang tải...</Navbar.Text>
             ) : user ? (
-              // Nếu ĐÃ ĐĂNG NHẬP (user tồn tại)
+
               <>
                 <Navbar.Text>
                   Xin chào, {user.fullName || user.email}
                 </Navbar.Text>
                 <Nav.Link
-                  as="button" // Biến nó thành nút bấm
+                  as="button"
                   onClick={handleLogout}
                   className="btn btn-outline-primary text-white px-2"
                 >
