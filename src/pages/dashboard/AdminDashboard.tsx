@@ -1,157 +1,169 @@
 import React from 'react';
 import styled from 'styled-components';
-import { FaUsers, FaFlask, FaClipboardList, FaChartLine } from 'react-icons/fa';
+import OrdersTable, { OrderRow } from '../../components/dashboard/OrdersTable';
+import UsersTable, { UserRow } from '../../components/dashboard/UsersTable';
+import { FaUsers, FaClipboardList, FaFlask, FaChartLine } from 'react-icons/fa';
+import StatCard from '../../components/dashboard/DashboardCards/StatCard';
+import MiniBarChart from '../../components/dashboard/DashboardCards/MiniBarChart';
+import Trend from '../../components/dashboard/Charts/TrendChart';
+import { dashboardStats, trendData, parameterDistribution, roleDistribution, heatmapData } from '../../utils/mockData';
+import HorizontalBarChart from '../../components/dashboard/Charts/HorizontalBarChart';
+import DonutChart from '../../components/dashboard/Charts/DonutChart';
+import HeatmapCalendar from '../../components/dashboard/Charts/HeatmapCalendar';
+import TopBarActions from '../../components/dashboard/TopBar/TopBarActions';
 
-const PageContainer = styled.div`
+const Container = styled.div`
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 `;
 
-const PageHeader = styled.div`
-  margin-bottom: 2rem;
+const Header = styled.div`
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+`;
+
+const TitleBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 `;
 
 const PageTitle = styled.h1`
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0 0 0.5rem 0;
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: #111827;
 `;
 
-const Breadcrumb = styled.div`
-  font-size: 0.875rem;
-  color: #6b7280;
+const Subtle = styled.div`
+  color: #6B7280;
+  font-size: 14px;
 `;
 
-const StatsGrid = styled.div`
+const KPIGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
 `;
 
-const StatCard = styled.div<{ $color: string }>`
-  background: white;
+const KPICard = styled.div`
+  background: #ffffff;
+  border: 1px solid #E5E7EB;
   border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 16px;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  border-left: 4px solid ${props => props.$color};
+  gap: 12px;
 `;
 
-const StatIcon = styled.div<{ $bgColor: string }>`
-  width: 60px;
-  height: 60px;
+const KPIIcon = styled.div`
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
-  background-color: ${props => props.$bgColor};
+  background: #fee2e2;
+  color: #dc2626;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.75rem;
-  color: white;
+  font-size: 22px;
 `;
 
-const StatInfo = styled.div`
-  flex: 1;
+const KPIInfo = styled.div`
+  display: flex;
+  flex-direction: column;
 `;
 
-const StatLabel = styled.div`
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 0.25rem;
+const KPILabel = styled.span`
+  color: #6B7280;
+  font-size: 13px;
 `;
 
-const StatValue = styled.div`
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1f2937;
+const KPIValue = styled.span`
+  color: #111827;
+  font-weight: 800;
+  font-size: 22px;
 `;
 
-const WelcomeCard = styled.div`
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  color: white;
-  border-radius: 12px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+const SectionGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
 `;
 
-const WelcomeTitle = styled.h2`
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0 0 0.5rem 0;
-`;
+const AdminDashboardPage: React.FC = () => {
+  const kpis = [
+    { label: 'Tổng người dùng', value: '1,245', icon: <FaUsers /> },
+    { label: 'Xét nghiệm hôm nay', value: '212', icon: <FaFlask /> },
+    { label: 'Đơn hàng chờ', value: '37', icon: <FaClipboardList /> },
+    { label: 'Tăng trưởng', value: '+8.2%', icon: <FaChartLine /> },
+  ];
 
-const WelcomeText = styled.p`
-  font-size: 1rem;
-  margin: 0;
-  opacity: 0.95;
-`;
+  const orderRows: OrderRow[] = [
+    { id: 'ORD-1000', patientName: 'Nguyễn Văn A', patientEmail: 'nguyenvana@email.com', type: 'Máu', status: 'pending', doctor: 'BS. Minh', createdAt: '16/10/2025', dueAt: '16/10/2025' },
+    { id: 'ORD-1001', patientName: 'Trần Thị B', patientEmail: 'tranthib@email.com', type: 'Nước tiểu', status: 'inProgress', doctor: 'BS. Lan', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+    { id: 'ORD-1002', patientName: 'Lê Văn C', patientEmail: 'levanc@email.com', type: 'X quang', status: 'cancelled', doctor: 'BS. Tuấn', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+    { id: 'ORD-1003', patientName: 'Phạm Thị D', patientEmail: 'phamthid@email.com', type: 'Siêu âm', status: 'cancelled', doctor: 'BS. Minh', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+    { id: 'ORD-1004', patientName: 'Nguyễn A', patientEmail: 'nguyen.a@email.com', type: 'Máu', status: 'pending', doctor: 'BS. Lan', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+    { id: 'ORD-1005', patientName: 'Trần Thị B', patientEmail: 'tranthib@email.com', type: 'Nước tiểu', status: 'inProgress', doctor: 'BS. Tuấn', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+    { id: 'ORD-1006', patientName: 'Lê Văn C', patientEmail: 'levanc@email.com', type: 'X quang', status: 'inProgress', doctor: 'BS. Minh', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+    { id: 'ORD-1007', patientName: 'Phạm Thị D', patientEmail: 'phamthid@email.com', type: 'Siêu âm', status: 'pending', doctor: 'BS. Tuấn', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+    { id: 'ORD-1008', patientName: 'Nguyễn Văn A', patientEmail: 'nguyenvana@email.com', type: 'Máu', status: 'pending', doctor: 'BS. Tuấn', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+    { id: 'ORD-1009', patientName: 'Trần Thị B', patientEmail: 'tranthib@email.com', type: 'Nước tiểu', status: 'inProgress', doctor: 'BS. Lan', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+  ];
 
-const DashboardPage: React.FC = () => {
-  const stats = [
-    {
-      label: 'Tổng người dùng',
-      value: '156',
-      icon: <FaUsers />,
-      color: '#3b82f6',
-      bgColor: '#dbeafe'
-    },
-    {
-      label: 'Xét nghiệm hôm nay',
-      value: '48',
-      icon: <FaFlask />,
-      color: '#10b981',
-      bgColor: '#d1fae5'
-    },
-    {
-      label: 'Đơn hàng chờ',
-      value: '23',
-      icon: <FaClipboardList />,
-      color: '#f59e0b',
-      bgColor: '#fef3c7'
-    },
-    {
-      label: 'Tăng trưởng',
-      value: '+12%',
-      icon: <FaChartLine />,
-      color: '#dc2626',
-      bgColor: '#fee2e2'
-    }
+  const userRows: UserRow[] = [
+    { id: 'U1', name: 'Nguyễn Văn A', email: 'user1@lab.com', role: 'Administrator', status: 'active', activity: 'Đang hóa', createdAt: '2025-10-15 15:09:30', online: true },
+    { id: 'U2', name: 'Trần Thị B', email: 'user2@lab.com', role: 'Laboratory Manager', status: 'active', activity: 'Đang hóa', createdAt: '2025-10-15 15:09:30', online: true },
+    { id: 'U3', name: 'Lê Văn C', email: 'user3@lab.com', role: 'Service', status: 'suspended', activity: '1 ngày trước\n(Từ 08:15 đến 16:18)', createdAt: '2025-10-15 15:09:30' },
+    { id: 'U4', name: 'Phạm Thị D', email: 'user4@lab.com', role: 'Lab User', status: 'active', activity: 'Đang hóa', createdAt: '2025-10-15 15:09:30', online: true },
+    { id: 'U5', name: 'Hoàng Văn E', email: 'user5@lab.com', role: 'Laboratory Manager', status: 'active', activity: 'Hoạt động 8 giờ trước\n(Từ 11:11 đến 16:18)', createdAt: '2025-10-15 15:09:30' },
+    { id: 'U6', name: 'Vũ Thị F', email: 'user6@lab.com', role: 'Lab User', status: 'active', activity: 'Đang hóa', createdAt: '2025-10-15 15:09:30' },
+    { id: 'U7', name: 'Đỗ Văn G', email: 'user7@lab.com', role: 'Service', status: 'pending', activity: '2 giờ trước\n(Từ 13:15 đến 15:30)', createdAt: '2025-10-15 15:09:30' },
+    { id: 'U8', name: 'Bùi Thị H', email: 'user8@lab.com', role: 'Lab User', status: 'active', activity: 'Đang hóa', createdAt: '2025-10-15 15:09:30', online: true },
+    { id: 'U9', name: 'Lý Văn I', email: 'user9@lab.com', role: 'Administrator', status: 'active', activity: 'Đang hóa', createdAt: '2025-10-15 15:09:30' },
+    { id: 'U10', name: 'Trương Thị K', email: 'user10@lab.com', role: 'Lab User', status: 'active', activity: 'Đang hóa', createdAt: '2025-10-15 15:09:30', online: true },
   ];
 
   return (
-    <PageContainer>
-      <PageHeader>
-        <PageTitle>Dashboard</PageTitle>
-        <Breadcrumb>Tổng quan hệ thống</Breadcrumb>
-      </PageHeader>
+    <Container>
+      <Header>
+        <TitleBlock>
+          <PageTitle>Admin Dashboard</PageTitle>
+          <Subtle>Hệ thống quản lý phòng xét nghiệm máu (Hematology Lab)</Subtle>
+        </TitleBlock>
+        <TopBarActions />
+      </Header>
 
-      <WelcomeCard>
-        <WelcomeTitle>Chào mừng trở lại!</WelcomeTitle>
-        <WelcomeText>
-          Đây là trang tổng quan quản lý phòng thí nghiệm. Bạn có thể theo dõi các chỉ số quan trọng và quản lý hệ thống từ đây.
-        </WelcomeText>
-      </WelcomeCard>
+      <KPIGrid>
+        <StatCard title={dashboardStats.totalUsers.title} value={dashboardStats.totalUsers.value} icon={<FaUsers />} color="#dc2626" description={dashboardStats.totalUsers.description} />
+        <StatCard title={dashboardStats.todayTests.title} value={dashboardStats.todayTests.value} icon={<FaFlask />} color="#dc2626">
+          <MiniBarChart data={dashboardStats.todayTests.breakdown} />
+        </StatCard>
+        <StatCard title={dashboardStats.completedTests.title} value={dashboardStats.completedTests.value} icon={<FaClipboardList />} color="#dc2626" description={dashboardStats.completedTests.description} />
+        <StatCard title={dashboardStats.growthRate.title} value={dashboardStats.growthRate.value} icon={<FaChartLine />} color="#dc2626" />
+      </KPIGrid>
 
-      <StatsGrid>
-        {stats.map((stat, index) => (
-          <StatCard key={index} $color={stat.color}>
-            <StatIcon $bgColor={stat.color}>
-              {stat.icon}
-            </StatIcon>
-            <StatInfo>
-              <StatLabel>{stat.label}</StatLabel>
-              <StatValue>{stat.value}</StatValue>
-            </StatInfo>
-          </StatCard>
-        ))}
-      </StatsGrid>
-    </PageContainer>
+      <Trend title={trendData.title} subtitle={trendData.period} data={trendData.data} />
+
+      <SectionGrid>
+        <HorizontalBarChart title={parameterDistribution.title} data={parameterDistribution.data} />
+        <DonutChart title={roleDistribution.title} totalLabel="Tổng tài khoản" total={roleDistribution.total} data={roleDistribution.data} />
+        <HeatmapCalendar title="Heatmap lịch hẹn" month={heatmapData.month} data={heatmapData.data} />
+      </SectionGrid>
+
+      <SectionGrid>
+        <OrdersTable rows={orderRows} />
+        <UsersTable rows={userRows} />
+      </SectionGrid>
+    </Container>
   );
 };
 
-export default DashboardPage;
+export default AdminDashboardPage;
