@@ -101,11 +101,6 @@ const WorkingSidebar: React.FC = () => {
           <FaFlask />
           <span>Danh sách xét nghiệm</span>
         </NavItem>
-
-        <NavItem to="/features/orders">
-          <FaClipboardList />
-          <span>Đơn hàng</span>
-        </NavItem>
       </NavList>
 
       <Divider />
