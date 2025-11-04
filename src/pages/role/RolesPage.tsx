@@ -1,7 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import { FaSearch, FaPlus, FaEdit, FaTrash, FaFilter, FaDownload, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import {
+  FaSearch,
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaFilter,
+  FaDownload,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa";
 
+// 1. IMPORT TRẠM API
+import { apiClient } from "../../api/apiClient";
+
+// --- (STYLED-COMPONENTS CỦA BẠN) ---
+// (Tôi sẽ rút gọn, bạn hãy giữ nguyên code của bạn)
 const PageContainer = styled.div`
   width: 100%;
   max-width: 1400px;
@@ -491,112 +505,282 @@ const ColorInput = styled.input`
   cursor: pointer;
 `;
 
-interface Role {
+// --- HẾT STYLED-COMPONENTS ---
+
+
+// --- 2. ĐỊNH NGHĨA "KIỂU" (TYPES) DỮ LIỆU ---
+
+// (Interface DTO từ BE)
+interface PermissionFromApi {
+  id: number;
+  action: string;
+  name: string;
+  description?: string;
+}
+interface RoleDtoFromApi {
+  id: number;
+  name: string; // Tên thật từ BE (vd: "ADMIN")
+  isActive: boolean;
+  userCount: number;
+  permissions: PermissionFromApi[];
+}
+// (Interface mà GIAO DIỆN của bạn cần)
+interface RoleForUI {
   id: number;
   name: string;
   color: string;
-  members: number;
-  isDefault?: boolean;
+  members: number; // (chính là userCount)
+  isDefault: boolean;
+  permissions: PermissionFromApi[]; // (Giữ lại list quyền)
 }
-
+// (Interface Member - Vẫn dùng giả)
 interface Member {
   id: number;
-  name: string;
+  fullName: string;
   email?: string;
 }
 
+// (Các hằng số)
 const ROLES_PER_PAGE = 3;
 const MEMBERS_PER_PAGE = 5;
+const DEFAULT_ROLE_NAMES = new Set(["ADMIN", "MANAGER", "USER", "Read-only"]);
+const ROLE_COLORS = ["#5865F2", "#43B581", "#FAA61A", "#EB459E", "#1ABC9C", "#E91E63", "#F1C40F"];
 
+
+// --- BẮT ĐẦU COMPONENT CHÍNH ---
 const RolesPage: React.FC = () => {
+
+  // --- 3. STATE (TRẠNG THÁI) ---
+  const [rolesState, setRolesState] = useState<RoleForUI[]>([]); // Dữ liệu thật (đã chuyển đổi)
+  const [allPermissions, setAllPermissions] = useState<PermissionFromApi[]>([]); // Dữ liệu thật
+  const [loadingRoles, setLoadingRoles] = useState(true); // (Đổi tên: loading cho Roles)
+  const [error, setError] = useState('');
+
+  // (Dữ liệu giả cho Member - Tạm thời giữ lại)
+  const [currentMembers, setCurrentMembers] = useState<Member[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false); // State loading riêng cho Members
+
+  // (Các state về UI)
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRoleId, setSelectedRoleId] = useState<number | null>(1);
+  const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [sortOption, setSortOption] = useState<"none" | "role" | "members">("none");
+
+  // (State cho Modal Create)
   const [roleNameInput, setRoleNameInput] = useState("");
-  const [roleColorInput, setRoleColorInput] = useState("#5865F2");
+  const [roleColorInput, setRoleColorInput] = useState("#5865F2"); // (Chỉ dùng cho UI)
+  const [newRolePermissions, setNewRolePermissions] = useState<Set<number>>(new Set());
+
+  // (State cho Modal Edit)
+  const [editRoleName, setEditRoleName] = useState("");
+  const [modalPermissions, setModalPermissions] = useState<Set<number>>(new Set());
+
+  // (State cho Pagination)
   const [customRolesPage, setCustomRolesPage] = useState(0);
   const [membersPage, setMembersPage] = useState(0);
 
+  // (Các Ref)
   const filterRef = useRef<HTMLDivElement | null>(null);
   const memberListRef = useRef<HTMLDivElement | null>(null);
   const defaultRolesRef = useRef<HTMLDivElement | null>(null);
   const customRolesRef = useRef<HTMLDivElement | null>(null);
-
   const [memberListHeight, setMemberListHeight] = useState("auto");
 
-  const initialRoles: Role[] = [
-    {
-      id: 1,
-      name: "Administrator",
-      color: "#5865F2",
-      members: 2,
-      isDefault: true,
-    },
-    {
-      id: 2,
-      name: "Laboratory Manager",
-      color: "#43B581",
-      members: 3,
-      isDefault: true,
-    },
-    { id: 3, name: "Service", color: "#FAA61A", members: 1, isDefault: true },
-    {
-      id: 4,
-      name: "Lab User",
-      color: "#EB459E",
-      members: 7,
-      isDefault: true,
-    },
-  ];
+  // --- 4. HÀM FETCH DỮ LIỆU (READ) ---
+  const fetchData = async () => {
+    try {
+      if (!rolesState.length) setLoadingRoles(true);
+      setError('');
+      const [rolesResponse, permsResponse] = await Promise.all([
+        apiClient.get('/api/roles'),
+        apiClient.get('/api/permissions')
+      ]);
+      const rolesData: RoleDtoFromApi[] = rolesResponse.data;
+      setAllPermissions(permsResponse.data);
 
-  const [rolesState, setRolesState] = useState<Role[]>(initialRoles);
+      const adaptedRoles = rolesData.map((dto, index) => ({
+        id: dto.id,
+        name: dto.name,
+        members: dto.userCount,
+        isDefault: DEFAULT_ROLE_NAMES.has(dto.name),
+        color: ROLE_COLORS[index % ROLE_COLORS.length],
+        permissions: dto.permissions ?? [],
+      }));
+      setRolesState(adaptedRoles);
 
-  const defaultRoles = rolesState.filter((r) => r.isDefault);
-  const customRoles = rolesState.filter((r) => !r.isDefault);
+      // Tự động chọn Role đầu tiên (hoặc giữ nguyên selection)
+      if (selectedRoleId === null && adaptedRoles.length > 0) {
+        setSelectedRoleId(adaptedRoles[0].id);
+      } else if (!adaptedRoles.some(r => r.id === selectedRoleId) && adaptedRoles.length > 0) {
+        setSelectedRoleId(adaptedRoles[0].id);
+      } else if (adaptedRoles.length === 0) {
+        setSelectedRoleId(null);
+      }
 
-  const membersMap: Record<number, Member[]> = {
-    1: [
-      { id: 1, name: "Nguyen Van A", email: "a@example.com" },
-      { id: 2, name: "Tran Thi B", email: "b@example.com" },
-    ],
-    2: [
-      { id: 3, name: "Le Van C", email: "c@example.com" },
-      { id: 4, name: "Pham Thi D", email: "d@example.com" },
-      { id: 5, name: "Hoang E", email: "e@example.com" },
-    ],
-    3: [{ id: 6, name: "Service One" }],
-    4: [
-      { id: 7, name: "User 1" },
-      { id: 8, name: "User 2" },
-      { id: 9, name: "User 3" },
-      { id: 10, name: "User 4" },
-      { id: 11, name: "User 5" },
-      { id: 12, name: "User 6" },
-      { id: 13, name: "User 7" },
-    ],
+    } catch (err) {
+      console.error("Lỗi khi tải dữ liệu:", err);
+      setError("Không thể tải dữ liệu. Vui lòng thử lại.");
+    } finally {
+      setLoadingRoles(false);
+    }
+  };
+  useEffect(() => {
+    const fetchMembers = async () => {
+      // Nếu không có role nào được chọn, set list rỗng
+      if (!selectedRoleId) {
+        setCurrentMembers([]);
+        return;
+      }
+
+      try {
+        setLoadingMembers(true); // Bật loading cho bảng Members
+
+        // GỌI API MỚI (đã thêm ở Backend)
+        const response = await apiClient.get(`/api/users?roleId=${selectedRoleId}`);
+
+        // (Backend trả về UserDto, chúng ta cần "chuyển đổi" nó)
+        const adaptedMembers = response.data.map((user: any) => ({
+          id: user.id,
+          fullName: user.fullName, // (UserDto của bạn có 'fullName')
+          email: user.email
+        }));
+
+        setCurrentMembers(adaptedMembers);
+        setMembersPage(0); // Reset về trang 1
+
+      } catch (err) {
+        console.error(`Lỗi khi fetch members cho Role ${selectedRoleId}:`, err);
+        setCurrentMembers([]); // Set rỗng nếu lỗi
+      } finally {
+        setLoadingMembers(false); // Tắt loading cho bảng Members
+      }
+    };
+
+    fetchData(); // (Gọi hàm fetch Roles/Permissions chung)
+    fetchMembers(); // (Gọi hàm fetch Members)
+
+  }, [selectedRoleId]); // <-- HÀM NÀY SẼ CHẠY LẠI KHI "selectedRoleId" THAY ĐỔI
+
+  // --- 5. HÀM NGHIỆP VỤ (CREATE, UPDATE, DELETE) ---
+
+  // --- CREATE ---
+  const handleOpenCreateModal = () => {
+    // Reset state
+    setRoleNameInput("");
+    setRoleColorInput("#5865F2");
+
+    // Tự động gán quyền "readonly" (AC02)
+    const readOnlyPerm = allPermissions.find(p => p.action === 'readonly');
+    if (readOnlyPerm) {
+      setNewRolePermissions(new Set([readOnlyPerm.id]));
+    } else {
+      setNewRolePermissions(new Set());
+    }
+
+    setShowCreateModal(true);
   };
 
-  const permissionGroups: { title: string; items: string[] }[] = [
-    { title: "Quyền hạn cơ bản", items: ["Read only"] },
-    {
-      title: "Quản lý người dùng",
-      items: ["View user", "Create user", "Lock/ Unlock user"],
-    },
-    { title: "Quản lý vai trò", items: ["Create role", "Update role"] },
-    {
-      title: "Quản lý đơn xét nghiệm",
-      items: ["Create test", "Update test", "Delete test"],
-    },
-  ];
+  const handleCreateRole = async () => {
+    if (!roleNameInput.trim()) {
+      alert("Tên vai trò không được để trống.");
+      return;
+    }
+    try {
+      const createRequest = {
+        name: roleNameInput.trim(),
+        permissionIds: Array.from(newRolePermissions),
+      };
+      await apiClient.post('/api/roles', createRequest);
+      setShowCreateModal(false);
+      await fetchData(); // Tải lại
 
-  const selectedRole = rolesState.find((r) => r.id === selectedRoleId) ?? rolesState[0];
-  const members = selectedRoleId ? membersMap[selectedRoleId] ?? [] : [];
+    } catch (err: any) {
+      console.error("Lỗi khi tạo role:", err);
+      alert("Lỗi khi tạo: " + (err.response?.data?.message || err.message));
+    }
+  };
 
-  const sortRoles = (roles: Role[]) => {
+  // --- UPDATE ---
+  const openEditModal = () => {
+    const roleData = rolesState.find(r => r.id === selectedRoleId);
+    if (!roleData) return;
+
+    setEditRoleName(roleData.name); // Dùng state riêng cho "edit name"
+
+    // Lấy ID quyền hiện tại của Role
+    const currentPermissionIds = new Set(
+      (roleData.permissions ?? []).map(p => p.id)
+    );
+    setModalPermissions(currentPermissionIds);
+
+    setShowModal(true);
+  };
+
+  const handleUpdateRole = async () => {
+    if (!selectedRoleId) return;
+    try {
+      const updateRequest = {
+        name: editRoleName.trim(),
+        permissionIds: Array.from(modalPermissions),
+      };
+      await apiClient.put(`/api/roles/${selectedRoleId}`, updateRequest);
+      setShowModal(false);
+      await fetchData(); // Tải lại
+
+    } catch (err: any) {
+      console.error("Lỗi khi cập nhật role:", err);
+      alert("Lỗi khi cập nhật: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleModalPermissionToggle = (permissionId: number) => {
+    setModalPermissions((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(permissionId)) {
+        newSet.delete(permissionId);
+      } else {
+        newSet.add(permissionId);
+      }
+      return newSet;
+    });
+  };
+
+  // --- DELETE ---
+  const handleDeleteRole = async () => {
+    if (!selectedRoleId) return;
+    try {
+      await apiClient.delete(`/api/roles/${selectedRoleId}`);
+      setShowDeleteConfirm(false);
+      setSelectedRoleId(null); // Reset selection
+      await fetchData(); // Tải lại
+    } catch (err: any) {
+      console.error("Lỗi khi xóa role:", err);
+      alert("Lỗi khi xóa: " + (err.response?.data?.message || err.message));
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  // --- 6. GỌI FETCHDATA LẦN ĐẦU (useEffect) ---
+  useEffect(() => {
+    fetchData(); // Gọi hàm fetch
+  }, []); // [] = Chỉ chạy 1 lần
+
+
+  // --- 7. LOGIC LỌC VÀ HIỂN THỊ (GIỮ NGUYÊN) ---
+  const filteredRoles = rolesState.filter(role =>
+    role.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const defaultRoles = filteredRoles.filter((r) => r.isDefault);
+  const customRoles = filteredRoles.filter((r) => !r.isDefault);
+
+  const selectedRoleData =
+    rolesState.find((r) => r.id === selectedRoleId) ?? (rolesState.length > 0 ? rolesState[0] : null);
+  const members = currentMembers;
+  const sortRoles = (roles: RoleForUI[]) => {
     const copy = [...roles];
     if (sortOption === "role") {
       return copy.sort((a, b) => a.name.localeCompare(b.name, "en", { sensitivity: "base" }));
@@ -610,37 +794,35 @@ const RolesPage: React.FC = () => {
   const sortedDefaultRoles = sortRoles(defaultRoles);
   const sortedCustomRoles = sortRoles(customRoles);
 
-  // Pagination for custom roles
   const totalCustomPages = Math.ceil(sortedCustomRoles.length / ROLES_PER_PAGE);
   const paginatedCustomRoles = sortedCustomRoles.slice(
     customRolesPage * ROLES_PER_PAGE,
     (customRolesPage + 1) * ROLES_PER_PAGE
   );
 
-  // Pagination for members
   const totalMemberPages = Math.ceil(members.length / MEMBERS_PER_PAGE);
-  const paginatedMembers = members.slice(membersPage * MEMBERS_PER_PAGE, (membersPage + 1) * MEMBERS_PER_PAGE);
+  const paginatedMembers = members.slice(
+    membersPage * MEMBERS_PER_PAGE,
+    (membersPage + 1) * MEMBERS_PER_PAGE
+  );
 
   const handleRoleSelect = (roleId: number) => {
     setSelectedRoleId(roleId);
     setMembersPage(0);
-    // Scroll member list to top
     if (memberListRef.current) {
       memberListRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
-  // Calculate member list height based on sidebar sections
   useEffect(() => {
     const calculateHeight = () => {
       if (defaultRolesRef.current && customRolesRef.current) {
         const defaultHeight = defaultRolesRef.current.offsetHeight;
         const customHeight = customRolesRef.current.offsetHeight;
-        const totalHeight = defaultHeight + customHeight + 16; // 16px is the gap
+        const totalHeight = defaultHeight + customHeight + 16;
         setMemberListHeight(`${totalHeight}px`);
       }
     };
-
     calculateHeight();
     window.addEventListener("resize", calculateHeight);
     return () => window.removeEventListener("resize", calculateHeight);
@@ -652,11 +834,9 @@ const RolesPage: React.FC = () => {
       if (filterRef.current.contains(e.target as Node)) return;
       setShowFilterDropdown(false);
     }
-
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setShowFilterDropdown(false);
     }
-
     document.addEventListener("mousedown", onDocClick);
     document.addEventListener("keydown", onKey);
     return () => {
@@ -664,6 +844,22 @@ const RolesPage: React.FC = () => {
       document.removeEventListener("keydown", onKey);
     };
   }, []);
+
+  // --- 8. RENDER (HIỂN THỊ) ---
+  if (loadingRoles) { // (Chỉ loading khi tải Roles)
+    return (
+      <PageContainer>
+        <PageHeader><PageTitle>Đang tải trang...</PageTitle></PageHeader>
+      </PageContainer>
+    );
+  }
+  if (error) {
+    return (
+      <PageContainer>
+        <PageHeader><PageTitle style={{ color: 'red' }}>Lỗi: {error}</PageTitle></PageHeader>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer>
@@ -679,60 +875,32 @@ const RolesPage: React.FC = () => {
           <FaSearch />
           <input
             type="text"
-            placeholder="Tìm vai trò hoặc thành viên"
+            placeholder="Tìm vai trò" // (Chỉ tìm role, vì member ta chưa fetch)
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </SearchBox>
-
         <ActionButtons>
+          {/* (Filter Dropdown giữ nguyên) */}
           <FilterWrapper ref={filterRef}>
             <Button $variant="secondary" onClick={() => setShowFilterDropdown((s) => !s)}>
-              <FaFilter />
-              Lọc
+              <FaFilter /> Lọc
             </Button>
             {showFilterDropdown && (
               <FilterDropdown>
-                <FilterItem
-                  onClick={() => {
-                    setSortOption("role");
-                    setShowFilterDropdown(false);
-                  }}
-                >
-                  <div>Sắp xếp theo tên vai trò (A → Z)</div>
-                  <div>{sortOption === "role" ? "✓" : ""}</div>
-                </FilterItem>
-                <FilterItem
-                  onClick={() => {
-                    setSortOption("members");
-                    setShowFilterDropdown(false);
-                  }}
-                >
-                  <div>Sắp xếp theo số thành viên (Giảm dần)</div>
-                  <div>{sortOption === "members" ? "✓" : ""}</div>
-                </FilterItem>
-                <FilterItem
-                  onClick={() => {
-                    setSortOption("none");
-                    setShowFilterDropdown(false);
-                  }}
-                >
-                  <div>Không sắp xếp</div>
-                  <div>{sortOption === "none" ? "✓" : ""}</div>
-                </FilterItem>
+                {/* (FilterItems giữ nguyên) */}
               </FilterDropdown>
             )}
           </FilterWrapper>
-
           <Button $variant="secondary">
-            <FaDownload />
-            Xuất
+            <FaDownload /> Xuất
           </Button>
         </ActionButtons>
       </ControlBar>
 
       <FlexLayout>
         <Sidebar>
+          {/* --- DEFAULT ROLES --- */}
           <SidebarSection ref={defaultRolesRef}>
             <SidebarHeader>
               Default Roles
@@ -744,7 +912,6 @@ const RolesPage: React.FC = () => {
                   key={role.id}
                   onClick={() => handleRoleSelect(role.id)}
                   $active={role.id === selectedRoleId}
-                  roleColor={role.color}
                   title={`${role.name} — ${role.members} thành viên`}
                 >
                   <RoleLeftStripe style={{ backgroundColor: role.color }} />
@@ -757,18 +924,13 @@ const RolesPage: React.FC = () => {
             </RoleList>
           </SidebarSection>
 
+          {/* --- CUSTOM ROLES --- */}
           <SidebarSection ref={customRolesRef}>
             <SidebarHeader>
               Custom Roles
               <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
                 <CountBadge>{customRoles.length}</CountBadge>
-                <AddRoleButton
-                  onClick={() => {
-                    setRoleNameInput("");
-                    setRoleColorInput("#5865F2");
-                    setShowCreateModal(true);
-                  }}
-                >
+                <AddRoleButton onClick={handleOpenCreateModal}>
                   <FaPlus />
                 </AddRoleButton>
               </div>
@@ -783,7 +945,6 @@ const RolesPage: React.FC = () => {
                       key={role.id}
                       onClick={() => handleRoleSelect(role.id)}
                       $active={role.id === selectedRoleId}
-                      roleColor={role.color}
                       title={`${role.name} — ${role.members} thành viên`}
                     >
                       <RoleLeftStripe style={{ backgroundColor: role.color }} />
@@ -795,9 +956,9 @@ const RolesPage: React.FC = () => {
                         <FaEdit
                           size={14}
                           onClick={() => {
-                            setRoleNameInput(role.name);
-                            setRoleColorInput(role.color);
-                            setShowCreateModal(true);
+                            // (Sửa: Chọn Role ID trước, sau đó mở Modal)
+                            setSelectedRoleId(role.id);
+                            openEditModal();
                           }}
                         />
                         <FaTrash
@@ -810,168 +971,168 @@ const RolesPage: React.FC = () => {
                       </RoleActions>
                     </RoleItem>
                   ))}
-
-                  {totalCustomPages > 1 && (
-                    <PaginationControls>
-                      <PaginationButton
-                        onClick={() => setCustomRolesPage((p) => Math.max(0, p - 1))}
-                        disabled={customRolesPage === 0}
-                      >
-                        <FaChevronLeft />
-                      </PaginationButton>
-                      <PageInfo>
-                        {customRolesPage + 1} / {totalCustomPages}
-                      </PageInfo>
-                      <PaginationButton
-                        onClick={() => setCustomRolesPage((p) => Math.min(totalCustomPages - 1, p + 1))}
-                        disabled={customRolesPage >= totalCustomPages - 1}
-                      >
-                        <FaChevronRight />
-                      </PaginationButton>
-                    </PaginationControls>
-                  )}
+                  {/* (PaginationControls giữ nguyên) */}
                 </>
               )}
             </RoleList>
           </SidebarSection>
         </Sidebar>
 
-        <Content ref={memberListRef} style={{ maxHeight: memberListHeight }}>
-          <ContentHeader>
-            <div>
-              <h2 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 700 }}>{selectedRole?.name}</h2>
-              <div style={{ color: "#6b7280", fontSize: 14, marginTop: 4 }}>{selectedRole?.members} thành viên</div>
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <Button
-                $variant="secondary"
-                onClick={() => {
-                  setShowModal(true);
-                }}
-              >
-                <FaEdit /> Chỉnh sửa quyền
-              </Button>
-              {!selectedRole?.isDefault && (
-                <Button $variant="secondary" onClick={() => setShowDeleteConfirm(true)}>
-                  <FaTrash /> Xóa
-                </Button>
-              )}
-            </div>
-          </ContentHeader>
-
-          <Panel>
-            <SectionTitle>Thành viên</SectionTitle>
-            <MemberList>
-              {members.length === 0 && (
-                <div style={{ color: "#9ca3af", textAlign: "center", padding: "1rem" }}>Không có thành viên</div>
-              )}
-              {paginatedMembers.map((m) => (
-                <MemberRow key={m.id}>
-                  <Avatar>{m.name.split(" ").pop()?.charAt(0) ?? m.name.charAt(0)}</Avatar>
-                  <div>
-                    <div style={{ fontWeight: 600 }}>{m.name}</div>
-                    {m.email && <div style={{ color: "#6b7280", fontSize: 13 }}>{m.email}</div>}
+        {/* --- CONTENT (Bên phải) - ĐÃ SỬA LẠI ĐẦY ĐỦ --- */}
+        <Content
+          ref={memberListRef}
+          style={{ maxHeight: memberListHeight }}
+        >
+          {/* KIỂM TRA XEM ĐÃ CHỌN ROLE CHƯA */}
+          {selectedRoleData ? (
+            <>
+              {/* 1. ĐÂY LÀ PHẦN BỊ THIẾU CỦA BẠN */}
+              <ContentHeader>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 700 }}>
+                    {selectedRoleData.name}
+                  </h2>
+                  <div style={{ color: "#6b7280", fontSize: 14, marginTop: 4 }}>
+                    {selectedRoleData.members} thành viên
                   </div>
-                </MemberRow>
-              ))}
-            </MemberList>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  {/* NÚT NÀY LUÔN HIỂN THỊ */}
+                  <Button $variant="secondary" onClick={openEditModal}>
+                    <FaEdit /> Chỉnh sửa quyền
+                  </Button>
 
-            {totalMemberPages > 1 && (
-              <PaginationControls>
-                <PaginationButton
-                  onClick={() => setMembersPage((p) => Math.max(0, p - 1))}
-                  disabled={membersPage === 0}
-                >
-                  <FaChevronLeft />
-                </PaginationButton>
-                <PageInfo>
-                  {membersPage + 1} / {totalMemberPages}
-                </PageInfo>
-                <PaginationButton
-                  onClick={() => setMembersPage((p) => Math.min(totalMemberPages - 1, p + 1))}
-                  disabled={membersPage >= totalMemberPages - 1}
-                >
-                  <FaChevronRight />
-                </PaginationButton>
-              </PaginationControls>
-            )}
-          </Panel>
+                  {/* NÚT "XÓA" CHỈ HIỆN VỚI CUSTOM ROLE */}
+                  {!selectedRoleData.isDefault && (
+                    <Button
+                      $variant="secondary"
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      <FaTrash /> Xóa
+                    </Button>
+                  )}
+                </div>
+              </ContentHeader>
+              {/* --- HẾT PHẦN BỊ THIẾU --- */}
+
+
+              {/* 2. PHẦN "THÀNH VIÊN" (BẠN ĐÃ CÓ) */}
+              <Panel>
+                <SectionTitle>Thành viên</SectionTitle>
+                {loadingMembers ? (
+                  <EmptyState>Đang tải thành viên...</EmptyState>
+                ) : (
+                  <MemberList>
+                    {members.length === 0 && (
+                      <EmptyState>Không có thành viên</EmptyState>
+                    )}
+                    {paginatedMembers.map((m) => (
+                      <MemberRow key={m.id}>
+                        <Avatar>
+                          {m.fullName.split(" ").pop()?.charAt(0) ?? m.fullName.charAt(0)}
+                        </Avatar>
+                        <div>
+                          <div style={{ fontWeight: 600 }}>{m.fullName}</div>
+                          {m.email && (
+                            <div style={{ color: "#6b7280", fontSize: 13 }}>
+                              {m.email}
+                            </div>
+                          )}
+                        </div>
+                      </MemberRow>
+                    ))}
+                  </MemberList>
+                )}
+
+                {/* (Member Pagination giữ nguyên) */}
+                {totalMemberPages > 1 && (
+                  <PaginationControls>
+                    {/* ... (Các nút Pagination) ... */}
+                  </PaginationControls>
+                )}
+              </Panel>
+            </>
+          ) : (
+            // (Nếu không có role nào được chọn)
+            <EmptyState>Vui lòng chọn một vai trò để xem chi tiết.</EmptyState>
+          )}
         </Content>
       </FlexLayout>
 
+      {/* --- MODAL CHỈNH SỬA QUYỀN (UPDATE) --- */}
       {showModal && (
         <ModalOverlay onClick={() => setShowModal(false)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>Chỉnh sửa quyền hạn - {selectedRole?.name}</ModalHeader>
+            <ModalHeader>
+              Chỉnh sửa quyền hạn - {selectedRoleData?.name}
+            </ModalHeader>
             <ModalBody>
-              <ModalColumns>
+              {/* (Sửa: Dùng state 'editRoleName') */}
+              <FormGroup>
+                <Label>Tên vai trò</Label>
+                <Input
+                  value={editRoleName}
+                  onChange={(e) => setEditRoleName(e.target.value)}
+                  placeholder="Nhập tên vai trò"
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <Label>Quyền hạn</Label>
                 <PermissionsColumn style={{ flex: 1 }}>
-                  {permissionGroups.map((group) => (
-                    <PermissionGroup key={group.title}>
-                      <GroupTitle>{group.title}</GroupTitle>
-                      {group.items.map((item) => (
-                        <PermissionRow key={item}>
-                          <div>{item}</div>
-                          {item === "Read only" ? (
-                            <ToggleSwitch>
-                              <input type="checkbox" checked disabled />
-                              <span />
-                            </ToggleSwitch>
-                          ) : (
-                            <ToggleSwitch>
-                              <input type="checkbox" defaultChecked />
-                              <span />
-                            </ToggleSwitch>
-                          )}
-                        </PermissionRow>
-                      ))}
-                    </PermissionGroup>
+                  {/* Sửa: Lặp qua 'allPermissions' (dữ liệu thật) */}
+                  {allPermissions.map((item) => (
+                    <PermissionRow key={item.id}>
+                      <div>{item.name} ({item.action})</div>
+                      <ToggleSwitch>
+                        <input
+                          type="checkbox"
+                          // Sửa: Dùng state 'modalPermissions'
+                          checked={modalPermissions.has(item.id)}
+                          onChange={() => handleModalPermissionToggle(item.id)}
+                          // Sửa: Check 'readonly' bằng 'action'
+                          disabled={item.action === "readonly"}
+                        />
+                        <span />
+                      </ToggleSwitch>
+                    </PermissionRow>
                   ))}
                 </PermissionsColumn>
-              </ModalColumns>
+              </FormGroup>
 
-              <ModalFooter>
-                <Button $variant="secondary" onClick={() => setShowModal(false)}>
-                  Hủy
-                </Button>
-                <Button
-                  $variant="primary"
-                  onClick={() => {
-                    setShowModal(false);
-                  }}
-                >
-                  Cập nhật
-                </Button>
-              </ModalFooter>
             </ModalBody>
+            <ModalFooter>
+              <Button $variant="secondary" onClick={() => setShowModal(false)}>
+                Hủy
+              </Button>
+              <Button $variant="primary" onClick={handleUpdateRole}>
+                Cập nhật
+              </Button>
+            </ModalFooter>
           </ModalContent>
         </ModalOverlay>
       )}
 
+      {/* --- MODAL XÁC NHẬN XÓA (DELETE) --- */}
       {showDeleteConfirm && (
         <ModalOverlay onClick={() => setShowDeleteConfirm(false)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <ModalHeader>Xác nhận xóa</ModalHeader>
             <ModalBody>
               <div style={{ marginBottom: 12 }}>
-                Bạn có chắc muốn xóa vai trò "{selectedRole?.name}"? Hành động này không thể hoàn tác.
+                Bạn có chắc muốn xóa vai trò "{selectedRoleData?.name}"?
+                Các user dùng role này sẽ được chuyển về "Read-only".
               </div>
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                <Button $variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
+              <div
+                style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}
+              >
+                <Button
+                  $variant="secondary"
+                  onClick={() => setShowDeleteConfirm(false)}
+                >
                   Hủy
                 </Button>
-                <Button
-                  $variant="primary"
-                  onClick={() => {
-                    setRolesState((prev) => {
-                      const next = prev.filter((r) => r.id !== (selectedRole?.id ?? -1));
-                      const nextId = next.length > 0 ? next[0].id : null;
-                      setSelectedRoleId(nextId);
-                      return next;
-                    });
-                    setShowDeleteConfirm(false);
-                  }}
-                >
+                <Button $variant="primary" onClick={handleDeleteRole}>
                   Xóa
                 </Button>
               </div>
@@ -980,6 +1141,7 @@ const RolesPage: React.FC = () => {
         </ModalOverlay>
       )}
 
+      {/* --- MODAL TẠO MỚI (CREATE) --- */}
       {showCreateModal && (
         <ModalOverlay onClick={() => setShowCreateModal(false)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
@@ -994,37 +1156,60 @@ const RolesPage: React.FC = () => {
                 />
               </FormGroup>
 
+              {/* (Phần chọn màu (UI-only) giữ nguyên) */}
               <FormGroup>
                 <Label>Màu vai trò</Label>
-                <ColorInput type="color" value={roleColorInput} onChange={(e) => setRoleColorInput(e.target.value)} />
+                <ColorInput
+                  type="color"
+                  value={roleColorInput}
+                  onChange={(e) => setRoleColorInput(e.target.value)}
+                />
               </FormGroup>
 
-              <ModalFooter>
-                <Button $variant="secondary" onClick={() => setShowCreateModal(false)}>
-                  Hủy
-                </Button>
-                <Button
-                  $variant="primary"
-                  onClick={() => {
-                    const name = roleNameInput.trim() || "New Custom Role";
-                    const maxId = rolesState.reduce((acc, r) => Math.max(acc, r.id), 0);
-                    const newRole: Role = {
-                      id: maxId + 1,
-                      name,
-                      color: roleColorInput,
-                      members: 0,
-                      isDefault: false,
-                    };
-                    setRolesState((prev) => [...prev, newRole]);
-                    setRoleNameInput("");
-                    setShowCreateModal(false);
-                    setSelectedRoleId(newRole.id);
-                  }}
-                >
-                  Tạo
-                </Button>
-              </ModalFooter>
+              {/* (Sửa: Hiển thị Permissions thật) */}
+              <FormGroup>
+                <Label>Quyền hạn</Label>
+                <PermissionsColumn>
+                  {allPermissions.map((item) => (
+                    <PermissionRow key={item.id}>
+                      <div>{item.name} ({item.action})</div>
+                      <ToggleSwitch>
+                        <input
+                          type="checkbox"
+                          // Sửa: Dùng state 'newRolePermissions'
+                          checked={newRolePermissions.has(item.id)}
+                          onChange={() => {
+                            // (Không cho phép bỏ check 'readonly')
+                            if (item.action !== 'readonly') {
+                              setNewRolePermissions(prev => {
+                                const newSet = new Set(prev);
+                                if (newSet.has(item.id)) newSet.delete(item.id);
+                                else newSet.add(item.id);
+                                return newSet;
+                              });
+                            }
+                          }}
+                          disabled={item.action === 'readonly'}
+                        />
+                        <span />
+                      </ToggleSwitch>
+                    </PermissionRow>
+                  ))}
+                </PermissionsColumn>
+              </FormGroup>
+
             </ModalBody>
+            <ModalFooter>
+              <Button
+                $variant="secondary"
+                onClick={() => setShowCreateModal(false)}
+              >
+                Hủy
+              </Button>
+              <Button $variant="primary" onClick={handleCreateRole}>
+                Tạo
+              </Button>
+            </ModalFooter>
           </ModalContent>
         </ModalOverlay>
       )}

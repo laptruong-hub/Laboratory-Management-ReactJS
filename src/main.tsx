@@ -4,8 +4,13 @@ import App from "./App.tsx";
 import "./index.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+import { AuthProvider } from "./context/AuthContext.tsx";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    { }
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </StrictMode>
 );
