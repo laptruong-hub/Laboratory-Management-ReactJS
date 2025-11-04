@@ -1,19 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FaSearch, FaPlus, FaTrash, FaFilter, FaDownload, FaEye } from "react-icons/fa";
 import "../../components/admin/account-manage.css";
-import AccountDetailModal, {
-  type AccountDetailData,
-  type UserStatus,
-} from "../../components/admin/AccountDetailModal";
+import AccountDetailModal, { type AccountDetailData, type UserStatus } from "../../components/admin/AccountDetailModal";
 
 /* ---------- Types ---------- */
-type Role =
-  | "Administrator"
-  | "Lab Manager"
-  | "Laboratory Manager"
-  | "Lab User"
-  | "Service"
-  | "User";
+type Role = "Administrator" | "Lab Manager" | "Laboratory Manager" | "Lab User" | "Service" | "User";
 type Status = "active" | "pending" | "inactive" | "suspended";
 
 export interface User {
@@ -26,8 +17,7 @@ export interface User {
 }
 
 /* ---------- Helpers / UI ---------- */
-const formatDate = (iso?: string) =>
-  iso ? new Intl.DateTimeFormat("vi-VN").format(new Date(iso)) : "—";
+const formatDate = (iso?: string) => (iso ? new Intl.DateTimeFormat("vi-VN").format(new Date(iso)) : "—");
 
 const tone = {
   primary: { bg: "#eef2ff", fg: "#4f46e5" },
@@ -38,29 +28,23 @@ const tone = {
   secondary: { bg: "#f1f5f9", fg: "#475569" },
 };
 const roleTone = (role: Role) =>
-  ({
-    Administrator: tone.primary,
-    "Lab Manager": tone.info,
-    "Laboratory Manager": tone.info,
-    "Lab User": tone.success,
-    Service: tone.warning,
-    User: tone.secondary,
-  } as Record<string, typeof tone.secondary>)[role] ?? tone.secondary;
+  ((
+    {
+      Administrator: tone.primary,
+      "Lab Manager": tone.info,
+      "Laboratory Manager": tone.info,
+      "Lab User": tone.success,
+      Service: tone.warning,
+      User: tone.secondary,
+    } as Record<string, typeof tone.secondary>
+  )[role] ?? tone.secondary);
 const statusText = (s: Status) =>
-  ({ active: "Hoạt động", pending: "Chờ duyệt", inactive: "Ngưng", suspended: "Tạm ngưng" }[s] ??
-    "—");
+  ({ active: "Hoạt động", pending: "Chờ duyệt", inactive: "Ngưng", suspended: "Tạm ngưng" }[s] ?? "—");
 const statusTone = (s: Status) =>
-  ({ active: tone.success, pending: tone.warning, inactive: tone.secondary, suspended: tone.danger }[
-    s
-  ] ?? tone.secondary);
+  ({ active: tone.success, pending: tone.warning, inactive: tone.secondary, suspended: tone.danger }[s] ??
+  tone.secondary);
 
-const Badge = ({
-  children,
-  colors,
-}: {
-  children: React.ReactNode;
-  colors: { bg: string; fg: string };
-}) => (
+const Badge = ({ children, colors }: { children: React.ReactNode; colors: { bg: string; fg: string } }) => (
   <span className="badge-pill" style={{ backgroundColor: colors.bg, color: colors.fg }}>
     {children}
   </span>
@@ -142,7 +126,10 @@ export default function AccountManage() {
 
   // normalize VN text
   const normalize = (s: string) =>
-    s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    s
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
 
   // filter áp dụng khi nhấn Enter
   const filtered = useMemo(() => {
@@ -180,8 +167,7 @@ export default function AccountManage() {
         u.id === id
           ? {
               ...u,
-              status:
-                next === "active" ? "active" : next === "pending" ? "pending" : "suspended",
+              status: next === "active" ? "active" : next === "pending" ? "pending" : "suspended",
             }
           : u
       )
@@ -267,9 +253,7 @@ export default function AccountManage() {
                 <td>{(page - 1) * pageSize + idx + 1}</td>
                 <td>
                   <div className="am-user-cell">
-                    <div className="am-avatar">
-                      {u.name.split(" ").slice(-1)[0]?.[0]?.toUpperCase() ?? "U"}
-                    </div>
+                    <div className="am-avatar">{u.name.split(" ").slice(-1)[0]?.[0]?.toUpperCase() ?? "U"}</div>
                     <div>
                       <div className="am-user-name">{u.name}</div>
                       <div className="am-user-email">{u.email}</div>
@@ -285,17 +269,12 @@ export default function AccountManage() {
                 <td>{formatDate(u.joinedAt)}</td>
                 <td>
                   <div className="am-actions-inline">
-                    <button
-                      className="icon-btn"
-                      title="Xem chi tiết"
-                      onClick={() => openDetail(u)}
-                    >
+                    <button className="icon-btn" title="Xem chi tiết" onClick={() => openDetail(u)}>
                       <FaEye />
                     </button>
-                    <button className="icon-btn danger"  title="Xoá"  onClick={() => handleDelete(u.id)}>
-                <FaTrash />
-                      </button>
-
+                    <button className="icon-btn danger" title="Xoá" onClick={() => handleDelete(u.id)}>
+                      <FaTrash />
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -313,11 +292,7 @@ export default function AccountManage() {
 
       {/* Pagination */}
       <div className="am-pagination">
-        <button
-          className="btn outline"
-          disabled={page === 1}
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-        >
+        <button className="btn outline" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
           ← Trước
         </button>
         <div className="muted">
@@ -342,31 +317,41 @@ export default function AccountManage() {
       />
 
       {/* Confirm Delete Modal */}
-<dialog
-  ref={confirmRef}
-  className="am-modal am-confirm"
-  onCancel={(e) => {
-    e.preventDefault();
-    closeDeleteConfirm();
-  }}
->
-  <div className="am-modal__header">
-    <h2 className="title">Xác nhận xoá</h2>
-  </div>
+      <dialog
+        ref={confirmRef}
+        className="am-modal am-confirm"
+        onCancel={(e) => {
+          e.preventDefault();
+          closeDeleteConfirm();
+        }}
+      >
+        <div className="am-modal__header">
+          <h2 className="title">Xác nhận xoá</h2>
+        </div>
 
-  {/* BODY — luôn hiển thị câu hỏi */}
-  <div className="am-modal__body">
-   <p className="am-confirm-text">
-  Bạn có chắc muốn xoá{deleteTarget && <> người dùng <strong>{deleteTarget.name}</strong></>}?
-</p>
-  </div>
+        {/* BODY — luôn hiển thị câu hỏi */}
+        <div className="am-modal__body">
+          <p className="am-confirm-text">
+            Bạn có chắc muốn xoá
+            {deleteTarget && (
+              <>
+                {" "}
+                người dùng <strong>{deleteTarget.name}</strong>
+              </>
+            )}
+            ?
+          </p>
+        </div>
 
-  <div className="am-modal__footer">
-    <button className="btn outline" onClick={closeDeleteConfirm}>Huỷ</button>
-    <button className="btn danger" onClick={confirmDelete}>Xoá</button>
-  </div>
-</dialog>
+        <div className="am-modal__footer">
+          <button className="btn outline" onClick={closeDeleteConfirm}>
+            Huỷ
+          </button>
+          <button className="btn danger" onClick={confirmDelete}>
+            Xoá
+          </button>
+        </div>
+      </dialog>
     </div>
   );
 }
-// noop change

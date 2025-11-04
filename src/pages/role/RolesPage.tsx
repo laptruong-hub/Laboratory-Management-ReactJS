@@ -1,15 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import {
-  FaSearch,
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaFilter,
-  FaDownload,
-  FaChevronLeft,
-  FaChevronRight,
-} from "react-icons/fa";
+import { FaSearch, FaPlus, FaEdit, FaTrash, FaFilter, FaDownload, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const PageContainer = styled.div`
   width: 100%;
@@ -524,9 +515,7 @@ const RolesPage: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [sortOption, setSortOption] = useState<"none" | "role" | "members">(
-    "none"
-  );
+  const [sortOption, setSortOption] = useState<"none" | "role" | "members">("none");
   const [roleNameInput, setRoleNameInput] = useState("");
   const [roleColorInput, setRoleColorInput] = useState("#5865F2");
   const [customRolesPage, setCustomRolesPage] = useState(0);
@@ -604,16 +593,13 @@ const RolesPage: React.FC = () => {
     },
   ];
 
-  const selectedRole =
-    rolesState.find((r) => r.id === selectedRoleId) ?? rolesState[0];
+  const selectedRole = rolesState.find((r) => r.id === selectedRoleId) ?? rolesState[0];
   const members = selectedRoleId ? membersMap[selectedRoleId] ?? [] : [];
 
   const sortRoles = (roles: Role[]) => {
     const copy = [...roles];
     if (sortOption === "role") {
-      return copy.sort((a, b) =>
-        a.name.localeCompare(b.name, "en", { sensitivity: "base" })
-      );
+      return copy.sort((a, b) => a.name.localeCompare(b.name, "en", { sensitivity: "base" }));
     }
     if (sortOption === "members") {
       return copy.sort((a, b) => b.members - a.members);
@@ -633,10 +619,7 @@ const RolesPage: React.FC = () => {
 
   // Pagination for members
   const totalMemberPages = Math.ceil(members.length / MEMBERS_PER_PAGE);
-  const paginatedMembers = members.slice(
-    membersPage * MEMBERS_PER_PAGE,
-    (membersPage + 1) * MEMBERS_PER_PAGE
-  );
+  const paginatedMembers = members.slice(membersPage * MEMBERS_PER_PAGE, (membersPage + 1) * MEMBERS_PER_PAGE);
 
   const handleRoleSelect = (roleId: number) => {
     setSelectedRoleId(roleId);
@@ -704,10 +687,7 @@ const RolesPage: React.FC = () => {
 
         <ActionButtons>
           <FilterWrapper ref={filterRef}>
-            <Button
-              $variant="secondary"
-              onClick={() => setShowFilterDropdown((s) => !s)}
-            >
+            <Button $variant="secondary" onClick={() => setShowFilterDropdown((s) => !s)}>
               <FaFilter />
               Lọc
             </Button>
@@ -780,9 +760,7 @@ const RolesPage: React.FC = () => {
           <SidebarSection ref={customRolesRef}>
             <SidebarHeader>
               Custom Roles
-              <div
-                style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}
-              >
+              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
                 <CountBadge>{customRoles.length}</CountBadge>
                 <AddRoleButton
                   onClick={() => {
@@ -808,9 +786,7 @@ const RolesPage: React.FC = () => {
                       roleColor={role.color}
                       title={`${role.name} — ${role.members} thành viên`}
                     >
-                      <RoleLeftStripe
-                        style={{ backgroundColor: role.color }}
-                      />
+                      <RoleLeftStripe style={{ backgroundColor: role.color }} />
                       <RoleLabel>
                         <RoleName>{role.name}</RoleName>
                         <RoleMeta>{role.members} thành viên</RoleMeta>
@@ -838,9 +814,7 @@ const RolesPage: React.FC = () => {
                   {totalCustomPages > 1 && (
                     <PaginationControls>
                       <PaginationButton
-                        onClick={() =>
-                          setCustomRolesPage((p) => Math.max(0, p - 1))
-                        }
+                        onClick={() => setCustomRolesPage((p) => Math.max(0, p - 1))}
                         disabled={customRolesPage === 0}
                       >
                         <FaChevronLeft />
@@ -849,11 +823,7 @@ const RolesPage: React.FC = () => {
                         {customRolesPage + 1} / {totalCustomPages}
                       </PageInfo>
                       <PaginationButton
-                        onClick={() =>
-                          setCustomRolesPage((p) =>
-                            Math.min(totalCustomPages - 1, p + 1)
-                          )
-                        }
+                        onClick={() => setCustomRolesPage((p) => Math.min(totalCustomPages - 1, p + 1))}
                         disabled={customRolesPage >= totalCustomPages - 1}
                       >
                         <FaChevronRight />
@@ -866,18 +836,11 @@ const RolesPage: React.FC = () => {
           </SidebarSection>
         </Sidebar>
 
-        <Content
-          ref={memberListRef}
-          style={{ maxHeight: memberListHeight }}
-        >
+        <Content ref={memberListRef} style={{ maxHeight: memberListHeight }}>
           <ContentHeader>
             <div>
-              <h2 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 700 }}>
-                {selectedRole?.name}
-              </h2>
-              <div style={{ color: "#6b7280", fontSize: 14, marginTop: 4 }}>
-                {selectedRole?.members} thành viên
-              </div>
+              <h2 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 700 }}>{selectedRole?.name}</h2>
+              <div style={{ color: "#6b7280", fontSize: 14, marginTop: 4 }}>{selectedRole?.members} thành viên</div>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <Button
@@ -889,10 +852,7 @@ const RolesPage: React.FC = () => {
                 <FaEdit /> Chỉnh sửa quyền
               </Button>
               {!selectedRole?.isDefault && (
-                <Button
-                  $variant="secondary"
-                  onClick={() => setShowDeleteConfirm(true)}
-                >
+                <Button $variant="secondary" onClick={() => setShowDeleteConfirm(true)}>
                   <FaTrash /> Xóa
                 </Button>
               )}
@@ -903,22 +863,14 @@ const RolesPage: React.FC = () => {
             <SectionTitle>Thành viên</SectionTitle>
             <MemberList>
               {members.length === 0 && (
-                <div style={{ color: "#9ca3af", textAlign: "center", padding: "1rem" }}>
-                  Không có thành viên
-                </div>
+                <div style={{ color: "#9ca3af", textAlign: "center", padding: "1rem" }}>Không có thành viên</div>
               )}
               {paginatedMembers.map((m) => (
                 <MemberRow key={m.id}>
-                  <Avatar>
-                    {m.name.split(" ").pop()?.charAt(0) ?? m.name.charAt(0)}
-                  </Avatar>
+                  <Avatar>{m.name.split(" ").pop()?.charAt(0) ?? m.name.charAt(0)}</Avatar>
                   <div>
                     <div style={{ fontWeight: 600 }}>{m.name}</div>
-                    {m.email && (
-                      <div style={{ color: "#6b7280", fontSize: 13 }}>
-                        {m.email}
-                      </div>
-                    )}
+                    {m.email && <div style={{ color: "#6b7280", fontSize: 13 }}>{m.email}</div>}
                   </div>
                 </MemberRow>
               ))}
@@ -936,9 +888,7 @@ const RolesPage: React.FC = () => {
                   {membersPage + 1} / {totalMemberPages}
                 </PageInfo>
                 <PaginationButton
-                  onClick={() =>
-                    setMembersPage((p) => Math.min(totalMemberPages - 1, p + 1))
-                  }
+                  onClick={() => setMembersPage((p) => Math.min(totalMemberPages - 1, p + 1))}
                   disabled={membersPage >= totalMemberPages - 1}
                 >
                   <FaChevronRight />
@@ -952,9 +902,7 @@ const RolesPage: React.FC = () => {
       {showModal && (
         <ModalOverlay onClick={() => setShowModal(false)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              Chỉnh sửa quyền hạn - {selectedRole?.name}
-            </ModalHeader>
+            <ModalHeader>Chỉnh sửa quyền hạn - {selectedRole?.name}</ModalHeader>
             <ModalBody>
               <ModalColumns>
                 <PermissionsColumn style={{ flex: 1 }}>
@@ -1006,25 +954,17 @@ const RolesPage: React.FC = () => {
             <ModalHeader>Xác nhận xóa</ModalHeader>
             <ModalBody>
               <div style={{ marginBottom: 12 }}>
-                Bạn có chắc muốn xóa vai trò "{selectedRole?.name}"? Hành động
-                này không thể hoàn tác.
+                Bạn có chắc muốn xóa vai trò "{selectedRole?.name}"? Hành động này không thể hoàn tác.
               </div>
-              <div
-                style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}
-              >
-                <Button
-                  $variant="secondary"
-                  onClick={() => setShowDeleteConfirm(false)}
-                >
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                <Button $variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
                   Hủy
                 </Button>
                 <Button
                   $variant="primary"
                   onClick={() => {
                     setRolesState((prev) => {
-                      const next = prev.filter(
-                        (r) => r.id !== (selectedRole?.id ?? -1)
-                      );
+                      const next = prev.filter((r) => r.id !== (selectedRole?.id ?? -1));
                       const nextId = next.length > 0 ? next[0].id : null;
                       setSelectedRoleId(nextId);
                       return next;
@@ -1056,28 +996,18 @@ const RolesPage: React.FC = () => {
 
               <FormGroup>
                 <Label>Màu vai trò</Label>
-                <ColorInput
-                  type="color"
-                  value={roleColorInput}
-                  onChange={(e) => setRoleColorInput(e.target.value)}
-                />
+                <ColorInput type="color" value={roleColorInput} onChange={(e) => setRoleColorInput(e.target.value)} />
               </FormGroup>
 
               <ModalFooter>
-                <Button
-                  $variant="secondary"
-                  onClick={() => setShowCreateModal(false)}
-                >
+                <Button $variant="secondary" onClick={() => setShowCreateModal(false)}>
                   Hủy
                 </Button>
                 <Button
                   $variant="primary"
                   onClick={() => {
                     const name = roleNameInput.trim() || "New Custom Role";
-                    const maxId = rolesState.reduce(
-                      (acc, r) => Math.max(acc, r.id),
-                      0
-                    );
+                    const maxId = rolesState.reduce((acc, r) => Math.max(acc, r.id), 0);
                     const newRole: Role = {
                       id: maxId + 1,
                       name,
@@ -1103,4 +1033,3 @@ const RolesPage: React.FC = () => {
 };
 
 export default RolesPage;
-// noop change

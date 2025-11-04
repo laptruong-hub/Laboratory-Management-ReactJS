@@ -1,8 +1,4 @@
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
-} from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 
 // Layouts
 import MainLayout from "./components/layout/MainLayout.tsx";
@@ -20,7 +16,6 @@ import ForgotPassword from "./pages/authentication/ForgotPassword.tsx";
 
 // Pages - Admin
 import AdminDashboardPage from "./pages/dashboard/AdminDashboard.tsx";
-
 
 import AccountManage from "./pages/admin/AccountManage.tsx";
 import RolesPage from "./pages/role/RolesPage.tsx";
@@ -73,7 +68,6 @@ const router = createBrowserRouter([
         path: "profile",
         element: <UserProfile />,
       },
-      
     ],
   },
   {
@@ -84,7 +78,7 @@ const router = createBrowserRouter([
         path: "admin-dashboard",
         element: <AdminDashboardPage />,
       },
-      
+
       {
         path: "roles",
         element: <RolesPage />,
@@ -114,5 +108,3 @@ function App() {
 }
 
 export default App;
-
-// noop change

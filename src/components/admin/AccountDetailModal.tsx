@@ -58,16 +58,9 @@ const roleMap: Record<string, { bg: string; fg: string }> = {
   User: tone.secondary,
 };
 const roleTone = (role: Role) => roleMap[role] ?? tone.secondary;
-const statusTone = (s: UserStatus) =>
-  ({ active: tone.success, pending: tone.warning, suspended: tone.danger }[s]);
+const statusTone = (s: UserStatus) => ({ active: tone.success, pending: tone.warning, suspended: tone.danger }[s]);
 
-function Badge({
-  children,
-  colors,
-}: {
-  children: React.ReactNode;
-  colors: { bg: string; fg: string };
-}) {
+function Badge({ children, colors }: { children: React.ReactNode; colors: { bg: string; fg: string } }) {
   return (
     <span className="badge-pill" style={{ backgroundColor: colors.bg, color: colors.fg }}>
       {children}
@@ -151,10 +144,7 @@ export default function AccountDetailModal({
             Đóng
           </button>
           <button className="btn outline">Chỉnh sửa</button>
-          <button
-            className={"btn " + (status === "suspended" ? "primary" : "danger")}
-            onClick={handleSuspendToggle}
-          >
+          <button className={"btn " + (status === "suspended" ? "primary" : "danger")} onClick={handleSuspendToggle}>
             {status === "suspended" ? "Kích hoạt" : "Tạm ngưng"}
           </button>
         </div>
@@ -183,5 +173,3 @@ export default function AccountDetailModal({
     </dialog>
   );
 }
-
-// noop change
