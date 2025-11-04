@@ -4,9 +4,6 @@ import {
   Navigate,
 } from "react-router-dom";
 
-
-import PrivateRoute from "./components/common/PrivateRoute.tsx";
-
 // Layouts
 import MainLayout from "./components/layout/MainLayout.tsx";
 import AuthLayout from "./components/layout/AuthLayout.tsx";
@@ -23,6 +20,8 @@ import ForgotPassword from "./pages/authentication/ForgotPassword.tsx";
 
 // Pages - Admin
 import AdminDashboardPage from "./pages/dashboard/AdminDashboard.tsx";
+
+
 import AccountManage from "./pages/admin/AccountManage.tsx";
 import RolesPage from "./pages/role/RolesPage.tsx";
 
@@ -38,6 +37,16 @@ import Forbidden from "./pages/error/Forbidden.tsx";
 import "./App.css";
 
 const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <MainLayout />,
+    children: [
+      {
+        path: "/",
+        element: <Home />,
+      },
+    ],
+  },
   {
     path: "/auth",
     element: <AuthLayout />,
@@ -94,53 +103,6 @@ const router = createBrowserRouter([
     path: "/not-found",
     element: <NotFound />,
   },
-
-  {
-    path: "/",
-    element: <MainLayout />,
-    children: [
-      {
-        path: "/",
-        element: <Home />,
-      },
-    ],
-  },
-
-  {
-    element: <PrivateRoute />,
-    children: [
-
-      {
-        path: "/user",
-        element: <UserLayout />,
-        children: [
-          {
-            path: "",
-            element: <Security />,
-          },
-        ],
-      },
-      {
-        path: "/admin",
-        element: <WorkingLayout />,
-        children: [
-          {
-            path: "admin-dashboard",
-            element: <AdminDashboardPage />,
-          },
-          {
-            path: "roles",
-            element: <RolesPage />,
-          },
-          {
-            path: "account",
-            element: <AccountManage />,
-          },
-        ],
-      },
-    ],
-  },
-
   {
     path: "*",
     element: <Navigate to="/not-found" replace />,
@@ -151,4 +113,4 @@ function App() {
   return <RouterProvider router={router} />;
 }
 
-export default App; 
+export default App;

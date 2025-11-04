@@ -3,9 +3,6 @@ import loginImg from '../../assets/img/login.jpg';
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { apiPublic } from '../../api/apiClient.ts';
-
-
 
 
 const Login: React.FC = () => {
@@ -24,28 +21,27 @@ const Login: React.FC = () => {
     setError('');
 
     try {
-      const response = await apiPublic.post('/api/auth/login', {
-        email: email,
-        password: password
+      const response = await axios.post('http://localhost:8090/api/auth/login', {
+        email: email, // Lấy từ state
+        password: password // Lấy từ state
       });
 
-      // 2b. Lấy CẢ HAI token
+      // thành công (200 OK)
       if (response.data && response.data.accessToken) {
-        const { accessToken, refreshToken } = response.data;
+        //  (JWT Token)
+        const accessToken = response.data.accessToken;
 
-        // 2c. LƯU CẢ HAI token
+        //Lưu token vào localStorage
         localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
 
-        window.location.href = '/'; // Chuyển hướng về trang chủ
-
+        navigate('/user');
       } else {
         // Nếu BE trả về 200 OK nhưng không có token thì coi như lỗi
         setError('Lỗi đăng nhập không mong muốn.');
       }
 
     } catch (err: any) {
-      // 2d. Sửa lại hàm check lỗi
+      //Xử lý lỗi (BE trả về 401, 404, 500...)
       if (axios.isAxiosError(err) && err.response) {
         setError(err.response.data.message || 'Email hoặc mật khẩu không chính xác.');
       } else {

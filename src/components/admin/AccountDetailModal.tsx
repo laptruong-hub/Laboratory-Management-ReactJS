@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./account-manage.css";
 
-// (Các Type (kiểu) của bạn)
 type Gender = "male" | "female" | "other";
 type BloodGroup = "A" | "B" | "AB" | "O";
 type RhFactor = "+" | "-" | "unknown";
@@ -10,18 +9,17 @@ type Role = string;
 
 export type AccountDetailData = {
   fullName: string;
-  email: string;
-  role: Role;
-  status: UserStatus;
-  rhFactor: string;
-  phone?: string;
   dob?: string;
-  gender?: boolean;
-  bloodType?: string;
+  gender?: Gender;
+  bloodGroup?: BloodGroup;
+  rhFactor?: RhFactor;
   medicalHistory?: string;
+  role: Role;
+  email: string;
+  phone?: string;
+  status: UserStatus;
 };
 
-// (Các hàm Helper (trợ giúp) của bạn)
 const vi = {
   gender(g?: Gender) {
     if (!g) return "—";
@@ -35,7 +33,7 @@ const vi = {
     const d = new Date(iso);
     return isNaN(d.getTime()) ? "—" : new Intl.DateTimeFormat("vi-VN").format(d);
   },
-  rh(r?: RhFactor | string) { // (Mở rộng 'string' để khớp 'rhFactor: string' trong AccountDetailData)
+  rh(r?: RhFactor) {
     if (!r) return "—";
     if (r === "+") return "Dương (+)";
     if (r === "-") return "Âm (-)";
@@ -58,16 +56,11 @@ const roleMap: Record<string, { bg: string; fg: string }> = {
   "Lab User": tone.success,
   Service: tone.warning,
   User: tone.secondary,
-  // (Thêm các role thật từ BE nếu bạn muốn có màu riêng)
-  ADMIN: tone.danger,
-  MANAGER: tone.primary,
-  "Read-only": tone.secondary,
 };
 const roleTone = (role: Role) => roleMap[role] ?? tone.secondary;
 const statusTone = (s: UserStatus) =>
   ({ active: tone.success, pending: tone.warning, suspended: tone.danger }[s]);
 
-// (Component Badge và Field của bạn)
 function Badge({
   children,
   colors,
@@ -90,28 +83,19 @@ function Field({ label, children }: { label: string; children?: React.ReactNode 
   );
 }
 
-// (Props của Modal)
-export type AccountDetailModalProps = { // (Thêm export ở đây)
-  open: boolean;
-  onClose: () => void;
-  user?: AccountDetailData;
-  userId?: string;
-  onStatusChange?: (id: string, next: UserStatus) => void;
-  onEdit?: () => void;
-};
-
-
-// --- COMPONENT CHÍNH ---
 export default function AccountDetailModal({
   open,
   onClose,
   user,
   userId,
   onStatusChange,
-  onEdit
-}: AccountDetailModalProps) { // (Dùng Type ở trên)
-
-  // (Data dự phòng của bạn)
+}: {
+  open: boolean;
+  onClose: () => void;
+  user?: AccountDetailData;
+  userId?: string;
+  onStatusChange?: (id: string, next: UserStatus) => void;
+}) {
   const demo: AccountDetailData = {
     fullName: "Người dùng mẫu",
     role: "User",
@@ -120,15 +104,11 @@ export default function AccountDetailModal({
     rhFactor: "unknown",
     medicalHistory: "Chưa có tiền sử bệnh rõ ràng.",
   };
-
-  // 'actual' SẼ LUÔN TỒN TẠI (hoặc là 'user' thật, hoặc là 'demo')
   const actual = user ?? demo;
 
-  // 'status' là state nội bộ của Modal (để đổi "Tạm ngưng" -> "Kích hoạt" ngay lập tức)
   const [status, setStatus] = useState<UserStatus>(actual.status);
   const ref = useRef<HTMLDialogElement>(null);
 
-  // (useEffect để đồng bộ state "open" với <dialog>)
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
@@ -150,18 +130,15 @@ export default function AccountDetailModal({
     };
   }, [open, onClose]);
 
-  // (useEffect để "reset" status nội bộ mỗi khi 'user' (prop) thay đổi)
   useEffect(() => {
     setStatus(actual.status);
   }, [actual.status]);
 
-  // (Hàm xử lý khi bấm nút "Tạm ngưng" / "Kích hoạt")
   const handleSuspendToggle = () => {
     const next: UserStatus = status === "suspended" ? "active" : "suspended";
-    setStatus(next); // Cập nhật state nội bộ
-
-    // Báo cho "Cha" (AccountManage) biết để gọi API
+    setStatus(next);
     if (userId && onStatusChange) onStatusChange(userId, next);
+    // TODO: gọi API thật nếu cần
   };
 
   return (
@@ -173,12 +150,7 @@ export default function AccountDetailModal({
           <button className="btn outline" onClick={onClose}>
             Đóng
           </button>
-
-          {/* Sửa: Gắn 'onEdit' vào nút "Chỉnh sửa" */}
-          <button className="btn outline" onClick={onEdit}>
-            Chỉnh sửa
-          </button>
-
+          <button className="btn outline">Chỉnh sửa</button>
           <button
             className={"btn " + (status === "suspended" ? "primary" : "danger")}
             onClick={handleSuspendToggle}
@@ -189,42 +161,24 @@ export default function AccountDetailModal({
       </div>
 
       <div className="am-modal__body">
-
-        {/* --- KHỐI JSX ĐÃ SỬA LẠI "CHUẨN" --- */}
         <div className="card" style={{ boxShadow: "none" }}>
           <div className="am-grid">
-
-            {/* Luôn dùng 'actual.' để đảm bảo an toàn (không bị 'undefined') */}
-
             <Field label="Họ và tên">{actual.fullName}</Field>
-
             <Field label="Ngày sinh">{vi.date(actual.dob)}</Field>
-
-            <Field label="Giới tính">
-              {/* Logic này đã đúng */}
-              {actual.gender === true ? 'Nam' : actual.gender === false ? 'Nữ' : '—'}
-            </Field>
-
-            <Field label="Nhóm máu">{actual.bloodType ?? "—"}</Field>
+            <Field label="Giới tính">{vi.gender(actual.gender)}</Field>
+            <Field label="Nhóm máu">{actual.bloodGroup ?? "—"}</Field>
             <Field label="Yếu tố Rh">{vi.rh(actual.rhFactor)}</Field>
-
             <Field label="Vai trò">
               <Badge colors={roleTone(actual.role)}>{actual.role}</Badge>
             </Field>
-
             <Field label="Email">{actual.email}</Field>
             <Field label="Số điện thoại">{actual.phone ?? "—"}</Field>
-
             <Field label="Trạng thái">
-              {/* Dùng state 'status' vì nó thay đổi động */}
               <Badge colors={statusTone(status)}>{vi.status(status)}</Badge>
             </Field>
-
             <Field label="Tiền sử bệnh">{actual.medicalHistory ?? "—"}</Field>
           </div>
         </div>
-        {/* --- HẾT KHỐI SỬA --- */}
-
       </div>
     </dialog>
   );

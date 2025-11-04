@@ -1,101 +1,30 @@
+
 import React, { useState } from 'react';
 import { Eye, EyeOff, User, Mail, Phone, Lock, FileText } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // (Cần để check lỗi)
-import { apiPublic } from '../../api/apiClient'; // (Trạm API "công khai")
 
 const SignUp: React.FC = () => {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    gender: '', // (Sẽ là "male" hoặc "female")
-    dob: '',    // (Ngày sinh)
-    password: '',
-    confirmPassword: '',
-  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [gender, setGender] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
-  // (State cho API)
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const navigate = useNavigate();
-
-  // --- 2. HÀM CHUNG ĐỂ CẬP NHẬT FORM DATA ---
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  // --- 3. SỬA LẠI HÀM SUBMIT ĐỂ GỌI API ---
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-
-    // (Validation phía FE)
-    if (formData.password !== formData.confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp.');
-      return;
-    }
-    if (!agreedToTerms) {
-      setError('Bạn phải đồng ý với Điều khoản dịch vụ.');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // (Chuẩn bị DTO 'RegisterRequest' cho Backend)
-      const registerRequest = {
-        fullName: formData.fullName,
-        email: formData.email,
-        password: formData.password,
-        phone: formData.phone || null, // (Gửi null nếu rỗng)
-
-        // "Dịch" 'string' (FE) sang 'boolean' (BE)
-        gender: formData.gender === 'male' ? true : formData.gender === 'female' ? false : null,
-
-        // "Dịch" 'string' (FE) sang 'Date' (BE)
-        dob: formData.dob ? new Date(formData.dob) : null,
-      };
-
-      // Gọi API Đăng ký
-      await apiPublic.post('/api/auth/register', registerRequest);
-
-      // Nếu thành công:
-      setIsLoading(false);
-      // (Có thể hiển thị thông báo "Đăng ký thành công!")
-      alert('Đăng ký thành công! Vui lòng đăng nhập.');
-      navigate('/auth/login'); // Chuyển về trang login
-
-    } catch (err: any) {
-      if (axios.isAxiosError(err) && err.response) {
-        // (Hiển thị lỗi từ BE, ví dụ: "Email... đã tồn tại")
-        setError(err.response.data.message || 'Đăng ký thất bại. Vui lòng thử lại.');
-      } else {
-        setError('Đăng ký thất bại, không thể kết nối tới server.');
-      }
-      console.error("Lỗi đăng ký:", err);
-      setIsLoading(false);
-    }
   };
 
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        {/* ... (Phần icon và tiêu đề giữ nguyên) ... */}
+        <div style={styles.iconContainer}>
+          <FileText size={32} color="#ff0000" />
+        </div>
+
+        <h1 style={styles.title}>Hệ Thống Quản Lý Phòng Xét Nghiệm</h1>
+        <p style={styles.subtitle}>Tạo tài khoản để truy cập hệ thống quản lý xét nghiệm</p>
+
+        <h2 style={styles.sectionTitle}>Đăng Ký Tài Khoản</h2>
 
         <form onSubmit={handleSubmit} style={styles.form}>
-
-          {/* HIỂN THỊ LỖI (NẾU CÓ) */}
-          {error && <div style={{ ...styles.infoBox, background: '#ffeaea', color: '#dc2626' }}>{error}</div>}
-
           <div style={styles.formGroup}>
             <label style={styles.label}>
               <User size={14} style={styles.labelIcon} />
@@ -103,9 +32,6 @@ const SignUp: React.FC = () => {
             </label>
             <input
               type="text"
-              name="fullName" // <-- THÊM "name"
-              value={formData.fullName} // <-- THÊM "value"
-              onChange={handleChange} // <-- THÊM "onChange"
               placeholder="Nhập họ và tên đầy đủ"
               style={styles.input}
               required
@@ -119,9 +45,6 @@ const SignUp: React.FC = () => {
             </label>
             <input
               type="email"
-              name="email" // <-- THÊM "name"
-              value={formData.email} // <-- THÊM "value"
-              onChange={handleChange} // <-- THÊM "onChange"
               placeholder="email@example.com"
               style={styles.input}
               required
@@ -131,16 +54,13 @@ const SignUp: React.FC = () => {
           <div style={styles.formGroup}>
             <label style={styles.label}>
               <Phone size={14} style={styles.labelIcon} />
-              Số điện thoại
+              Số điện thoại <span style={styles.required}>*</span>
             </label>
             <input
               type="tel"
-              name="phone" // <-- THÊM "name"
-              value={formData.phone} // <-- THÊM "value"
-              onChange={handleChange} // <-- THÊM "onChange"
               placeholder="0912 345 678"
               style={styles.input}
-            // (Bỏ 'required' vì nó là tùy chọn (optional) trong BE)
+              required
             />
             <p style={styles.hint}>VD: 0912 345 678 hoặc +84 912 345 678</p>
           </div>
@@ -153,9 +73,9 @@ const SignUp: React.FC = () => {
                   <input
                     type="radio"
                     name="gender"
-                    value="male" // (value "male" -> sẽ dịch sang 'true')
-                    checked={formData.gender === 'male'}
-                    onChange={handleChange} // (Dùng hàm chung)
+                    value="male"
+                    checked={gender === 'male'}
+                    onChange={(e) => setGender(e.target.value)}
                     style={styles.radio}
                   />
                   Nam
@@ -164,9 +84,9 @@ const SignUp: React.FC = () => {
                   <input
                     type="radio"
                     name="gender"
-                    value="female" // (value "female" -> sẽ dịch sang 'false')
-                    checked={formData.gender === 'female'}
-                    onChange={handleChange} // (Dùng hàm chung)
+                    value="female"
+                    checked={gender === 'female'}
+                    onChange={(e) => setGender(e.target.value)}
                     style={styles.radio}
                   />
                   Nữ
@@ -178,9 +98,6 @@ const SignUp: React.FC = () => {
               <label style={styles.label}>Ngày sinh</label>
               <input
                 type="date"
-                name="dob" // <-- THÊM "name"
-                value={formData.dob} // <-- THÊM "value"
-                onChange={handleChange} // <-- THÊM "onChange"
                 style={styles.input}
               />
             </div>
@@ -194,9 +111,6 @@ const SignUp: React.FC = () => {
             <div style={styles.passwordContainer}>
               <input
                 type={showPassword ? 'text' : 'password'}
-                name="password" // <-- THÊM "name"
-                value={formData.password} // <-- THÊM "value"
-                onChange={handleChange} // <-- THÊM "onChange"
                 placeholder="Tạo mật khẩu mạnh"
                 style={styles.passwordInput}
                 required
@@ -216,9 +130,6 @@ const SignUp: React.FC = () => {
             <div style={styles.passwordContainer}>
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
-                name="confirmPassword" // <-- THÊM "name"
-                value={formData.confirmPassword} // <-- THÊM "value"
-                onChange={handleChange} // <-- THÊM "onChange"
                 placeholder="Nhập lại mật khẩu"
                 style={styles.passwordInput}
                 required
@@ -231,6 +142,18 @@ const SignUp: React.FC = () => {
                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+          </div>
+
+          <div style={styles.formGroup}>
+            <label style={styles.label}>Vai trò (Tùy chọn)</label>
+            <select style={styles.select}>
+              <option value="">Chọn vai trò của bạn</option>
+              <option value="doctor">Bác sĩ</option>
+              <option value="technician">Kỹ thuật viên</option>
+              <option value="admin">Quản trị viên</option>
+              <option value="staff">Nhân viên</option>
+            </select>
+            <p style={styles.hint}>Vai trò của bạn sẽ được xác nhận bởi admin sau khi tạo tài khoản.</p>
           </div>
 
           <div style={styles.checkboxGroup}>
@@ -261,20 +184,19 @@ const SignUp: React.FC = () => {
             </p>
           </div>
 
-          <button type="submit" style={styles.submitButton} disabled={isLoading}>
-            {isLoading ? (
-              'Đang xử lý...'
-            ) : (
-              <>
-                <FileText size={18} style={{ marginRight: '8px' }} />
-                Đăng ký
-              </>
-            )}
+          <button type="submit" style={styles.submitButton}>
+            <FileText size={18} style={{ marginRight: '8px' }} />
+            Đăng ký
           </button>
         </form>
 
         <div style={styles.footer}>
-          {/* ... (Giữ nguyên) ... */}
+          <p style={styles.footerText}>
+            Đã có tài khoản?{' '}
+            <a href="/auth/login" style={styles.link}>
+              Đăng nhập
+            </a>
+          </p>
         </div>
       </div>
     </div>
