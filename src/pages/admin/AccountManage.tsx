@@ -6,6 +6,7 @@ import AccountDetailModal, {
   type UserStatus,
 } from "../../components/admin/AccountDetailModal";
 import { apiClient } from "../../api/apiClient";
+import { toast } from 'react-toastify';
 
 /* ---------- Types ---------- */
 type Role = "User" | "Read-only" | "ADMIN" | "MANAGER";
@@ -138,6 +139,8 @@ export default function AccountManage() {
     dob: '',
   });
   const [allRoles, setAllRoles] = useState<{ id: number; name: string }[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadReport, setUploadReport] = useState<string>(''); // (Để hiển thị báo cáo)
 
   /* ---------- Helpers ---------- */
   const adaptUser = (dto: UserDtoFromApi): User => {
@@ -242,9 +245,10 @@ export default function AccountManage() {
       await apiClient.delete(`/api/users/${deleteTarget.id}`);
       closeDeleteConfirm();
       await fetchData();
+      toast.success("Xóa người dùng thành công!");
     } catch (err: any) {
-      console.error("Lỗi khi xóa user:", err);
-      alert("Lỗi khi xóa: " + (err.response?.data?.message || err.message));
+      const errorMessage = err.response?.data?.message || "Lỗi khi xóa";
+      toast.error(errorMessage);
       closeDeleteConfirm();
     }
   };
@@ -261,9 +265,11 @@ export default function AccountManage() {
     try {
       await apiClient.post(apiPath);
       setDetailOpen(false);
+      const message = next === 'active' ? 'Đã kích hoạt tài khoản!' : 'Đã tạm ngưng tài khoản.';
+      toast.success(message);
     } catch (err: any) {
-      console.error("Lỗi khi cập nhật trạng thái user:", err);
-      alert("Lỗi: " + (err.response?.data?.message || err.message));
+      const errorMessage = err.response?.data?.message || "Lỗi cập nhật trạng thái";
+      toast.error(errorMessage);
       setRows(oldRows);
     }
   };
@@ -320,10 +326,11 @@ export default function AccountManage() {
       // 3. Xong! Đóng modal và TẢI LẠI DỮ LIỆU (FIX LỖI)
       setShowEditModal(false);
       await fetchData(); // <-- THÊM DÒNG NÀY (FIX LỖI KHÔNG TỰ LÀM MỚI)
+      toast.success("Cập nhật tài khoản thành công!");
 
     } catch (err: any) {
-      console.error("Lỗi khi cập nhật user:", err);
-      alert("Lỗi khi cập nhật: " + (err.response?.data?.message || err.message));
+      const errorMessage = err.response?.data?.message || "Lỗi khi cập nhật";
+      toast.error(errorMessage);
     }
   };
 
@@ -367,10 +374,56 @@ export default function AccountManage() {
       setShowCreateModal(false);
       const newUserForUI = adaptUser(newUserDto);
       setRows(prevRows => [newUserForUI, ...prevRows]);
+      toast.success("Tạo người dùng thành công!");
 
     } catch (err: any) {
-      console.error("Lỗi khi tạo user:", err);
-      alert("Lỗi khi tạo: " + (err.response?.data?.message || err.message));
+      const errorMessage = err.response?.data?.message || "Lỗi khi tạo";
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    } else {
+      setSelectedFile(null);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      toast.error("Vui lòng chọn một file Excel (.xlsx) trước.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    setLoading(true);
+    setUploadReport('');
+
+    try {
+      const response = await apiClient.post(
+        '/api/users/upload',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      setUploadReport(response.data);
+      toast.success("Upload file thành công!");
+      await fetchData();
+
+    } catch (err: any) {
+      console.error("Lỗi khi upload file:", err);
+      const errorMessage = err.response?.data?.message || "Upload thất bại";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+      setSelectedFile(null);
     }
   };
   /* ---------- Loading / Error ---------- */
@@ -439,6 +492,29 @@ export default function AccountManage() {
             <button className="btn primary" onClick={openCreateModal}>
               <FaPlus /> &nbsp;Thêm người dùng
             </button>
+            <a
+              href="/template_users.xlsx" // (Đường dẫn đến file trong 'public/')
+              download="Mau_Nhap_Lieu_Nguoi_Dung.xlsx" // (Tên file khi user tải về)
+              className="btn outline" // (Dùng style "outline" có sẵn của bạn)
+            >
+              <FaDownload /> &nbsp;Tải file mẫu
+            </a>
+            <div style={{ borderLeft: '1px solid #e5e7eb', marginLeft: '8px', paddingLeft: '8px', display: 'flex', gap: '8px' }}>
+              <input
+                type="file"
+                accept=".xlsx, .xls"
+                onChange={handleFileChange}
+                // (Style đơn giản cho input)
+                style={{ fontSize: '12px', alignSelf: 'center' }}
+              />
+              <button
+                className="btn primary"
+                onClick={handleUpload}
+                disabled={!selectedFile || loading}
+              >
+                Upload Excel
+              </button>
+            </div>
           </div>
         </div>
       </div>
