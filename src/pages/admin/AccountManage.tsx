@@ -141,6 +141,8 @@ export default function AccountManage() {
   const [allRoles, setAllRoles] = useState<{ id: number; name: string }[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadReport, setUploadReport] = useState<string>(''); // (Để hiển thị báo cáo)
+  const importDropdownRef = useRef<HTMLDivElement>(null); // (Ref cho "click outside")
+  const [showImportModal, setShowImportModal] = useState(false); // (Thêm dòng này)
 
   /* ---------- Helpers ---------- */
   const adaptUser = (dto: UserDtoFromApi): User => {
@@ -400,30 +402,34 @@ export default function AccountManage() {
     formData.append("file", selectedFile);
 
     setLoading(true);
-    setUploadReport('');
+    setUploadReport(''); // (Reset báo cáo cũ)
 
     try {
       const response = await apiClient.post(
         '/api/users/upload',
         formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
+        { headers: { 'Content-Type': 'multipart/form-data' } }
       );
 
-      setUploadReport(response.data);
-      toast.success("Upload file thành công!");
+      const report = response.data;
+
+      if (report.failureCount > 0) {
+        toast.warning(`Hoàn thành: ${report.successCount} thành công, ${report.failureCount} thất bại.`);
+      } else {
+        toast.success(`Upload thành công ${report.successCount} user!`);
+      }
+
+      setUploadReport(report.errors.join('\n'));
+
       await fetchData();
 
     } catch (err: any) {
       console.error("Lỗi khi upload file:", err);
-      const errorMessage = err.response?.data?.message || "Upload thất bại";
+      const errorMessage = err.response?.data?.errors?.[0] || "Upload thất bại nghiêm trọng";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
-      setSelectedFile(null);
+      setSelectedFile(null); // Reset file
     }
   };
   /* ---------- Loading / Error ---------- */
@@ -492,32 +498,16 @@ export default function AccountManage() {
             <button className="btn primary" onClick={openCreateModal}>
               <FaPlus /> &nbsp;Thêm người dùng
             </button>
-            <a
-              href="/template_users.xlsx" // (Đường dẫn đến file trong 'public/')
-              download="Mau_Nhap_Lieu_Nguoi_Dung.xlsx" // (Tên file khi user tải về)
-              className="btn outline" // (Dùng style "outline" có sẵn của bạn)
+            <button
+              className="btn outline"
+              onClick={() => setShowImportModal(true)} // (Mở Modal mới)
             >
-              <FaDownload /> &nbsp;Tải file mẫu
-            </a>
-            <div style={{ borderLeft: '1px solid #e5e7eb', marginLeft: '8px', paddingLeft: '8px', display: 'flex', gap: '8px' }}>
-              <input
-                type="file"
-                accept=".xlsx, .xls"
-                onChange={handleFileChange}
-                // (Style đơn giản cho input)
-                style={{ fontSize: '12px', alignSelf: 'center' }}
-              />
-              <button
-                className="btn primary"
-                onClick={handleUpload}
-                disabled={!selectedFile || loading}
-              >
-                Upload Excel
-              </button>
-            </div>
+              <FaDownload /> &nbsp;Thêm nhiều người dùng
+            </button>
           </div>
         </div>
       </div>
+
 
       {/* Table */}
       <div className="card">
@@ -824,12 +814,77 @@ export default function AccountManage() {
                 </div>
 
               </div>
-              {/* --- HẾT PHẦN BỌC --- */}
 
             </div>
             <div className="am-modal__footer">
               <button className="btn outline" onClick={() => setShowCreateModal(false)}>Huỷ</button>
               <button className="btn primary" onClick={handleCreateUser}>Tạo</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showImportModal && (
+        <div className="am-modal-overlay" onClick={() => setShowImportModal(false)}>
+          <div
+            className="am-modal am-confirm" // (Tái sử dụng style modal)
+            style={{ maxWidth: '600px' }} // (Cho nó rộng hơn 1 chút)
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="am-modal__header">
+              <h2 className="title">Thêm người dùng (Upload Excel)</h2>
+            </div>
+
+            <div className="am-modal__body">
+              <div className="am-form-group">
+                <label>Bước 1: Tải file mẫu</label>
+                <p style={{ fontSize: '0.9rem', color: '#6b7280', margin: '4px 0' }}>
+                  Tải file mẫu về, điền thông tin user và lưu lại.
+                  (Lưu ý: Role để trống sẽ tự động gán là "USER")
+                </p>
+                <a
+                  href="/files/Template-add-user.xlsx"
+                  download="Mau_Nhap_Lieu_Nguoi_Dung.xlsx"
+                  className="btn outline"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  <FaDownload /> &nbsp;Tải file mẫu (.xlsx)
+                </a>
+              </div>
+
+              {/* Bước 2: Upload */}
+              <div className="am-form-group" style={{ marginTop: '1.5rem' }}>
+                <label>Bước 2: Upload file của bạn</label>
+                <input
+                  type="file"
+                  accept=".xlsx, .xls"
+                  onChange={handleFileChange}
+                  className="am-form-input" // (Tái sử dụng style input)
+                />
+                <button
+                  className="btn primary"
+                  onClick={handleUpload}
+                  disabled={!selectedFile || loading}
+                  style={{ width: '100%', marginTop: '10px' }}
+                >
+                  {loading ? 'Đang xử lý...' : 'Upload và Tạo Users'}
+                </button>
+              </div>
+
+              {/* Bước 3: Báo cáo lỗi (Như bạn yêu cầu) */}
+              {/* (Nó chỉ hiển thị nếu 'uploadReport' có nội dung) */}
+              {uploadReport && (
+                <div className="am-import-report" style={{ marginTop: '1.5rem' }}>
+                  <strong>Chi tiết lỗi (từ file Excel):</strong>
+                  <pre>{uploadReport}</pre>
+                </div>
+              )}
+
+            </div>
+
+            <div className="am-modal__footer">
+              <button className="btn outline" onClick={() => setShowImportModal(false)}>
+                Đóng
+              </button>
             </div>
           </div>
         </div>
