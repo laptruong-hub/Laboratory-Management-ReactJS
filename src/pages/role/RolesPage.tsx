@@ -1444,7 +1444,7 @@ const RolesPage: React.FC = () => {
                         {category.permissions.map((item) => {
                           const isReadOnly =
                             item.action.toLowerCase() === "readonly";
-                          return (
+                         return (
                             <PermissionRow key={item.id}>
                               <div>
                                 {item.name} ({item.action})
