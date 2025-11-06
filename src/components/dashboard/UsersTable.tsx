@@ -71,7 +71,13 @@ const SearchBox = styled.input`
   border-radius: 8px;
   outline: none;
   width: 220px;
+  background: #ffffff;
+  color: #111827;
   &:focus { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12); }
+
+  &::placeholder {
+    color: #94a3b8;
+  }
 `;
 
 const TableWrapper = styled.div`

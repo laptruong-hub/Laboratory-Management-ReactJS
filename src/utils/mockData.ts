@@ -103,4 +103,52 @@ export const heatmapData = {
   ],
 };
 
+export type OrderRowData = {
+  id: string;
+  patientName: string;
+  patientEmail: string;
+  type: 'Máu';
+  status: 'pending' | 'inProgress' | 'completed' | 'cancelled';
+  doctor: string;
+  createdAt: string;
+  dueAt: string;
+};
+
+export type UserRowData = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: 'active' | 'pending' | 'suspended' | 'inactive';
+  activity: string;
+  createdAt: string;
+  online?: boolean;
+};
+
+export const mockOrderRows: OrderRowData[] = [
+  { id: 'ORD-1000', patientName: 'Nguyễn Văn A', patientEmail: 'nguyenvana@email.com', type: 'Máu', status: 'pending', doctor: 'BS. Minh', createdAt: '16/10/2025', dueAt: '16/10/2025' },
+  { id: 'ORD-1001', patientName: 'Trần Thị B', patientEmail: 'tranthib@email.com', type: 'Nước tiểu', status: 'inProgress', doctor: 'BS. Lan', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+  { id: 'ORD-1002', patientName: 'Lê Văn C', patientEmail: 'levanc@email.com', type: 'X quang', status: 'cancelled', doctor: 'BS. Tuấn', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+  { id: 'ORD-1003', patientName: 'Phạm Thị D', patientEmail: 'phamthid@email.com', type: 'Siêu âm', status: 'cancelled', doctor: 'BS. Minh', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+  { id: 'ORD-1004', patientName: 'Nguyễn A', patientEmail: 'nguyen.a@email.com', type: 'Máu', status: 'pending', doctor: 'BS. Lan', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+  { id: 'ORD-1005', patientName: 'Trần Thị B', patientEmail: 'tranthib@email.com', type: 'Nước tiểu', status: 'inProgress', doctor: 'BS. Tuấn', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+  { id: 'ORD-1006', patientName: 'Lê Văn C', patientEmail: 'levanc@email.com', type: 'X quang', status: 'inProgress', doctor: 'BS. Minh', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+  { id: 'ORD-1007', patientName: 'Phạm Thị D', patientEmail: 'phamthid@email.com', type: 'Siêu âm', status: 'pending', doctor: 'BS. Tuấn', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+  { id: 'ORD-1008', patientName: 'Nguyễn Văn A', patientEmail: 'nguyenvana@email.com', type: 'Máu', status: 'pending', doctor: 'BS. Tuấn', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+  { id: 'ORD-1009', patientName: 'Trần Thị B', patientEmail: 'tranthib@email.com', type: 'Nước tiểu', status: 'inProgress', doctor: 'BS. Lan', createdAt: '16/10/2025', dueAt: '18/10/2025' },
+];
+
+export const mockUserRows: UserRowData[] = [
+  { id: 'U1', name: 'Nguyễn Văn A', email: 'user1@lab.com', role: 'Administrator', status: 'active', activity: 'Đang hoạt động', createdAt: '2025-10-15 15:09:30', online: true },
+  { id: 'U2', name: 'Trần Thị B', email: 'user2@lab.com', role: 'Laboratory Manager', status: 'active', activity: 'Đang hoạt động', createdAt: '2025-10-15 15:09:30', online: true },
+  { id: 'U3', name: 'Lê Văn C', email: 'user3@lab.com', role: 'Service', status: 'suspended', activity: '1 ngày trước', createdAt: '2025-10-15 15:09:30' },
+  { id: 'U4', name: 'Phạm Thị D', email: 'user4@lab.com', role: 'Lab User', status: 'active', activity: 'Đang hoạt động', createdAt: '2025-10-15 15:09:30', online: true },
+  { id: 'U5', name: 'Hoàng Văn E', email: 'user5@lab.com', role: 'Laboratory Manager', status: 'active', activity: 'Hoạt động 8 giờ trước', createdAt: '2025-10-15 15:09:30' },
+  { id: 'U6', name: 'Vũ Thị F', email: 'user6@lab.com', role: 'Lab User', status: 'active', activity: 'Đang hoạt động', createdAt: '2025-10-15 15:09:30' },
+  { id: 'U7', name: 'Đỗ Văn G', email: 'user7@lab.com', role: 'Service', status: 'pending', activity: '2 giờ trước', createdAt: '2025-10-15 15:09:30' },
+  { id: 'U8', name: 'Bùi Thị H', email: 'user8@lab.com', role: 'Lab User', status: 'active', activity: 'Đang hoạt động', createdAt: '2025-10-15 15:09:30', online: true },
+  { id: 'U9', name: 'Lý Văn I', email: 'user9@lab.com', role: 'Administrator', status: 'active', activity: 'Đang hoạt động', createdAt: '2025-10-15 15:09:30' },
+  { id: 'U10', name: 'Trương Thị K', email: 'user10@lab.com', role: 'Lab User', status: 'active', activity: 'Đang hoạt động', createdAt: '2025-10-15 15:09:30', online: true },
+];
+
 

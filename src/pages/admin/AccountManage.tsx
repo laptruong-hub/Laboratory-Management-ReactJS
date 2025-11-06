@@ -1,15 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { FaSearch, FaPlus, FaTrash, FaFilter, FaDownload, FaEye } from "react-icons/fa";
-import "../../components/admin/account-manage.css";
-import AccountDetailModal, {
-  type AccountDetailData,
-  type UserStatus,
-} from "../../components/admin/AccountDetailModal";
+import {
+  FaSearch,
+  FaPlus,
+  FaTrash,
+  FaFilter,
+  FaEdit,
+  FaSave,
+  FaTimes,
+} from "react-icons/fa";
+import "../../components/admin/account-manage.css"; // (File CSS gốc)
 import { apiClient } from "../../api/apiClient";
 import { toast } from 'react-toastify';
 
 /* ---------- Types ---------- */
-type Role = "User" | "Read-only" | "ADMIN" | "MANAGER";
+type Role = "ADMIN" | "LAB MANAGER" | "SERVICE" | "LAB USER";
 type Status = "active" | "pending" | "inactive" | "suspended";
 
 export interface User {
@@ -22,6 +26,9 @@ export interface User {
   phone?: string;
   dob?: string;
   gender?: boolean;
+  rhFactor?: string;
+  bloodType?: string;
+  medicalHistory?: string;
 }
 
 interface UserDtoFromApi {
@@ -34,11 +41,303 @@ interface UserDtoFromApi {
   phone?: string;
   dob?: string;
   gender?: boolean;
+  rhFactor?: string;
+  bloodType?: string;
+  medicalHistory?: string;
 }
+
+/* --- Styles for LIGHT LAYOUT --- */
+const LayoutStyles = () => (
+  <style>{`
+    /* ------------------------------ */
+    /* Filter Popup Styles (Light) */
+    /* ------------------------------ */
+    .am-filter-container {
+      position: relative;
+      display: inline-block;
+    }
+    .am-filter-popup {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 320px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 16px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .am-filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .am-filter-group label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #334155;
+    }
+    .am-filter-daterange {
+      display: flex;
+      gap: 8px;
+    }
+    .am-filter-daterange input {
+      width: 100%;
+    }
+    .am-filter-footer {
+      display: flex;
+      justify-content: flex-end; /* (Chỉ còn nút Xoá) */
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #f1f5f9;
+    }
+    .am-form-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+      color: #1e293b;
+    }
+    select.am-form-input {
+      appearance: none;
+    }
+    .am-filter-footer .btn.text {
+      background: transparent;
+      border: none;
+      color: #475569;
+      font-weight: 600;
+      padding: 8px 12px;
+    }
+    .am-filter-footer .btn.text:hover {
+      background: #f1f5f9;
+    }
+
+    /* ------------------------------ */
+    /* List/Detail Layout Styles (Light) */
+    /* ------------------------------ */
+    .card {
+      border: none;
+      box-shadow: none;
+      background: transparent;
+      padding: 0;
+    }
+    .am-layout-wrapper {
+      display: flex;
+      flex-direction: row;
+      gap: 24px;
+      margin-top: 16px;
+    }
+    .am-table, .am-pagination {
+      display: none; /* (Ẩn table và pagination cũ) */
+    }
+
+    /* Cột danh sách (bên trái) */
+    .am-list-pane {
+      width: 350px;
+      flex-shrink: 0;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .am-list-scroller {
+      padding: 8px;
+    }
+
+    .am-list-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background-color 0.2s;
+    }
+    .am-list-item:hover {
+      background-color: #f8fafc;
+    }
+    .am-list-item.active {
+      background-color: #eef2ff;
+      border-color: #c7d2fe;
+    }
+
+    .am-list-item-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #e0e7ff;
+      color: #4f46e5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 18px;
+      flex-shrink: 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .am-list-item-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .am-list-item-info {
+      flex-grow: 1;
+      min-width: 0;
+    }
+    .am-list-item-name {
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .am-list-item-email {
+      font-size: 13px;
+      color: #64748b;
+    }
+    .am-list-item-badges {
+      display: flex;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .badge-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    /* Pagination (mới) */
+    .am-list-pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      border-top: 1px solid #f1f5f9;
+      background: #fdfdff;
+    }
+    .am-list-pagination .muted {
+      color: #64748b;
+    }
+
+    /* Cột chi tiết (bên phải) */
+    .am-detail-pane {
+      flex-grow: 1;
+      min-width: 0;
+    }
+
+    .am-detail-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      padding: 24px;
+    }
+    
+    .am-detail-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 400px;
+      border: 2px dashed #e2e8f0;
+      border-radius: 12px;
+      color: #64748b;
+    }
+
+    .am-detail-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .am-detail-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background-color: #e0e7ff;
+      color: #4f46e5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 48px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+    .am-detail-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .am-detail-name {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .am-detail-email {
+      font-size: 16px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    /* Grid chi tiết */
+    .am-detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px 24px;
+    }
+    
+    .am-detail-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .am-detail-field label {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+    .am-detail-field .value {
+      font-size: 15px;
+      color: #1e293b;
+      font-weight: 500;
+    }
+    .am-detail-field .badge-pill {
+      align-self: flex-start;
+    }
+    
+    /* Nút bấm (dưới grid) */
+    .am-detail-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid #f1f5f9;
+    }
+  `}</style>
+);
+/* --- END STYLES --- */
 
 /* ---------- Helpers / UI ---------- */
 const formatDate = (iso?: string) =>
   iso ? new Intl.DateTimeFormat("vi-VN").format(new Date(iso)) : "—";
+
+const formatGender = (g?: boolean) =>
+  g === true ? "Nam" : g === false ? "Nữ" : "Không rõ";
 
 const tone = {
   primary: { bg: "#eef2ff", fg: "#4f46e5" },
@@ -50,7 +349,7 @@ const tone = {
 };
 
 const roleTone = (role: Role) =>
-  (
+  ((
     {
       ADMIN: tone.primary,
       MANAGER: tone.info,
@@ -60,27 +359,24 @@ const roleTone = (role: Role) =>
       Service: tone.warning,
       "Read-only": tone.secondary,
     } as Record<string, typeof tone.secondary>
-  )[role] ?? tone.secondary;
+  )[role] ?? tone.secondary);
 
 const statusText = (s: Status) =>
-(
-  {
+  ({
     active: "Hoạt động",
+
     pending: "Chờ duyệt",
     inactive: "Ngưng",
     suspended: "Tạm ngưng",
-  }[s] ?? "—"
-);
+  }[s] ?? "—");
 
 const statusTone = (s: Status) =>
-(
-  {
+  ({
     active: tone.success,
     pending: tone.warning,
     inactive: tone.secondary,
     suspended: tone.danger,
-  }[s] ?? tone.secondary
-);
+  }[s] ?? tone.secondary);
 
 const Badge = ({
   children,
@@ -89,9 +385,27 @@ const Badge = ({
   children: React.ReactNode;
   colors: { bg: string; fg: string };
 }) => (
-  <span className="badge-pill" style={{ backgroundColor: colors.bg, color: colors.fg }}>
+  <span
+    className="badge-pill"
+    style={{ backgroundColor: colors.bg, color: colors.fg }}
+  >
     {children}
   </span>
+);
+
+const DetailField = ({
+  label,
+  value,
+  children,
+}: {
+  label: string;
+  value?: React.ReactNode;
+  children?: React.ReactNode;
+}) => (
+  <div className="am-detail-field">
+    <label>{label}</label>
+    {children ? children : <div className="value">{value || "—"}</div>}
+  </div>
 );
 
 /* ---------- Component ---------- */
@@ -106,37 +420,34 @@ export default function AccountManage() {
   const searchRef = useRef<HTMLInputElement>(null);
 
   const [page, setPage] = useState(1);
-  const pageSize = 8;
+  const pageSize = 6;
 
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [detailUser, setDetailUser] = useState<AccountDetailData | undefined>(undefined);
-  const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
-
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editFormData, setEditFormData] = useState<{
-    fullName: string;
-    roleId: number | null;
-    phone: string;
-    gender: string; // (Dùng string cho <select>)
-    dob: string;            // (Dùng string cho <input type="date">)
-  }>({
-    fullName: '',
-    roleId: null,
-    phone: '',
-    gender: '', // (Khởi tạo là string rỗng)
-    dob: '',
+  const [editDetailData, setEditDetailData] = useState({
+    phone: "",
+    roleId: "",
+    rhFactor: "",
+    status: "",
+    gender: "",
+    bloodType: "",
+    medicalHistory: "",
   });
+
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createFormData, setCreateFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    roleId: '',
-    phone: '',
-    gender: '',
-    dob: '',
+    fullName: "",
+    email: "",
+    password: "",
+    roleId: "",
+    phone: "",
+    gender: "",
+    dob: "",
   });
   const [allRoles, setAllRoles] = useState<{ id: number; name: string }[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -144,13 +455,41 @@ export default function AccountManage() {
   const importDropdownRef = useRef<HTMLDivElement>(null); // (Ref cho "click outside")
   const [showImportModal, setShowImportModal] = useState(false); // (Thêm dòng này)
 
+  /* --- Filter State --- */
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+  // const [tempFilters, setTempFilters] = useState({ ... }); // <-- ĐÃ XOÁ
+
+  /* --- UPDATED: Chỉ dùng 'appliedFilters' --- */
+  const [appliedFilters, setAppliedFilters] = useState({
+    role: "all",
+    status: "all",
+    startDate: "",
+    endDate: "",
+  });
+
   /* ---------- Helpers ---------- */
+  // Helper function to get avatar from localStorage
+  const getAvatarFromStorage = (userId: string | number): string | null => {
+    try {
+      const avatar = localStorage.getItem(`avatar_${userId}`);
+      return avatar;
+    } catch (error) {
+      console.error("Error loading avatar from localStorage:", error);
+      return null;
+    }
+  };
+
   const adaptUser = (dto: UserDtoFromApi): User => {
+    // Backend trả về isActive boolean, nhưng chúng ta cần map sang Status
+    // Mặc định: isActive = false => pending (tài khoản mới tạo)
+    // Sau khi được activate thì isActive = true => active
     let status: Status;
     if (dto.isActive) {
       status = "active";
     } else {
-      status = "inactive";
+      // Nếu tài khoản mới tạo (isActive = false), mặc định là pending
+      status = "pending";
     }
 
     return {
@@ -163,6 +502,9 @@ export default function AccountManage() {
       phone: dto.phone,
       dob: dto.dob,
       gender: dto.gender,
+      rhFactor: dto.rhFactor || "Không rõ",
+      bloodType: dto.bloodType || "—",
+      medicalHistory: dto.medicalHistory || "—",
     };
   };
 
@@ -171,13 +513,14 @@ export default function AccountManage() {
     try {
       setLoading(true);
       setError("");
-
       const response = await apiClient.get("/api/users");
       const usersData: UserDtoFromApi[] = response.data;
       setRows(usersData.map(adaptUser));
-
       const roleResponse = await apiClient.get("/api/roles");
-      const rolesData = roleResponse.data.map((r: any) => ({ id: r.id, name: r.name }));
+      const rolesData = roleResponse.data.map((r: any) => ({
+        id: r.id,
+        name: r.name,
+      }));
       setAllRoles(rolesData);
     } catch (err) {
       console.error("Lỗi khi fetch users:", err);
@@ -191,44 +534,78 @@ export default function AccountManage() {
     fetchData();
   }, []);
 
+  /* --- Click outside to close filter --- */
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        filterRef.current &&
+        !filterRef.current.contains(event.target as Node)
+      ) {
+        setIsFilterOpen(false);
+      }
+    }
+    if (isFilterOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isFilterOpen]);
+
   /* ---------- Filtering ---------- */
   const normalize = (s: string) =>
-    s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    s
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
 
   const filtered = useMemo(() => {
     const kw = normalize(query);
-    if (!kw) return rows;
-    return rows.filter((u) => normalize(`${u.name} ${u.email} ${u.role}`).includes(kw));
-  }, [rows, query]);
+    const { role, status, startDate, endDate } = appliedFilters;
+    const start = startDate ? new Date(startDate) : null;
+    if (start) start.setHours(0, 0, 0, 0);
+    const end = endDate ? new Date(endDate) : null;
+    if (end) end.setHours(23, 59, 59, 999);
 
+    // 1. Lọc danh sách trước
+    const filteredRows = rows.filter((u) => {
+      if (kw && !normalize(`${u.name} ${u.email} ${u.role}`).includes(kw))
+        return false;
+      if (role !== "all" && u.role !== role) return false;
+      if (status !== "all" && u.status !== status) return false;
+      if (u.joinedAt) {
+        const joinedDate = new Date(u.joinedAt);
+        if (start && joinedDate < start) return false;
+        if (end && joinedDate > end) return false;
+      } else if (start || end) return false;
+      return true;
+    });
+
+    // 2. Sắp xếp danh sách đã lọc theo vai trò (quyền)
+    filteredRows.sort((a, b) => a.role.localeCompare(b.role));
+
+    return filteredRows;
+  }, [rows, query, appliedFilters]);
   const total = filtered.length;
   const pages = Math.max(1, Math.ceil(total / pageSize));
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  /* ---------- Detail ---------- */
-  function openDetail(u: User) {
-    setSelectedId(u.id);
-    const statusMap: Record<Status, UserStatus> = {
-      active: "active",
-      pending: "pending",
-      inactive: "suspended",
-      suspended: "suspended",
-    };
-    setDetailUser({
-      fullName: u.name,
-      email: u.email,
-      role: u.role,
-      status: statusMap[u.status],
-      phone: u.phone,
-      dob: u.dob,
-      gender: u.gender,
+  const selectedUser = useMemo(
+    () => rows.find((u) => u.id === selectedId),
+    [rows, selectedId]
+  );
 
-      rhFactor: "Không rõ",
-      bloodType: "—",
-      medicalHistory: "—"
-    });
-    setDetailOpen(true);
-  }
+  useEffect(() => {
+    if (!selectedId && filtered.length > 0) {
+      setSelectedId(filtered[0].id);
+    }
+  }, [filtered, selectedId]);
+
+  /* --- Handlers --- */
+  const handleSelectUser = (id: string) => {
+    setSelectedId(id);
+    setIsEditing(false);
+  };
 
   /* ---------- Delete ---------- */
   function handleDelete(id: string) {
@@ -294,35 +671,44 @@ export default function AccountManage() {
       // (Xử lý 'dob' (ISO string) sang 'YYYY-MM-DD' cho <input type="date">)
       dob: currentUser.dob ? currentUser.dob.split('T')[0] : '',
     });
-
-    setDetailOpen(false);
-    setShowEditModal(true);
+    setIsEditing(true);
   };
 
-  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+
+  const handleEditFormChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setEditFormData((prev) => ({
+    setEditDetailData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const handleUpdateUser = async () => {
+  const handleSaveEdit = async () => {
     if (!selectedId) return;
-
     try {
-      // 1. Chuẩn bị DTO (UserUpdateRequest)
       const updateRequest = {
-        fullName: editFormData.fullName,
-        roleId: editFormData.roleId ? Number(editFormData.roleId) : null,
-        phone: editFormData.phone || null,
-        // (Chuyển 'string' ("true"/"false") về 'boolean')
-        gender: editFormData.gender === 'true' ? true : editFormData.gender === 'false' ? false : null,
-        // (Chuyển 'string' (date) về 'Date' (hoặc null))
-        dob: editFormData.dob ? new Date(editFormData.dob) : null,
+        fullName: selectedUser?.name,
+        dob: selectedUser?.dob ? new Date(selectedUser.dob) : null,
+        phone: editDetailData.phone || null,
+        roleId: editDetailData.roleId ? Number(editDetailData.roleId) : null,
+        gender:
+          editDetailData.gender === "true"
+            ? true
+            : editDetailData.gender === "false"
+            ? false
+            : null,
+        rhFactor: editDetailData.rhFactor,
+        bloodType: editDetailData.bloodType,
+        medicalHistory: editDetailData.medicalHistory,
+        isActive: editDetailData.status === "active",
       };
-
-      // 2. GỌI API PUT
       await apiClient.put(`/api/users/${selectedId}`, updateRequest);
 
       // 3. Xong! Đóng modal và TẢI LẠI DỮ LIỆU (FIX LỖI)
@@ -336,42 +722,103 @@ export default function AccountManage() {
     }
   };
 
+  /* --- Create Modal --- */
   const openCreateModal = () => {
+    // Tìm role "readonly" để set làm mặc định
+    const readonlyRole = allRoles.find(
+      (r) =>
+        r.name.trim().toUpperCase() === "READONLY" ||
+        r.name.trim().toUpperCase() === "READ-ONLY"
+    );
+    const defaultRoleId = readonlyRole ? readonlyRole.id.toString() : "";
+
     setCreateFormData({
-      fullName: '',
-      email: '',
-      password: '',
-      roleId: '',
-      phone: '',
-      gender: '',
-      dob: '',
+      fullName: "",
+      email: "",
+      password: "",
+      roleId: defaultRoleId,
+      phone: "",
+      gender: "",
+      dob: "",
     });
     setShowCreateModal(true);
   };
 
-  const handleCreateFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleCreateFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setCreateFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    setCreateFormData((prev) => ({ ...prev, [name]: value }));
   };
+
   const handleCreateUser = async () => {
     try {
+      // Tìm role "readonly" hoặc "Read-only" để làm mặc định
+      let defaultRoleId = createFormData.roleId;
+      if (!defaultRoleId || defaultRoleId === "") {
+        const readonlyRole = allRoles.find(
+          (r) =>
+            r.name.trim().toUpperCase() === "READONLY" ||
+            r.name.trim().toUpperCase() === "READ-ONLY"
+        );
+        if (readonlyRole) {
+          defaultRoleId = readonlyRole.id.toString();
+        } else if (allRoles.length > 0) {
+          // Fallback: chọn role đầu tiên nếu không tìm thấy readonly
+          defaultRoleId = allRoles[0].id.toString();
+        }
+      }
+
       const createRequest = {
         fullName: createFormData.fullName,
         email: createFormData.email,
         password: createFormData.password,
-        roleId: Number(createFormData.roleId),
-
+        roleId: Number(defaultRoleId),
         phone: createFormData.phone || null,
-        gender: createFormData.gender === 'true' ? true : createFormData.gender === 'false' ? false : null,
+        gender:
+          createFormData.gender === "true"
+            ? true
+            : createFormData.gender === "false"
+            ? false
+            : null,
         dob: createFormData.dob ? new Date(createFormData.dob) : null,
+        // Set status mặc định là pending (isActive = false cho pending status)
+        isActive: false,
       };
+      const response = await apiClient.post("/api/users", createRequest);
+      let newUserDto = response.data;
 
-      const response = await apiClient.post('/api/users', createRequest);
+      // Đảm bảo trạng thái của tài khoản mới tạo là "pending" (chờ duyệt)
+      // Nếu backend tự động set isActive = true, cập nhật lại thành false
+      if (newUserDto.isActive === true) {
+        try {
+          // Tìm roleId từ roleName nếu backend không trả về roleId
+          const userRoleId =
+            newUserDto.roleId ||
+            allRoles.find((r) => r.name === newUserDto.roleName)?.id ||
+            Number(defaultRoleId);
 
-      const newUserDto = response.data;
+          const updateResponse = await apiClient.put(
+            `/api/users/${newUserDto.id}`,
+            {
+              fullName: newUserDto.fullName,
+              email: newUserDto.email,
+              phone: newUserDto.phone || null,
+              dob: newUserDto.dob ? new Date(newUserDto.dob) : null,
+              roleId: userRoleId,
+              gender: newUserDto.gender,
+              isActive: false, // Đặt về pending (chờ duyệt)
+            }
+          );
+          newUserDto = updateResponse.data;
+        } catch (updateErr) {
+          console.warn(
+            "Không thể cập nhật trạng thái user sau khi tạo:",
+            updateErr
+          );
+          // Nếu không thể cập nhật, vẫn tiếp tục với dữ liệu từ response tạo user
+        }
+      }
 
       setShowCreateModal(false);
       const newUserForUI = adaptUser(newUserDto);
@@ -432,13 +879,43 @@ export default function AccountManage() {
       setSelectedFile(null); // Reset file
     }
   };
+
+  /* --- UPDATED: Filter Handlers --- */
+  const handleFilterChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    // Cập nhật thẳng vào 'appliedFilters'
+    setAppliedFilters((prev) => ({ ...prev, [name]: value }));
+    setPage(1); // Reset về trang 1
+  };
+
+  // (handleApplyFilter đã bị xoá)
+
+  const handleClearFilter = () => {
+    const defaultFilters = {
+      role: "all",
+      status: "all",
+      startDate: "",
+      endDate: "",
+    };
+    setAppliedFilters(defaultFilters); // Chỉ cần reset state này
+    setPage(1);
+    // (Không đóng popup)
+  };
+
+  const toggleFilter = () => {
+    // (Không cần đồng bộ state nữa)
+    setIsFilterOpen((prev) => !prev);
+  };
+
   /* ---------- Loading / Error ---------- */
   if (loading) {
     return (
       <div className="am-page">
         <div className="am-toolbar">
           <div className="am-title">
-            <h1 className="title">Đang tải danh sách tài khoản...</h1>
+            <h1 className="title">Đang tải...</h1>
           </div>
         </div>
       </div>
@@ -459,15 +936,16 @@ export default function AccountManage() {
     );
   }
 
-  /* ---------- Render ---------- */
   return (
     <div className="am-page">
+      <LayoutStyles />
+
       {/* Toolbar */}
       <div className="am-toolbar">
         <div className="am-title">
-          <h1 className="title">Danh sách tài khoản</h1>
+          <h1 className="title">Quản lý tài khoản</h1>
           <div className="muted">
-            Đang hiển thị {paged.length}/{total} người dùng
+            {/* Đang hiển thị {paged.length}/{total} người dùng */}
           </div>
         </div>
 
@@ -484,17 +962,85 @@ export default function AccountManage() {
                   setQuery(search.trim());
                   setPage(1);
                 }
-                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-                  e.preventDefault();
-                  searchRef.current?.focus();
-                }
               }}
             />
           </div>
           <div className="am-actions">
-            <button className="btn outline">
-              <FaFilter /> &nbsp;Lọc
-            </button>
+            {/* Filter Popup */}
+            <div className="am-filter-container" ref={filterRef}>
+              <button className="btn outline" onClick={toggleFilter}>
+                <FaFilter /> &nbsp;Lọc
+              </button>
+
+              {/* --- UPDATED: Filter Popup JSX --- */}
+              {isFilterOpen && (
+                <div className="am-filter-popup">
+                  <div className="am-filter-group">
+                    <label>Vai trò</label>
+                    <select
+                      name="role"
+                      value={appliedFilters.role} /* (Đọc từ appliedFilters) */
+                      onChange={handleFilterChange} /* (Dùng handler mới) */
+                      className="am-form-input"
+                    >
+                      <option value="all">Tất cả vai trò</option>
+                      {allRoles.map((r) => (
+                        <option key={r.id} value={r.name}>
+                          {r.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="am-filter-group">
+                    <label>Trạng thái</label>
+                    <select
+                      name="status"
+                      value={
+                        appliedFilters.status
+                      } /* (Đọc từ appliedFilters) */
+                      onChange={handleFilterChange}
+                      className="am-form-input"
+                    >
+                      <option value="all">Tất cả</option>
+                      <option value="active">Hoạt động</option>
+                      <option value="inactive">Ngưng</option>
+                      <option value="pending">Chờ duyệt</option>
+                      <option value="suspended">Tạm ngưng</option>
+                    </select>
+                  </div>
+                  <div className="am-filter-group">
+                    <label>Ngày tham gia</label>
+                    <div className="am-filter-daterange">
+                      <input
+                        type="date"
+                        name="startDate"
+                        value={
+                          appliedFilters.startDate
+                        } /* (Đọc từ appliedFilters) */
+                        onChange={handleFilterChange}
+                        className="am-form-input"
+                      />
+                      <input
+                        type="date"
+                        name="endDate"
+                        value={
+                          appliedFilters.endDate
+                        } /* (Đọc từ appliedFilters) */
+                        onChange={handleFilterChange}
+                        className="am-form-input"
+                      />
+                    </div>
+                  </div>
+                  <div className="am-filter-footer">
+                    <button className="btn text" onClick={handleClearFilter}>
+                      Xoá
+                    </button>
+                    {/* (Nút Áp dụng đã bị xoá) */}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <button className="btn primary" onClick={openCreateModal}>
               <FaPlus /> &nbsp;Thêm người dùng
             </button>
@@ -536,74 +1082,263 @@ export default function AccountManage() {
                       <div className="am-user-email">{u.email}</div>
                     </div>
                   </div>
-                </td>
-                <td>
-                  <Badge colors={roleTone(u.role)}>{u.role}</Badge>
-                </td>
-                <td>
-                  <Badge colors={statusTone(u.status)}>{statusText(u.status)}</Badge>
-                </td>
-                <td>{formatDate(u.joinedAt)}</td>
-                <td>
-                  <div className="am-actions-inline">
-                    <button className="icon-btn" title="Xem chi tiết" onClick={() => openDetail(u)}>
-                      <FaEye />
+                </div>
+              </div>
+            ))}
+            {!paged.length && (
+              <div
+                style={{ padding: 24, textAlign: "center", color: "#64748b" }}
+              >
+                Không tìm thấy kết quả.
+              </div>
+            )}
+          </div>
+
+          {/* Pagination (Mới) */}
+          <div className="am-list-pagination">
+            <button
+              className="btn outline"
+              disabled={page === 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              ← Trước
+            </button>
+            <div className="muted">
+              Trang {page}/{pages}
+            </div>
+            <button
+              className="btn outline"
+              disabled={page === pages}
+              onClick={() => setPage((p) => Math.min(pages, p + 1))}
+            >
+              Tiếp →
+            </button>
+          </div>
+        </div>
+
+        {/* --- Cột 2: Chi tiết User --- */}
+        <div className="am-detail-pane">
+          {!selectedUser ? (
+            <div className="am-detail-card">
+              <div className="am-detail-placeholder">
+                Chọn một người dùng từ danh sách để xem chi tiết
+              </div>
+            </div>
+          ) : (
+            <div className="am-detail-card">
+              {/* Header chi tiết */}
+              <div className="am-detail-header">
+                <div className="am-detail-avatar">
+                  {getAvatarFromStorage(selectedUser.id) ? (
+                    <img
+                      src={getAvatarFromStorage(selectedUser.id)!}
+                      alt={selectedUser.name}
+                      onError={(e) => {
+                        // Fallback to initials if image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = "none";
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.textContent =
+                            selectedUser.name
+                              .split(" ")
+                              .slice(-1)[0]?.[0]
+                              ?.toUpperCase() ?? "U";
+                        }
+                      }}
+                    />
+                  ) : (
+                    selectedUser.name
+                      .split(" ")
+                      .slice(-1)[0]?.[0]
+                      ?.toUpperCase() ?? "U"
+                  )}
+                </div>
+                <div className="am-detail-name">{selectedUser.name}</div>
+                <div className="am-detail-email">{selectedUser.email}</div>
+              </div>
+
+              {/* Grid chi tiết (Một khối duy nhất) */}
+              <div className="am-detail-grid">
+                {/* 1. Họ và Tên (Luôn tĩnh) */}
+                <DetailField label="Họ và Tên" value={selectedUser.name} />
+
+                {/* 2. Ngày sinh (Luôn tĩnh) */}
+                <DetailField
+                  label="Ngày sinh"
+                  value={formatDate(selectedUser.dob)}
+                />
+
+                {/* 3. Giới tính (Đổi thành input) */}
+                <DetailField label="Giới tính">
+                  {isEditing ? (
+                    <select
+                      name="gender"
+                      value={editDetailData.gender}
+                      onChange={handleEditFormChange}
+                      className="am-form-input"
+                    >
+                      <option value="">[Chưa chọn]</option>
+                      <option value="true">Nam</option>
+                      <option value="false">Nữ</option>
+                    </select>
+                  ) : (
+                    <div className="value">
+                      {formatGender(selectedUser.gender)}
+                    </div>
+                  )}
+                </DetailField>
+
+                {/* 4. Nhóm máu (Đổi thành input) */}
+                <DetailField label="Nhóm máu">
+                  {isEditing ? (
+                    <select
+                      name="bloodType"
+                      value={editDetailData.bloodType}
+                      onChange={handleEditFormChange}
+                      className="am-form-input"
+                    >
+                      <option value="—">[Chưa chọn]</option>
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="AB">AB</option>
+                      <option value="O">O</option>
+                    </select>
+                  ) : (
+                    <div className="value">{selectedUser.bloodType}</div>
+                  )}
+                </DetailField>
+
+                {/* 5. Yếu tố Rh (Đổi thành input) */}
+                <DetailField label="Yếu tố Rh">
+                  {isEditing ? (
+                    <select
+                      name="rhFactor"
+                      value={editDetailData.rhFactor}
+                      onChange={handleEditFormChange}
+                      className="am-form-input"
+                    >
+                      <option value="Không rõ">Không rõ</option>
+                      <option value="Rh+">Rh+</option>
+                      <option value="Rh-">Rh-</option>
+                    </select>
+                  ) : (
+                    <div className="value">{selectedUser.rhFactor}</div>
+                  )}
+                </DetailField>
+
+                {/* 6. Vai trò (Đổi thành input) */}
+                <DetailField label="Vai trò">
+                  {isEditing ? (
+                    <select
+                      name="roleId"
+                      value={editDetailData.roleId}
+                      onChange={handleEditFormChange}
+                      className="am-form-input"
+                    >
+                      <option value="">[Chọn vai trò]</option>
+                      {allRoles.map((role) => (
+                        <option key={role.id} value={role.id}>
+                          {role.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <Badge colors={roleTone(selectedUser.role)}>
+                      {selectedUser.role}
+                    </Badge>
+                  )}
+                </DetailField>
+
+                {/* 7. Email (Luôn tĩnh) */}
+                <DetailField label="Email" value={selectedUser.email} />
+
+                {/* 8. Số điện thoại (Đổi thành input) */}
+                <DetailField label="Số điện thoại">
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="phone"
+                      value={editDetailData.phone}
+                      onChange={handleEditFormChange}
+                      className="am-form-input"
+                    />
+                  ) : (
+                    <div className="value">{selectedUser.phone || "—"}</div>
+                  )}
+                </DetailField>
+
+                {/* 9. Trạng thái (Đổi thành input) */}
+                <DetailField label="Trạng thái">
+                  {isEditing ? (
+                    <select
+                      name="status"
+                      value={editDetailData.status}
+                      onChange={handleEditFormChange}
+                      className="am-form-input"
+                    >
+                      <option value="active">Hoạt động</option>
+                      <option value="pending">Chờ duyệt</option>
+                      <option value="inactive">Ngưng</option>
+                      <option value="suspended">Tạm ngưng</option>
+                    </select>
+                  ) : (
+                    <Badge colors={statusTone(selectedUser.status)}>
+                      {statusText(selectedUser.status)}
+                    </Badge>
+                  )}
+                </DetailField>
+
+                {/* 10. Tiền sử bệnh (Đổi thành textarea) */}
+                <DetailField label="Ghi chú'">
+                  {isEditing ? (
+                    <textarea
+                      name="medicalHistory"
+                      value={editDetailData.medicalHistory}
+                      onChange={handleEditFormChange}
+                      className="am-form-input"
+                      rows={3}
+                    />
+                  ) : (
+                    <div className="value">
+                      {selectedUser.medicalHistory || "—"}
+                    </div>
+                  )}
+                </DetailField>
+              </div>
+              {/* --- END Grid --- */}
+
+              {/* Nút bấm (dưới grid) */}
+              <div className="am-detail-actions">
+                {!isEditing ? (
+                  <>
+                    <button className="btn primary" onClick={handleStartEdit}>
+                      <FaEdit /> &nbsp;Chỉnh sửa
                     </button>
                     <button
-                      className="icon-btn danger"
-                      title="Xoá"
-                      onClick={() => handleDelete(u.id)}
+                      className="btn danger"
+                      onClick={() => handleDelete(selectedUser.id)}
                     >
-                      <FaTrash />
+                      <FaTrash /> &nbsp;Xoá
                     </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-
-            {!paged.length && (
-              <tr>
-                <td colSpan={6} style={{ padding: 24, textAlign: "center" }}>
-                  Không tìm thấy kết quả cho <strong>{query}</strong>.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      <div className="am-pagination">
-        <button
-          className="btn outline"
-          disabled={page === 1}
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-        >
-          ← Trước
-        </button>
-        <div className="muted">
-          Trang {page}/{pages}
+                  </>
+                ) : (
+                  <>
+                    <button className="btn outline" onClick={handleCancelEdit}>
+                      <FaTimes /> &nbsp;Huỷ
+                    </button>
+                    <button className="btn primary" onClick={handleSaveEdit}>
+                      <FaSave /> &nbsp;Lưu
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
-        <button
-          className="btn outline"
-          disabled={page === pages}
-          onClick={() => setPage((p) => Math.min(pages, p + 1))}
-        >
-          Tiếp →
-        </button>
       </div>
 
-      {/* Detail Modal */}
-      <AccountDetailModal
-        open={detailOpen}
-        onClose={() => setDetailOpen(false)}
-        user={detailUser}
-        userId={selectedId}
-        onStatusChange={handleStatusChange}
-        onEdit={openEditModal}
-      />
-
-      {/* Delete Modal */}
+      {/* --- MODALS --- */}
       {deleteTarget && (
         <div className="am-modal-overlay">
           <div className="am-modal am-confirm">
@@ -612,7 +1347,8 @@ export default function AccountManage() {
             </div>
             <div className="am-modal__body">
               <p className="am-confirm-text">
-                Bạn có chắc muốn xoá người dùng <strong>{deleteTarget.name}</strong>?
+                Bạn có chắc muốn xoá người dùng Văn
+                <strong>{deleteTarget.name}</strong>?
               </p>
             </div>
             <div className="am-modal__footer">
@@ -626,102 +1362,21 @@ export default function AccountManage() {
           </div>
         </div>
       )}
-
-      {/* Edit Modal */}
-      {showEditModal && (
-        <div className="am-modal-overlay" onClick={() => setShowEditModal(false)}>
-          <div className="am-modal am-confirm" style={{ maxWidth: '500px' }} onClick={(e) => e.stopPropagation()}>
-            <div className="am-modal__header">
-              <h2 className="title">Chỉnh sửa tài khoản</h2>
-            </div>
-            <div className="am-modal__body">
-
-              <div className="am-form-group">
-                <label>Họ và Tên</label>
-                <input
-                  type="text"
-                  name="fullName"
-                  value={editFormData.fullName}
-                  onChange={handleEditFormChange}
-                  className="am-form-input"
-                />
-              </div>
-
-              <div className="am-form-group">
-                <label>Vai trò (Role)</label>
-                <select
-                  name="roleId"
-                  value={editFormData.roleId || ''}
-                  onChange={handleEditFormChange}
-                  className="am-form-input"
-                >
-                  <option value="">[Chưa chọn]</option>
-                  {allRoles.map(role => (
-                    <option key={role.id} value={role.id}>
-                      {role.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="am-form-group">
-                <label>Số điện thoại</label>
-                <input
-                  type="text"
-                  name="phone"
-                  value={editFormData.phone}
-                  onChange={handleEditFormChange}
-                  className="am-form-input"
-                />
-              </div>
-
-              {/* --- THÊM 2 TRƯỜNG MỚI VÀO FORM --- */}
-              <div className="am-form-group">
-                <label>Giới tính</label>
-                <select
-                  name="gender"
-                  value={editFormData.gender}
-                  onChange={handleEditFormChange}
-                  className="am-form-input"
-                >
-                  <option value="">[Chưa chọn]</option>
-                  <option value="true">Nam</option>
-                  <option value="false">Nữ</option>
-                </select>
-              </div>
-
-              <div className="am-form-group">
-                <label>Ngày sinh</label>
-                <input
-                  type="date"
-                  name="dob"
-                  value={editFormData.dob}
-                  onChange={handleEditFormChange}
-                  className="am-form-input"
-                />
-              </div>
-              {/* --- HẾT PHẦN THÊM --- */}
-
-            </div>
-            <div className="am-modal__footer">
-              <button className="btn outline" onClick={() => setShowEditModal(false)}>Huỷ</button>
-              <button className="btn primary" onClick={handleUpdateUser}>Lưu thay đổi</button>
-            </div>
-          </div>
-        </div>
-      )}
       {showCreateModal && (
-        <div className="am-modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="am-modal am-confirm" style={{ maxWidth: '700px' }} onClick={(e) => e.stopPropagation()}> {/* (Tăng chiều rộng modal) */}
+        <div
+          className="am-modal-overlay"
+          onClick={() => setShowCreateModal(false)}
+        >
+          <div
+            className="am-modal am-confirm"
+            style={{ maxWidth: "700px" }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="am-modal__header">
               <h2 className="title">Thêm người dùng mới</h2>
             </div>
             <div className="am-modal__body">
-
-              {/* 1. BỌC CÁC TRƯỜNG BẰNG "am-form-grid" */}
               <div className="am-form-grid">
-
-                {/* --- CỘT BÊN TRÁI --- */}
                 <div className="am-form-group">
                   <label>Họ và Tên (*)</label>
                   <input
@@ -733,7 +1388,6 @@ export default function AccountManage() {
                     required
                   />
                 </div>
-
                 <div className="am-form-group">
                   <label>Email (*)</label>
                   <input
@@ -745,7 +1399,6 @@ export default function AccountManage() {
                     required
                   />
                 </div>
-
                 <div className="am-form-group">
                   <label>Mật khẩu (*)</label>
                   <input
@@ -757,7 +1410,6 @@ export default function AccountManage() {
                     required
                   />
                 </div>
-
                 <div className="am-form-group">
                   <label>Số điện thoại</label>
                   <input
@@ -768,8 +1420,6 @@ export default function AccountManage() {
                     className="am-form-input"
                   />
                 </div>
-
-                {/* --- CỘT BÊN PHẢI --- */}
                 <div className="am-form-group">
                   <label>Vai trò (Role) (*)</label>
                   <select
@@ -779,15 +1429,13 @@ export default function AccountManage() {
                     className="am-form-input"
                     required
                   >
-                    <option value="">[Chọn một vai trò]</option>
-                    {allRoles.map(role => (
+                    {allRoles.map((role) => (
                       <option key={role.id} value={role.id}>
                         {role.name}
                       </option>
                     ))}
                   </select>
                 </div>
-
                 <div className="am-form-group">
                   <label>Giới tính</label>
                   <select
@@ -801,7 +1449,6 @@ export default function AccountManage() {
                     <option value="false">Nữ</option>
                   </select>
                 </div>
-
                 <div className="am-form-group">
                   <label>Ngày sinh</label>
                   <input
@@ -812,13 +1459,19 @@ export default function AccountManage() {
                     className="am-form-input"
                   />
                 </div>
-
               </div>
 
             </div>
             <div className="am-modal__footer">
-              <button className="btn outline" onClick={() => setShowCreateModal(false)}>Huỷ</button>
-              <button className="btn primary" onClick={handleCreateUser}>Tạo</button>
+              <button
+                className="btn outline"
+                onClick={() => setShowCreateModal(false)}
+              >
+                Huỷ
+              </button>
+              <button className="btn primary" onClick={handleCreateUser}>
+                Tạo
+              </button>
             </div>
           </div>
         </div>
@@ -892,4 +1545,3 @@ export default function AccountManage() {
     </div>
   );
 }
-

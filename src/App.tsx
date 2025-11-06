@@ -1,9 +1,7 @@
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
-} from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import PrivateRoute from "./components/common/PrivateRoute.tsx";
 
@@ -78,7 +76,6 @@ const router = createBrowserRouter([
   {
     element: <PrivateRoute />,
     children: [
-
       {
         path: "/user",
         element: <UserLayout />,
@@ -117,7 +114,23 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <RouterProvider router={router} />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+    </>
+  );
 }
 
-export default App; 
+export default App;
