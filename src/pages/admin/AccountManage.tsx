@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 import "../../components/admin/account-manage.css"; // (File CSS gốc)
 import { apiClient } from "../../api/apiClient";
+import { toast } from 'react-toastify';
 
 /* ---------- Types ---------- */
 type Role = "ADMIN" | "LAB MANAGER" | "SERVICE" | "LAB USER";
@@ -449,6 +450,10 @@ export default function AccountManage() {
     dob: "",
   });
   const [allRoles, setAllRoles] = useState<{ id: number; name: string }[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadReport, setUploadReport] = useState<string>(''); // (Để hiển thị báo cáo)
+  const importDropdownRef = useRef<HTMLDivElement>(null); // (Ref cho "click outside")
+  const [showImportModal, setShowImportModal] = useState(false); // (Thêm dòng này)
 
   /* --- Filter State --- */
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -619,31 +624,52 @@ export default function AccountManage() {
       await apiClient.delete(`/api/users/${deleteTarget.id}`);
       closeDeleteConfirm();
       await fetchData();
-      setSelectedId(null);
+      toast.success("Xóa người dùng thành công!");
     } catch (err: any) {
-      console.error("Lỗi khi xóa user:", err);
-      alert("Lỗi khi xóa: " + (err.response?.data?.message || err.message));
+      const errorMessage = err.response?.data?.message || "Lỗi khi xóa";
+      toast.error(errorMessage);
       closeDeleteConfirm();
     }
   };
 
-  /* --- Edit Handlers --- */
-  const handleStartEdit = () => {
-    if (!selectedUser) return;
-    const currentRole = allRoles.find((r) => r.name === selectedUser.role);
-    setEditDetailData({
-      phone: selectedUser.phone || "",
-      roleId: currentRole ? currentRole.id.toString() : "",
-      rhFactor: selectedUser.rhFactor || "Không rõ",
-      status: selectedUser.status,
-      gender:
-        selectedUser.gender === true
-          ? "true"
-          : selectedUser.gender === false
-          ? "false"
-          : "",
-      bloodType: selectedUser.bloodType || "—",
-      medicalHistory: selectedUser.medicalHistory || "—",
+  /* ---------- Status Change ---------- */
+  const handleStatusChange = async (id: string, next: UserStatus) => {
+    const oldRows = [...rows];
+    const nextStatus: Status = next === "active" ? "active" : "inactive";
+    setRows((prev) => prev.map((u) => (u.id === id ? { ...u, status: nextStatus } : u)));
+
+    const isLocking = next === "suspended";
+    const apiPath = `/api/users/${id}/${isLocking ? "lock" : "unlock"}`;
+
+    try {
+      await apiClient.post(apiPath);
+      setDetailOpen(false);
+      const message = next === 'active' ? 'Đã kích hoạt tài khoản!' : 'Đã tạm ngưng tài khoản.';
+      toast.success(message);
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || "Lỗi cập nhật trạng thái";
+      toast.error(errorMessage);
+      setRows(oldRows);
+    }
+  };
+
+  /* ---------- Edit ---------- */
+
+  const openEditModal = () => {
+    const currentUser = rows.find(u => u.id === selectedId);
+    if (!currentUser) return;
+
+    const currentRole = allRoles.find(r => r.name === currentUser.role);
+
+    // --- TẢI DỮ LIỆU THẬT VÀO FORM ---
+    setEditFormData({
+      fullName: currentUser.name,
+      roleId: currentRole ? currentRole.id : null,
+      phone: currentUser.phone || '',
+      // (Xử lý 'gender' (boolean) sang 'string' cho <select>)
+      gender: currentUser.gender === true ? 'true' : currentUser.gender === false ? 'false' : '',
+      // (Xử lý 'dob' (ISO string) sang 'YYYY-MM-DD' cho <input type="date">)
+      dob: currentUser.dob ? currentUser.dob.split('T')[0] : '',
     });
     setIsEditing(true);
   };
@@ -684,13 +710,15 @@ export default function AccountManage() {
         isActive: editDetailData.status === "active",
       };
       await apiClient.put(`/api/users/${selectedId}`, updateRequest);
-      setIsEditing(false);
-      await fetchData();
+
+      // 3. Xong! Đóng modal và TẢI LẠI DỮ LIỆU (FIX LỖI)
+      setShowEditModal(false);
+      await fetchData(); // <-- THÊM DÒNG NÀY (FIX LỖI KHÔNG TỰ LÀM MỚI)
+      toast.success("Cập nhật tài khoản thành công!");
+
     } catch (err: any) {
-      console.error("Lỗi khi cập nhật user:", err);
-      alert(
-        "Lỗi khi cập nhật: " + (err.response?.data?.message || err.message)
-      );
+      const errorMessage = err.response?.data?.message || "Lỗi khi cập nhật";
+      toast.error(errorMessage);
     }
   };
 
@@ -794,11 +822,61 @@ export default function AccountManage() {
 
       setShowCreateModal(false);
       const newUserForUI = adaptUser(newUserDto);
-      setRows((prevRows) => [newUserForUI, ...prevRows]);
-      setSelectedId(newUserForUI.id);
+      setRows(prevRows => [newUserForUI, ...prevRows]);
+      toast.success("Tạo người dùng thành công!");
+
     } catch (err: any) {
-      console.error("Lỗi khi tạo user:", err);
-      alert("Lỗi khi tạo: " + (err.response?.data?.message || err.message));
+      const errorMessage = err.response?.data?.message || "Lỗi khi tạo";
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    } else {
+      setSelectedFile(null);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      toast.error("Vui lòng chọn một file Excel (.xlsx) trước.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    setLoading(true);
+    setUploadReport(''); // (Reset báo cáo cũ)
+
+    try {
+      const response = await apiClient.post(
+        '/api/users/upload',
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+
+      const report = response.data;
+
+      if (report.failureCount > 0) {
+        toast.warning(`Hoàn thành: ${report.successCount} thành công, ${report.failureCount} thất bại.`);
+      } else {
+        toast.success(`Upload thành công ${report.successCount} user!`);
+      }
+
+      setUploadReport(report.errors.join('\n'));
+
+      await fetchData();
+
+    } catch (err: any) {
+      console.error("Lỗi khi upload file:", err);
+      const errorMessage = err.response?.data?.errors?.[0] || "Upload thất bại nghiêm trọng";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+      setSelectedFile(null); // Reset file
     }
   };
 
@@ -966,54 +1044,43 @@ export default function AccountManage() {
             <button className="btn primary" onClick={openCreateModal}>
               <FaPlus /> &nbsp;Thêm người dùng
             </button>
+            <button
+              className="btn outline"
+              onClick={() => setShowImportModal(true)} // (Mở Modal mới)
+            >
+              <FaDownload /> &nbsp;Thêm nhiều người dùng
+            </button>
           </div>
         </div>
       </div>
 
-      {/* --- NEW LAYOUT WRAPPER --- */}
-      <div className="am-layout-wrapper">
-        {/* --- Cột 1: Danh sách User --- */}
-        <div className="am-list-pane">
-          <div className="am-list-scroller">
-            {paged.map((u) => (
-              <div
-                key={u.id}
-                className={`am-list-item ${
-                  u.id === selectedId ? "active" : ""
-                }`}
-                onClick={() => handleSelectUser(u.id)}
-              >
-                <div className="am-list-item-avatar">
-                  {getAvatarFromStorage(u.id) ? (
-                    <img
-                      src={getAvatarFromStorage(u.id)!}
-                      alt={u.name}
-                      onError={(e) => {
-                        // Fallback to initials if image fails to load
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = "none";
-                        const parent = target.parentElement;
-                        if (parent) {
-                          parent.textContent =
-                            u.name
-                              .split(" ")
-                              .slice(-1)[0]?.[0]
-                              ?.toUpperCase() ?? "U";
-                        }
-                      }}
-                    />
-                  ) : (
-                    u.name.split(" ").slice(-1)[0]?.[0]?.toUpperCase() ?? "U"
-                  )}
-                </div>
-                <div className="am-list-item-info">
-                  <div className="am-list-item-name">{u.name}</div>
-                  <div className="am-list-item-email">{u.email}</div>
-                  <div className="am-list-item-badges">
-                    <Badge colors={roleTone(u.role)}>{u.role}</Badge>
-                    <Badge colors={statusTone(u.status)}>
-                      {statusText(u.status)}
-                    </Badge>
+
+      {/* Table */}
+      <div className="card">
+        <table className="am-table">
+          <thead>
+            <tr>
+              <th style={{ width: 60 }}>STT</th>
+              <th>Người dùng</th>
+              <th style={{ width: 180 }}>Vai trò</th>
+              <th style={{ width: 160 }}>Trạng thái</th>
+              <th style={{ width: 150 }}>Ngày tham gia</th>
+              <th style={{ width: 120 }}>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paged.map((u, idx) => (
+              <tr key={u.id}>
+                <td>{(page - 1) * pageSize + idx + 1}</td>
+                <td>
+                  <div className="am-user-cell">
+                    <div className="am-avatar">
+                      {u.name.split(" ").slice(-1)[0]?.[0]?.toUpperCase() ?? "U"}
+                    </div>
+                    <div>
+                      <div className="am-user-name">{u.name}</div>
+                      <div className="am-user-email">{u.email}</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1393,6 +1460,7 @@ export default function AccountManage() {
                   />
                 </div>
               </div>
+
             </div>
             <div className="am-modal__footer">
               <button
@@ -1403,6 +1471,72 @@ export default function AccountManage() {
               </button>
               <button className="btn primary" onClick={handleCreateUser}>
                 Tạo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showImportModal && (
+        <div className="am-modal-overlay" onClick={() => setShowImportModal(false)}>
+          <div
+            className="am-modal am-confirm" // (Tái sử dụng style modal)
+            style={{ maxWidth: '600px' }} // (Cho nó rộng hơn 1 chút)
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="am-modal__header">
+              <h2 className="title">Thêm người dùng (Upload Excel)</h2>
+            </div>
+
+            <div className="am-modal__body">
+              <div className="am-form-group">
+                <label>Bước 1: Tải file mẫu</label>
+                <p style={{ fontSize: '0.9rem', color: '#6b7280', margin: '4px 0' }}>
+                  Tải file mẫu về, điền thông tin user và lưu lại.
+                  (Lưu ý: Role để trống sẽ tự động gán là "USER")
+                </p>
+                <a
+                  href="/files/Template-add-user.xlsx"
+                  download="Mau_Nhap_Lieu_Nguoi_Dung.xlsx"
+                  className="btn outline"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  <FaDownload /> &nbsp;Tải file mẫu (.xlsx)
+                </a>
+              </div>
+
+              {/* Bước 2: Upload */}
+              <div className="am-form-group" style={{ marginTop: '1.5rem' }}>
+                <label>Bước 2: Upload file của bạn</label>
+                <input
+                  type="file"
+                  accept=".xlsx, .xls"
+                  onChange={handleFileChange}
+                  className="am-form-input" // (Tái sử dụng style input)
+                />
+                <button
+                  className="btn primary"
+                  onClick={handleUpload}
+                  disabled={!selectedFile || loading}
+                  style={{ width: '100%', marginTop: '10px' }}
+                >
+                  {loading ? 'Đang xử lý...' : 'Upload và Tạo Users'}
+                </button>
+              </div>
+
+              {/* Bước 3: Báo cáo lỗi (Như bạn yêu cầu) */}
+              {/* (Nó chỉ hiển thị nếu 'uploadReport' có nội dung) */}
+              {uploadReport && (
+                <div className="am-import-report" style={{ marginTop: '1.5rem' }}>
+                  <strong>Chi tiết lỗi (từ file Excel):</strong>
+                  <pre>{uploadReport}</pre>
+                </div>
+              )}
+
+            </div>
+
+            <div className="am-modal__footer">
+              <button className="btn outline" onClick={() => setShowImportModal(false)}>
+                Đóng
               </button>
             </div>
           </div>
