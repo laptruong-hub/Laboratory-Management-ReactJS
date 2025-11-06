@@ -1,168 +1,361 @@
-import React from 'react';
-import styled from 'styled-components';
-import OrdersTable, { OrderRow } from '../../components/dashboard/OrdersTable';
-import UsersTable, { UserRow } from '../../components/dashboard/UsersTable';
-import { FaUsers, FaClipboardList, FaFlask, FaChartLine } from 'react-icons/fa';
-import StatCard from '../../components/dashboard/DashboardCards/StatCard';
-import MiniBarChart from '../../components/dashboard/DashboardCards/MiniBarChart';
-import Trend from '../../components/dashboard/Charts/TrendChart';
-import { dashboardStats, trendData, parameterDistribution, roleDistribution, heatmapData } from '../../utils/mockData';
-import HorizontalBarChart from '../../components/dashboard/Charts/HorizontalBarChart';
-import DonutChart from '../../components/dashboard/Charts/DonutChart';
-import HeatmapCalendar from '../../components/dashboard/Charts/HeatmapCalendar';
-import TopBarActions from '../../components/dashboard/TopBar/TopBarActions';
+import React, { useState, useEffect, useCallback } from "react";
+import styled from "styled-components";
+import OrdersTable, {
+  type OrderRow,
+} from "../../components/dashboard/OrdersTable";
+import UsersTable, {
+  type UserRow,
+} from "../../components/dashboard/UsersTable";
+import { FaUsers, FaClipboardList, FaFlask, FaChartLine } from "react-icons/fa";
+import StatCard from "../../components/dashboard/DashboardCards/StatCard";
+import MiniBarChart from "../../components/dashboard/DashboardCards/MiniBarChart";
+import Trend from "../../components/dashboard/Charts/TrendChart";
+import {
+  dashboardStats,
+  trendData,
+  parameterDistribution,
+  roleDistribution,
+  heatmapData,
+  mockOrderRows,
+  mockUserRows,
+} from "../../utils/mockData";
+import HorizontalBarChart from "../../components/dashboard/Charts/HorizontalBarChart";
+import DonutChart from "../../components/dashboard/Charts/DonutChart";
+import HeatmapCalendar from "../../components/dashboard/Charts/HeatmapCalendar";
+import TopBarActions from "../../components/dashboard/TopBar/TopBarActions";
+import { apiClient } from "../../api/apiClient";
 
-const Container = styled.div`
+const PageContainer = styled.div`
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
+  padding: 0 1.5rem 2rem;
   display: flex;
   flex-direction: column;
   gap: 24px;
 `;
 
-const Header = styled.div`
+const PageHeader = styled.header`
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const Breadcrumb = styled.nav`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+
+  strong {
+    color: #475569;
+    font-weight: 600;
+  }
+`;
+
+const BreadcrumbSeparator = styled.span`
+  color: #cbd5f5;
+`;
+
+const HeadingRow = styled.div`
+  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
 `;
 
-const TitleBlock = styled.div`
+const TitleGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 `;
 
 const PageTitle = styled.h1`
   margin: 0;
-  font-size: 28px;
-  font-weight: 800;
-  color: #111827;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
 `;
 
-const Subtle = styled.div`
-  color: #6B7280;
-  font-size: 14px;
+const PageDescription = styled.p`
+  margin: 0;
+  font-size: 0.95rem;
+  color: #64748b;
+`;
+
+const ActionsWrap = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+`;
+
+const Section = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const SectionHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const SectionTitle = styled.h2`
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+`;
+
+const SectionSubtitle = styled.p`
+  margin: 0;
+  font-size: 0.9rem;
+  color: #64748b;
 `;
 
 const KPIGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 `;
 
-const KPICard = styled.div`
+const AnalyticsGrid = styled.div`
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+`;
+
+const TablesGrid = styled.div`
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+`;
+
+const StateCard = styled.div<{ $variant?: "info" | "error" }>`
   background: #ffffff;
-  border: 1px solid #E5E7EB;
+  border: 1px solid ${(p) => (p.$variant === "error" ? "#fecaca" : "#e2e8f0")};
   border-radius: 12px;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const KPIIcon = styled.div`
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: #fee2e2;
-  color: #dc2626;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-`;
-
-const KPIInfo = styled.div`
+  padding: 32px;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  color: ${(p) => (p.$variant === "error" ? "#b91c1c" : "#475569")};
+  min-height: 160px;
 `;
 
-const KPILabel = styled.span`
-  color: #6B7280;
-  font-size: 13px;
-`;
+interface UserDtoFromApi {
+  id: number;
+  fullName: string;
+  email: string;
+  roleName: string;
+  isActive: boolean;
+  createdAt: string;
+  [key: string]: any;
+}
 
-const KPIValue = styled.span`
-  color: #111827;
-  font-weight: 800;
-  font-size: 22px;
-`;
+interface DashboardStats {
+  totalUsers: number;
+  totalRoles: number;
+}
 
-const SectionGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-`;
+const ROLE_NAME_MAP: Record<string, UserRow["role"]> = {
+  Administrator: "Administrator",
+  Admin: "Administrator",
+  "Laboratory Manager": "Laboratory Manager",
+  "Lab Manager": "Laboratory Manager",
+  Service: "Service",
+  "Customer Service": "Service",
+  "Lab User": "Lab User",
+  Technician: "Lab User",
+};
+
+const normalizeRoleName = (roleName: string): UserRow["role"] =>
+  ROLE_NAME_MAP[roleName] ?? "Lab User";
 
 const AdminDashboardPage: React.FC = () => {
-  const kpis = [
-    { label: 'Tổng người dùng', value: '1,245', icon: <FaUsers /> },
-    { label: 'Xét nghiệm hôm nay', value: '212', icon: <FaFlask /> },
-    { label: 'Đơn hàng chờ', value: '37', icon: <FaClipboardList /> },
-    { label: 'Tăng trưởng', value: '+8.2%', icon: <FaChartLine /> },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardStats>({
+    totalUsers: 0,
+    totalRoles: 0,
+  });
+  const [userRows, setUserRows] = useState<UserRow[]>([]);
+  const [orderRows] = useState<OrderRow[]>(
+    mockOrderRows.map((order) => ({ ...order }))
+  );
 
-  const orderRows: OrderRow[] = [
-    { id: 'ORD-1000', patientName: 'Nguyễn Văn A', patientEmail: 'nguyenvana@email.com', type: 'Máu', status: 'pending', doctor: 'BS. Minh', createdAt: '16/10/2025', dueAt: '16/10/2025' },
-    { id: 'ORD-1001', patientName: 'Trần Thị B', patientEmail: 'tranthib@email.com', type: 'Nước tiểu', status: 'inProgress', doctor: 'BS. Lan', createdAt: '16/10/2025', dueAt: '18/10/2025' },
-    { id: 'ORD-1002', patientName: 'Lê Văn C', patientEmail: 'levanc@email.com', type: 'X quang', status: 'cancelled', doctor: 'BS. Tuấn', createdAt: '16/10/2025', dueAt: '18/10/2025' },
-    { id: 'ORD-1003', patientName: 'Phạm Thị D', patientEmail: 'phamthid@email.com', type: 'Siêu âm', status: 'cancelled', doctor: 'BS. Minh', createdAt: '16/10/2025', dueAt: '18/10/2025' },
-    { id: 'ORD-1004', patientName: 'Nguyễn A', patientEmail: 'nguyen.a@email.com', type: 'Máu', status: 'pending', doctor: 'BS. Lan', createdAt: '16/10/2025', dueAt: '18/10/2025' },
-    { id: 'ORD-1005', patientName: 'Trần Thị B', patientEmail: 'tranthib@email.com', type: 'Nước tiểu', status: 'inProgress', doctor: 'BS. Tuấn', createdAt: '16/10/2025', dueAt: '18/10/2025' },
-    { id: 'ORD-1006', patientName: 'Lê Văn C', patientEmail: 'levanc@email.com', type: 'X quang', status: 'inProgress', doctor: 'BS. Minh', createdAt: '16/10/2025', dueAt: '18/10/2025' },
-    { id: 'ORD-1007', patientName: 'Phạm Thị D', patientEmail: 'phamthid@email.com', type: 'Siêu âm', status: 'pending', doctor: 'BS. Tuấn', createdAt: '16/10/2025', dueAt: '18/10/2025' },
-    { id: 'ORD-1008', patientName: 'Nguyễn Văn A', patientEmail: 'nguyenvana@email.com', type: 'Máu', status: 'pending', doctor: 'BS. Tuấn', createdAt: '16/10/2025', dueAt: '18/10/2025' },
-    { id: 'ORD-1009', patientName: 'Trần Thị B', patientEmail: 'tranthib@email.com', type: 'Nước tiểu', status: 'inProgress', doctor: 'BS. Lan', createdAt: '16/10/2025', dueAt: '18/10/2025' },
-  ];
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  const userRows: UserRow[] = [
-    { id: 'U1', name: 'Nguyễn Văn A', email: 'user1@lab.com', role: 'Administrator', status: 'active', activity: 'Đang hóa', createdAt: '2025-10-15 15:09:30', online: true },
-    { id: 'U2', name: 'Trần Thị B', email: 'user2@lab.com', role: 'Laboratory Manager', status: 'active', activity: 'Đang hóa', createdAt: '2025-10-15 15:09:30', online: true },
-    { id: 'U3', name: 'Lê Văn C', email: 'user3@lab.com', role: 'Service', status: 'suspended', activity: '1 ngày trước\n(Từ 08:15 đến 16:18)', createdAt: '2025-10-15 15:09:30' },
-    { id: 'U4', name: 'Phạm Thị D', email: 'user4@lab.com', role: 'Lab User', status: 'active', activity: 'Đang hóa', createdAt: '2025-10-15 15:09:30', online: true },
-    { id: 'U5', name: 'Hoàng Văn E', email: 'user5@lab.com', role: 'Laboratory Manager', status: 'active', activity: 'Hoạt động 8 giờ trước\n(Từ 11:11 đến 16:18)', createdAt: '2025-10-15 15:09:30' },
-    { id: 'U6', name: 'Vũ Thị F', email: 'user6@lab.com', role: 'Lab User', status: 'active', activity: 'Đang hóa', createdAt: '2025-10-15 15:09:30' },
-    { id: 'U7', name: 'Đỗ Văn G', email: 'user7@lab.com', role: 'Service', status: 'pending', activity: '2 giờ trước\n(Từ 13:15 đến 15:30)', createdAt: '2025-10-15 15:09:30' },
-    { id: 'U8', name: 'Bùi Thị H', email: 'user8@lab.com', role: 'Lab User', status: 'active', activity: 'Đang hóa', createdAt: '2025-10-15 15:09:30', online: true },
-    { id: 'U9', name: 'Lý Văn I', email: 'user9@lab.com', role: 'Administrator', status: 'active', activity: 'Đang hóa', createdAt: '2025-10-15 15:09:30' },
-    { id: 'U10', name: 'Trương Thị K', email: 'user10@lab.com', role: 'Lab User', status: 'active', activity: 'Đang hóa', createdAt: '2025-10-15 15:09:30', online: true },
-  ];
+      const [usersResponse, rolesResponse] = await Promise.all([
+        apiClient.get("/api/users"),
+        apiClient.get("/api/roles"),
+      
+      ]);
+
+      const usersData: UserDtoFromApi[] = usersResponse.data;
+      const rolesData = rolesResponse.data;
+
+      const convertedUserRows: UserRow[] = usersData
+        .slice(0, 10)
+        .map((user) => ({
+          id: user.id.toString(),
+          name: user.fullName,
+          email: user.email,
+          role: normalizeRoleName(user.roleName),
+          status: user.isActive ? "active" : "pending",
+          activity: user.isActive ? "Đang hoạt động" : "Chưa kích hoạt",
+          createdAt: user.createdAt,
+          online: user.isActive,
+        }));
+
+      setUserRows(convertedUserRows);
+      setDashboardData({
+        totalUsers: usersData.length,
+        totalRoles: rolesData.length,
+      });
+    } catch (err) {
+      console.error("Lỗi khi fetch dashboard data:", err);
+      setError("Không thể tải dữ liệu dashboard");
+      setUserRows(
+        mockUserRows.slice(0, 10).map((user) => ({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: normalizeRoleName(user.role),
+          status: user.status,
+          activity: user.activity,
+          createdAt: user.createdAt,
+          online: user.online ?? false,
+        }))
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  const handleRefresh = useCallback(() => {
+    void fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  // Update dashboardStats with real data
+  const updatedDashboardStats = {
+    ...dashboardStats,
+    totalUsers: {
+      ...dashboardStats.totalUsers,
+      value: dashboardData.totalUsers || dashboardStats.totalUsers.value,
+    },
+  };
+
+  const header = (
+    <PageHeader>
+      <Breadcrumb>
+        <span>Trang chủ</span>
+        <BreadcrumbSeparator>/</BreadcrumbSeparator>
+        <strong>Dashboard</strong>
+      </Breadcrumb>
+      <HeadingRow>
+        <TitleGroup>
+          <PageTitle>Dashboard tổng quan</PageTitle>
+          <PageDescription>
+            Hệ thống quản lý phòng xét nghiệm máu (Hematology Lab)
+          </PageDescription>
+        </TitleGroup>
+        <ActionsWrap>
+          <TopBarActions onRefresh={handleRefresh} />
+        </ActionsWrap>
+      </HeadingRow>
+    </PageHeader>
+  );
+
+  if (loading) {
+    return (
+      <PageContainer>
+        {header}
+        <StateCard>
+          <strong>Đang tải dữ liệu...</strong>
+          <span>Vui lòng đợi trong giây lát.</span>
+        </StateCard>
+      </PageContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageContainer>
+        {header}
+        <StateCard $variant="error">
+          <strong>{error}</strong>
+          <span>Vui lòng thử lại sau hoặc làm mới trang.</span>
+        </StateCard>
+      </PageContainer>
+    );
+  }
 
   return (
-    <Container>
-      <Header>
-        <TitleBlock>
-          <PageTitle>Admin Dashboard</PageTitle>
-          <Subtle>Hệ thống quản lý phòng xét nghiệm máu (Hematology Lab)</Subtle>
-        </TitleBlock>
-        <TopBarActions />
-      </Header>
+    <PageContainer>
+      {header}
 
-      <KPIGrid>
-        <StatCard title={dashboardStats.totalUsers.title} value={dashboardStats.totalUsers.value} icon={<FaUsers />} color="#dc2626" description={dashboardStats.totalUsers.description} />
-        <StatCard title={dashboardStats.todayTests.title} value={dashboardStats.todayTests.value} icon={<FaFlask />} color="#dc2626">
-          <MiniBarChart data={dashboardStats.todayTests.breakdown} />
-        </StatCard>
-        <StatCard title={dashboardStats.completedTests.title} value={dashboardStats.completedTests.value} icon={<FaClipboardList />} color="#dc2626" description={dashboardStats.completedTests.description} />
-        <StatCard title={dashboardStats.growthRate.title} value={dashboardStats.growthRate.value} icon={<FaChartLine />} color="#dc2626" />
-      </KPIGrid>
+      <Section>
+        <SectionHeader>
+          <SectionTitle>Chỉ số vận hành</SectionTitle>
+          <SectionSubtitle>
+            Tổng quan nhanh các chỉ số chính của hệ thống
+          </SectionSubtitle>
+        </SectionHeader>
 
-      <Trend title={trendData.title} subtitle={trendData.period} data={trendData.data} />
+        <KPIGrid>
+          <StatCard
+            title={updatedDashboardStats.totalUsers.title}
+            value={updatedDashboardStats.totalUsers.value}
+            icon={<FaUsers />}
+            color="#dc2626"
+            description={updatedDashboardStats.totalUsers.description}
+          />
+          <StatCard
+            title={dashboardStats.todayTests.title}
+            value={dashboardStats.todayTests.value}
+            icon={<FaFlask />}
+            color="#dc2626"
+          >
+            <MiniBarChart data={dashboardStats.todayTests.breakdown} />
+          </StatCard>
+        </KPIGrid>
+      </Section>
 
-      <SectionGrid>
-        <HorizontalBarChart title={parameterDistribution.title} data={parameterDistribution.data} />
-        <DonutChart title={roleDistribution.title} totalLabel="Tổng tài khoản" total={roleDistribution.total} data={roleDistribution.data} />
-        <HeatmapCalendar title="Heatmap lịch hẹn" month={heatmapData.month} data={heatmapData.data} />
-      </SectionGrid>
-
-      <SectionGrid>
-        <OrdersTable rows={orderRows} />
-        <UsersTable rows={userRows} />
-      </SectionGrid>
-    </Container>
+      <Section>
+        <AnalyticsGrid>
+          <HorizontalBarChart
+            title={parameterDistribution.title}
+            data={parameterDistribution.data}
+          />
+          <DonutChart
+            title={roleDistribution.title}
+            totalLabel="Tổng tài khoản"
+            total={roleDistribution.total}
+            data={roleDistribution.data}
+          />
+          <HeatmapCalendar
+            title="Heatmap lịch hẹn"
+            month={heatmapData.month}
+            data={heatmapData.data}
+          />
+        </AnalyticsGrid>
+      </Section>
+    </PageContainer>
   );
 };
 
