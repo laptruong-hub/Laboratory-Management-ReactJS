@@ -8,6 +8,7 @@ import {
   FaFilter,
   FaDownload,
   FaCheck,
+  FaChevronDown,
 } from "react-icons/fa";
 
 // 1. IMPORT TRẠM API
@@ -18,13 +19,21 @@ import { useAuth } from "../../context/AuthContext";
 // (Tôi sẽ rút gọn, bạn hãy giữ nguyên code của bạn)
 const PageContainer = styled.div`
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
   padding: 1.5rem;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: 0;
 `;
 
 const PageHeader = styled.div`
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+  min-height: 0;
 `;
 
 const PageTitle = styled.h1`
@@ -51,6 +60,8 @@ const ControlBar = styled.div`
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
   background: white;
+  flex-shrink: 0;
+  min-height: 0;
   input background: white;
 `;
 
@@ -141,14 +152,28 @@ const Button = styled.button<{ $variant?: "primary" | "secondary" }>`
 const FlexLayout = styled.div`
   display: flex;
   gap: 1.5rem;
-  align-items: flex-start;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
 `;
 
 const Sidebar = styled.aside`
   width: 320px;
+  min-width: 280px;
+  max-width: 320px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  align-items: stretch;
 `;
 
 const SidebarSection = styled.div`
@@ -156,7 +181,12 @@ const SidebarSection = styled.div`
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   padding: 0.75rem;
-  height: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
 `;
 
 const SidebarHeader = styled.div`
@@ -167,6 +197,8 @@ const SidebarHeader = styled.div`
   font-weight: 700;
   color: #374151;
   border-bottom: 1px solid #eef2f6;
+  flex-shrink: 0;
+  min-height: 0;
 `;
 
 const AddRoleButton = styled.button`
@@ -207,7 +239,46 @@ const RoleList = styled.div`
   flex-direction: column;
   gap: 0.25rem;
   margin-top: 0.75rem;
-  min-height: 240px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+
+  /* Ẩn scrollbar nhưng vẫn cho phép scroll */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+`;
+
+// RoleList cho Default Roles - có scroll nếu cần
+const DefaultRoleList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+
+  /* Ẩn scrollbar nhưng vẫn cho phép scroll */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+`;
+
+// SidebarSection cho Default Roles - có flex để có thể scroll
+const DefaultRolesSection = styled(SidebarSection)`
+  flex: 1 1 auto;
+  min-height: 0;
 `;
 
 const RoleItem = styled.div<{ $active?: boolean; roleColor?: string }>`
@@ -219,6 +290,8 @@ const RoleItem = styled.div<{ $active?: boolean; roleColor?: string }>`
   cursor: pointer;
   transition: background 0.12s ease, transform 0.08s ease;
   background: ${(props) => (props.$active ? "#f8fafc" : "transparent")};
+  flex-shrink: 0;
+  min-width: 0;
 
   &:hover {
     background: #f9fafb;
@@ -237,11 +310,15 @@ const RoleLabel = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-width: 0;
 `;
 
 const RoleName = styled.div`
   font-weight: 700;
   color: #111827;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
 `;
 
 const RoleMeta = styled.div`
@@ -257,6 +334,8 @@ const PaginationControls = styled.div`
   margin-top: 0.75rem;
   padding-top: 0.75rem;
   border-top: 1px solid #eef2f6;
+  flex-shrink: 0;
+  min-height: 0;
 `;
 
 const PaginationButton = styled.button`
@@ -290,11 +369,27 @@ const PageInfo = styled.span`
 
 const Content = styled.main`
   flex: 1;
+  min-width: 0;
+  min-height: 0;
   background: white;
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  /* Ẩn scrollbar nhưng vẫn cho phép scroll */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
 `;
 
 const ContentHeader = styled.div`
@@ -302,6 +397,8 @@ const ContentHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
+  flex-shrink: 0;
+  min-height: 0;
 `;
 
 const Panel = styled.section`
@@ -309,6 +406,13 @@ const Panel = styled.section`
   border-radius: 8px;
   padding: 1rem;
   border: 1px solid #eef2f6;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  max-height: 100%;
 `;
 
 const SectionTitle = styled.h3`
@@ -316,12 +420,27 @@ const SectionTitle = styled.h3`
   font-size: 1rem;
   color: #111827;
   font-weight: 700;
+  flex-shrink: 0;
+  min-height: 0;
 `;
 
 const MemberList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+
+  /* Ẩn scrollbar nhưng vẫn cho phép scroll */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
 `;
 
 const MemberRow = styled.div`
@@ -331,6 +450,10 @@ const MemberRow = styled.div`
   padding: 0.75rem;
   border-radius: 8px;
   transition: background 0.12s ease;
+  flex-shrink: 0;
+  min-width: 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
 
   &:hover {
     background: #f9fafb;
@@ -357,16 +480,23 @@ const ModalOverlay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 1rem;
   z-index: 50;
+  overflow-y: auto;
+  box-sizing: border-box;
 `;
 
 const ModalContent = styled.div`
   width: 100%;
   max-width: 920px;
+  max-height: calc(100vh - 2rem);
   background: white;
   border-radius: 12px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  margin: auto;
 `;
 
 const ModalHeader = styled.div`
@@ -375,21 +505,121 @@ const ModalHeader = styled.div`
   border-bottom: 1px solid #eef2f6;
   font-size: 1.1rem;
   color: #111827;
+  flex-shrink: 0;
 `;
 
 const ModalBody = styled.div`
-  padding: 1rem 1.25rem 1.5rem 1.25rem;
+  padding: 1rem 1.25rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
+
+  /* Custom scrollbar styling */
+  scrollbar-width: thin; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
 `;
 
 const PermissionsColumn = styled.div`
-  flex: 2;
-  max-height: 420px;
-  overflow: auto;
-  padding-right: 0.5rem;
+  width: 100%;
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
+  box-sizing: border-box;
 `;
 
 const PermissionGroup = styled.div`
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
+`;
+
+const GroupDropdownWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const GroupDropdownButton = styled.button`
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f9fafb;
+    border-color: #dc2626;
+  }
+
+  svg {
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+  }
+
+  &[data-open="true"] svg {
+    transform: rotate(180deg);
+  }
+`;
+
+const GroupDropdownContent = styled.div<{ $isOpen: boolean }>`
+  display: ${(props) => (props.$isOpen ? "block" : "none")};
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+
+  /* Custom scrollbar styling */
+  scrollbar-width: thin; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
 `;
 
 const GroupTitle = styled.div`
@@ -457,9 +687,14 @@ const ToggleSwitch = styled.label`
 
 const ModalFooter = styled.div`
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 0.75rem;
-  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #eef2f6;
+  flex-shrink: 0;
+  background: white;
+  box-sizing: border-box;
 `;
 
 const EmptyState = styled.div`
@@ -467,6 +702,9 @@ const EmptyState = styled.div`
   text-align: center;
   color: #9ca3af;
   font-size: 0.9rem;
+  flex-shrink: 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
 `;
 
 const FormGroup = styled.div`
@@ -474,6 +712,7 @@ const FormGroup = styled.div`
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 1rem;
+  flex-shrink: 0;
 `;
 
 const Label = styled.label`
@@ -542,8 +781,9 @@ interface Member {
 }
 
 // (Các hằng số)
-const ROLES_PER_PAGE = 3;
 const MEMBERS_PER_PAGE = 5;
+const DEFAULT_ROLES_PER_PAGE = 2;
+// ROLES_PER_PAGE sẽ được tính động dựa trên không gian có sẵn
 const DEFAULT_ROLE_NAMES = new Set([
   "ADMIN",
   "LAB MANAGER",
@@ -607,17 +847,22 @@ const RolesPage: React.FC = () => {
   const [modalPermissions, setModalPermissions] = useState<Set<number>>(
     new Set()
   );
+  const [openPermissionGroups, setOpenPermissionGroups] = useState<Set<string>>(
+    new Set()
+  );
 
   // (State cho Pagination)
+  const [defaultRolesPage, setDefaultRolesPage] = useState(0);
   const [customRolesPage, setCustomRolesPage] = useState(0);
   const [membersPage, setMembersPage] = useState(0);
+  const [customRolesPerPage, setCustomRolesPerPage] = useState(3); // PageSize động
 
   // (Các Ref)
   const filterRef = useRef<HTMLDivElement | null>(null);
   const memberListRef = useRef<HTMLDivElement | null>(null);
   const defaultRolesRef = useRef<HTMLDivElement | null>(null);
   const customRolesRef = useRef<HTMLDivElement | null>(null);
-  const [memberListHeight, setMemberListHeight] = useState("auto");
+  const customRoleListRef = useRef<HTMLDivElement | null>(null);
 
   // --- 4. HÀM FETCH DỮ LIỆU (READ) ---
   const fetchData = async () => {
@@ -840,8 +1085,23 @@ const RolesPage: React.FC = () => {
     }
 
     setModalPermissions(currentPermissionIds);
+    // Mở tất cả các group khi mở modal
+    const groups = groupPermissionsByCategory(allPermissions);
+    setOpenPermissionGroups(new Set(groups.map((g) => g.name)));
 
     setShowModal(true);
+  };
+
+  const togglePermissionGroup = (groupName: string) => {
+    setOpenPermissionGroups((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupName)) {
+        newSet.delete(groupName);
+      } else {
+        newSet.add(groupName);
+      }
+      return newSet;
+    });
   };
 
   const handleUpdateRole = async () => {
@@ -905,123 +1165,154 @@ const RolesPage: React.FC = () => {
       return;
     }
 
-    // Kiểm tra lại trước khi xóa
+    // Kiểm tra lại trước khi xóa - chỉ check default roles
     if (!canDeleteRole(roleToDelete)) {
       const normalizedName = roleToDelete.name.trim().toUpperCase();
-      const isDefault = DEFAULT_ROLE_NAMES.has(normalizedName);
+      const isDefault =
+        DEFAULT_ROLE_NAMES.has(normalizedName) || roleToDelete.isDefault;
 
       if (isDefault) {
         alert("Không thể xóa role mặc định.");
-      } else if (roleToDelete.members >= 1) {
-        alert(`Không thể xóa role có ${roleToDelete.members} thành viên.`);
       }
       setShowDeleteConfirm(false);
       return;
     }
 
     try {
-      await apiClient.delete(`/api/roles/${selectedRoleId}`);
-      setShowDeleteConfirm(false);
-      setSelectedRoleId(null); // Reset selection
-      await fetchData(); // Tải lại
-    } catch (err: any) {
-      console.error("Lỗi khi xóa role:", err);
+      // Trước khi xóa, kiểm tra xem role có users không
+      // Nếu có, chuyển tất cả users về role "read only"
+      let usersToUpdate: any[] = [];
 
-      // Nếu lỗi do role đang được sử dụng, tự động chuyển role của users về unassigned
-      const errorMessage = err.response?.data?.message || err.message || "";
-      const isRoleInUse =
-        errorMessage.toLowerCase().includes("role") &&
-        (errorMessage.toLowerCase().includes("đang") ||
-          errorMessage.toLowerCase().includes("được") ||
-          errorMessage.toLowerCase().includes("in use") ||
-          errorMessage.toLowerCase().includes("used") ||
-          err.response?.status === 400 ||
-          err.response?.status === 409);
+      try {
+        // Lấy danh sách users có role này
+        const usersResponse = await apiClient.get(`/api/users`);
+        const allUsers = usersResponse.data || [];
 
-      if (isRoleInUse) {
-        try {
-          // Lấy danh sách users có role này
-          const usersResponse = await apiClient.get(
-            `/api/users?roleId=${selectedRoleId}`
-          );
-          const users = usersResponse.data || [];
+        // Lọc users có role trùng với role đang xóa
+        usersToUpdate = allUsers.filter((user: any) => {
+          // Kiểm tra nhiều trường hợp để đảm bảo tìm đúng users
+          const userRoleId = user.roleId || (user.role && user.role.id) || null;
+          const userRoleName =
+            user.roleName || (user.role && user.role.name) || null;
 
-          // Cập nhật role của từng user về null (unassigned)
-          if (users.length > 0) {
-            // Fetch đầy đủ thông tin của từng user trước khi cập nhật
-            const updatePromises = users.map(async (user: any) => {
-              try {
-                // Lấy thông tin đầy đủ của user
-                const userDetailResponse = await apiClient.get(
-                  `/api/users/${user.id}`
-                );
-                const userDetail = userDetailResponse.data;
-
-                // Cập nhật user với roleId = null
-                return apiClient.put(`/api/users/${user.id}`, {
-                  fullName: userDetail.fullName || user.fullName,
-                  email: userDetail.email || user.email,
-                  phone: userDetail.phone || null,
-                  dob: userDetail.dob ? new Date(userDetail.dob) : null,
-                  roleId: null, // Set về unassigned
-                  gender: userDetail.gender,
-                  rhFactor: userDetail.rhFactor || null,
-                  bloodType: userDetail.bloodType || null,
-                  medicalHistory: userDetail.medicalHistory || null,
-                  isActive:
-                    userDetail.isActive !== undefined
-                      ? userDetail.isActive
-                      : true,
-                });
-              } catch (detailErr: any) {
-                // Nếu không lấy được detail, thử cập nhật với thông tin có sẵn
-                console.warn(
-                  `Không thể lấy chi tiết user ${user.id}, thử cập nhật với thông tin có sẵn`
-                );
-                return apiClient.put(`/api/users/${user.id}`, {
-                  fullName: user.fullName,
-                  email: user.email,
-                  phone: user.phone || null,
-                  dob: user.dob ? new Date(user.dob) : null,
-                  roleId: null,
-                  gender: user.gender,
-                  rhFactor: user.rhFactor || null,
-                  bloodType: user.bloodType || null,
-                  medicalHistory: user.medicalHistory || null,
-                  isActive: user.isActive !== undefined ? user.isActive : true,
-                });
-              }
-            });
-
-            await Promise.all(updatePromises);
-
-            // Sau khi cập nhật xong, thử xóa role lại
-            await apiClient.delete(`/api/roles/${selectedRoleId}`);
-
-            alert(
-              `Đã chuyển ${users.length} tài khoản về trạng thái unassigned và xóa role thành công.`
-            );
-            setShowDeleteConfirm(false);
-            setSelectedRoleId(null);
-            await fetchData();
-          } else {
-            // Không có user nào nhưng vẫn lỗi, có thể do lỗi khác
-            alert("Lỗi khi xóa: " + errorMessage);
-            setShowDeleteConfirm(false);
+          // So sánh bằng ID
+          if (userRoleId === selectedRoleId || userRoleId === roleToDelete.id) {
+            return true;
           }
+
+          // So sánh bằng tên (case-insensitive)
+          if (userRoleName) {
+            const normalizedUserRoleName = userRoleName.trim().toUpperCase();
+            const normalizedRoleToDeleteName = roleToDelete.name
+              .trim()
+              .toUpperCase();
+            if (normalizedUserRoleName === normalizedRoleToDeleteName) {
+              return true;
+            }
+          }
+
+          return false;
+        });
+      } catch (usersErr) {
+        console.warn("Không thể lấy danh sách users:", usersErr);
+        // Tiếp tục xóa role dù không lấy được users
+      }
+
+      // Tìm role "read only" (READONLY hoặc READ-ONLY)
+      const readOnlyRole = rolesState.find((r) => {
+        const normalizedName = r.name.trim().toUpperCase();
+        return normalizedName === "READONLY" || normalizedName === "READ-ONLY";
+      });
+
+      if (!readOnlyRole) {
+        alert(
+          "Không tìm thấy role 'Read Only'. Vui lòng đảm bảo role này tồn tại trong hệ thống."
+        );
+        setShowDeleteConfirm(false);
+        return;
+      }
+
+      // Nếu có users, chuyển tất cả về role "read only"
+      if (usersToUpdate.length > 0) {
+        try {
+          // Cập nhật role của từng user về "read only"
+          const updatePromises = usersToUpdate.map(async (user: any) => {
+            try {
+              // Lấy thông tin đầy đủ của user
+              const userDetailResponse = await apiClient.get(
+                `/api/users/${user.id}`
+              );
+              const userDetail = userDetailResponse.data;
+
+              // Cập nhật user với roleId = readOnlyRole.id
+              return apiClient.put(`/api/users/${user.id}`, {
+                fullName: userDetail.fullName || user.fullName,
+                email: userDetail.email || user.email,
+                phone: userDetail.phone || null,
+                dob: userDetail.dob ? new Date(userDetail.dob) : null,
+                roleId: readOnlyRole.id, // Chuyển về read only
+                gender: userDetail.gender,
+                rhFactor: userDetail.rhFactor || null,
+                bloodType: userDetail.bloodType || null,
+                medicalHistory: userDetail.medicalHistory || null,
+                isActive:
+                  userDetail.isActive !== undefined
+                    ? userDetail.isActive
+                    : true,
+              });
+            } catch (detailErr: any) {
+              // Nếu không lấy được detail, thử cập nhật với thông tin có sẵn
+              console.warn(
+                `Không thể lấy chi tiết user ${user.id}, thử cập nhật với thông tin có sẵn`
+              );
+              return apiClient.put(`/api/users/${user.id}`, {
+                fullName: user.fullName,
+                email: user.email,
+                phone: user.phone || null,
+                dob: user.dob ? new Date(user.dob) : null,
+                roleId: readOnlyRole.id, // Chuyển về read only
+                gender: user.gender,
+                rhFactor: user.rhFactor || null,
+                bloodType: user.bloodType || null,
+                medicalHistory: user.medicalHistory || null,
+                isActive: user.isActive !== undefined ? user.isActive : true,
+              });
+            }
+          });
+
+          await Promise.all(updatePromises);
         } catch (updateErr: any) {
           console.error("Lỗi khi cập nhật users:", updateErr);
           alert(
-            "Lỗi khi cập nhật role của các tài khoản: " +
+            "Lỗi khi chuyển role của các tài khoản về 'Read Only': " +
               (updateErr.response?.data?.message || updateErr.message)
           );
           setShowDeleteConfirm(false);
+          return;
         }
-      } else {
-        // Lỗi khác, không phải do role đang được sử dụng
-        alert("Lỗi khi xóa: " + errorMessage);
-        setShowDeleteConfirm(false);
       }
+
+      // Sau khi cập nhật users (nếu có), xóa role
+      await apiClient.delete(`/api/roles/${selectedRoleId}`);
+
+      setShowDeleteConfirm(false);
+      setSelectedRoleId(null); // Reset selection
+
+      if (usersToUpdate.length > 0) {
+        alert(
+          `Đã chuyển ${usersToUpdate.length} tài khoản về role 'Read Only' và xóa role thành công.`
+        );
+      } else {
+        alert("Xóa role thành công.");
+      }
+
+      await fetchData(); // Tải lại
+    } catch (err: any) {
+      console.error("Lỗi khi xóa role:", err);
+      const errorMessage =
+        err.response?.data?.message || err.message || "Lỗi không xác định";
+      alert("Lỗi khi xóa role: " + errorMessage);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -1057,6 +1348,15 @@ const RolesPage: React.FC = () => {
 
   const sortedDefaultRoles = [...defaultRolesRaw].sort((a, b) =>
     a.name.localeCompare(b.name, "vi", { sensitivity: "base" })
+  );
+
+  // Phân trang cho Default Roles
+  const totalDefaultPages = Math.ceil(
+    sortedDefaultRoles.length / DEFAULT_ROLES_PER_PAGE
+  );
+  const paginatedDefaultRoles = sortedDefaultRoles.slice(
+    defaultRolesPage * DEFAULT_ROLES_PER_PAGE,
+    (defaultRolesPage + 1) * DEFAULT_ROLES_PER_PAGE
   );
 
   const processedCustomRoles = (() => {
@@ -1101,19 +1401,20 @@ const RolesPage: React.FC = () => {
       return false;
     }
 
-    // Không thể xóa role có từ 1 thành viên trở lên
-    if (role.members >= 1) {
+    // Kiểm tra isDefault từ API
+    if (role.isDefault) {
       return false;
     }
 
+    // Tất cả custom roles (không phải default) đều có thể xóa được
     return true;
   };
   const totalCustomPages = Math.ceil(
-    processedCustomRoles.length / ROLES_PER_PAGE
+    processedCustomRoles.length / customRolesPerPage
   );
   const paginatedCustomRoles = processedCustomRoles.slice(
-    customRolesPage * ROLES_PER_PAGE,
-    (customRolesPage + 1) * ROLES_PER_PAGE
+    customRolesPage * customRolesPerPage,
+    (customRolesPage + 1) * customRolesPerPage
   );
 
   const totalMemberPages = Math.ceil(members.length / MEMBERS_PER_PAGE);
@@ -1130,31 +1431,97 @@ const RolesPage: React.FC = () => {
     }
   };
 
+  // Reset default roles page when list changes
+  useEffect(() => {
+    if (defaultRolesPage >= totalDefaultPages && totalDefaultPages > 0) {
+      setDefaultRolesPage(0);
+    }
+  }, [totalDefaultPages, defaultRolesPage]);
+
   // Reset custom roles page when filtered/sorted list changes
   useEffect(() => {
     if (customRolesPage >= totalCustomPages && totalCustomPages > 0) {
       setCustomRolesPage(0);
     }
-  }, [totalCustomPages, customRolesPage]);
+  }, [totalCustomPages, customRolesPage, customRolesPerPage]);
+
+  // Tính toán pageSize động cho Custom Roles dựa trên không gian có sẵn
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    const calculatePageSize = () => {
+      if (!customRoleListRef.current) return;
+
+      const listElement = customRoleListRef.current;
+      const availableHeight = listElement.clientHeight;
+
+      // Nếu không có không gian, giữ nguyên giá trị hiện tại
+      if (availableHeight <= 0) return;
+
+      // Chiều cao của một RoleItem (khoảng 48px + gap 4px = ~52px)
+      // Lấy từ một item mẫu nếu có, hoặc dùng giá trị mặc định
+      const sampleItem = listElement.querySelector(
+        "[data-role-item]"
+      ) as HTMLElement;
+      let itemHeight = 52; // Giá trị mặc định
+
+      if (sampleItem) {
+        // Lấy chiều cao thực tế của item
+        const computedStyle = window.getComputedStyle(sampleItem);
+        const marginTop = parseFloat(computedStyle.marginTop) || 0;
+        const marginBottom = parseFloat(computedStyle.marginBottom) || 0;
+        itemHeight = sampleItem.offsetHeight + marginTop + marginBottom;
+      }
+
+      // Gap giữa các items (0.25rem = 4px)
+      const gap = 4;
+
+      // Tính số lượng items có thể fit (trừ đi một chút để đảm bảo không bị cắt)
+      // Công thức: (availableHeight - gap) / (itemHeight + gap)
+      const itemsPerPage = Math.max(
+        1,
+        Math.floor((availableHeight - gap) / (itemHeight + gap))
+      );
+
+      setCustomRolesPerPage(itemsPerPage);
+    };
+
+    const debouncedCalculate = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(calculatePageSize, 100);
+    };
+
+    // Delay một chút để đảm bảo DOM đã render
+    debouncedCalculate();
+
+    const resizeObserver = new ResizeObserver(() => {
+      debouncedCalculate();
+    });
+
+    if (customRoleListRef.current) {
+      resizeObserver.observe(customRoleListRef.current);
+    }
+
+    // Cũng observe window resize
+    window.addEventListener("resize", debouncedCalculate);
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", debouncedCalculate);
+    };
+  }, [customRolesFiltered.length, paginatedCustomRoles.length]); // Recalculate when list changes
 
   // Reset to page 0 when search term or sort option changes
   useEffect(() => {
     setCustomRolesPage(0);
   }, [searchTerm, customRoleFilter]);
 
-  useEffect(() => {
-    const calculateHeight = () => {
-      if (defaultRolesRef.current && customRolesRef.current) {
-        const defaultHeight = defaultRolesRef.current.offsetHeight;
-        const customHeight = customRolesRef.current.offsetHeight;
-        const totalHeight = defaultHeight + customHeight + 16;
-        setMemberListHeight(`${totalHeight}px`);
-      }
-    };
-    calculateHeight();
-    window.addEventListener("resize", calculateHeight);
-    return () => window.removeEventListener("resize", calculateHeight);
-  }, [sortedDefaultRoles.length, processedCustomRoles.length, customRolesPage]);
+  // Removed calculateHeight - using flexbox layout instead
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -1252,13 +1619,13 @@ const RolesPage: React.FC = () => {
       <FlexLayout>
         <Sidebar>
           {/* --- DEFAULT ROLES --- */}
-          <SidebarSection ref={defaultRolesRef}>
+          <DefaultRolesSection ref={defaultRolesRef}>
             <SidebarHeader>
               Default Roles
               <CountBadge>{sortedDefaultRoles.length}</CountBadge>
             </SidebarHeader>
-            <RoleList>
-              {sortedDefaultRoles.map((role) => (
+            <DefaultRoleList>
+              {paginatedDefaultRoles.map((role) => (
                 <RoleItem
                   key={role.id}
                   onClick={() => handleRoleSelect(role.id)}
@@ -1272,8 +1639,32 @@ const RolesPage: React.FC = () => {
                   </RoleLabel>
                 </RoleItem>
               ))}
-            </RoleList>
-          </SidebarSection>
+            </DefaultRoleList>
+            {/* Pagination Controls cho Default Roles */}
+            {totalDefaultPages > 1 && (
+              <PaginationControls>
+                <PaginationButton
+                  onClick={() => setDefaultRolesPage((p) => Math.max(0, p - 1))}
+                  disabled={defaultRolesPage === 0}
+                >
+                  ← Trước
+                </PaginationButton>
+                <PageInfo>
+                  Trang {defaultRolesPage + 1}/{totalDefaultPages}
+                </PageInfo>
+                <PaginationButton
+                  onClick={() =>
+                    setDefaultRolesPage((p) =>
+                      Math.min(totalDefaultPages - 1, p + 1)
+                    )
+                  }
+                  disabled={defaultRolesPage >= totalDefaultPages - 1}
+                >
+                  Tiếp →
+                </PaginationButton>
+              </PaginationControls>
+            )}
+          </DefaultRolesSection>
 
           {/* --- CUSTOM ROLES --- */}
           <SidebarSection ref={customRolesRef}>
@@ -1288,59 +1679,56 @@ const RolesPage: React.FC = () => {
                 </AddRoleButton>
               </div>
             </SidebarHeader>
-            <RoleList>
+            <RoleList ref={customRoleListRef}>
               {customRolesFiltered.length === 0 ? (
                 <EmptyState>Chưa có vai trò tùy chỉnh</EmptyState>
               ) : (
-                <>
-                  {paginatedCustomRoles.map((role) => (
-                    <RoleItem
-                      key={role.id}
-                      onClick={() => handleRoleSelect(role.id)}
-                      $active={role.id === selectedRoleId}
-                      title={`${role.name} — ${role.members} thành viên`}
-                    >
-                      <RoleLeftStripe style={{ backgroundColor: role.color }} />
-                      <RoleLabel>
-                        <RoleName>{role.name}</RoleName>
-                        <RoleMeta>{role.members} thành viên</RoleMeta>
-                      </RoleLabel>
-                    </RoleItem>
-                  ))}
-                  {/* Pagination Controls cho Custom Roles */}
-                  {totalCustomPages > 1 && (
-                    <PaginationControls>
-                      <PaginationButton
-                        onClick={() =>
-                          setCustomRolesPage((p) => Math.max(0, p - 1))
-                        }
-                        disabled={customRolesPage === 0}
-                      >
-                        ← Trước
-                      </PaginationButton>
-                      <PageInfo>
-                        Trang {customRolesPage + 1}/{totalCustomPages}
-                      </PageInfo>
-                      <PaginationButton
-                        onClick={() =>
-                          setCustomRolesPage((p) =>
-                            Math.min(totalCustomPages - 1, p + 1)
-                          )
-                        }
-                        disabled={customRolesPage >= totalCustomPages - 1}
-                      >
-                        Tiếp →
-                      </PaginationButton>
-                    </PaginationControls>
-                  )}
-                </>
+                paginatedCustomRoles.map((role) => (
+                  <RoleItem
+                    key={role.id}
+                    data-role-item
+                    onClick={() => handleRoleSelect(role.id)}
+                    $active={role.id === selectedRoleId}
+                    title={`${role.name} — ${role.members} thành viên`}
+                  >
+                    <RoleLeftStripe style={{ backgroundColor: role.color }} />
+                    <RoleLabel>
+                      <RoleName>{role.name}</RoleName>
+                      <RoleMeta>{role.members} thành viên</RoleMeta>
+                    </RoleLabel>
+                  </RoleItem>
+                ))
               )}
             </RoleList>
+            {/* Pagination Controls cho Custom Roles - Đặt ngoài RoleList */}
+            {customRolesFiltered.length > 0 && totalCustomPages > 1 && (
+              <PaginationControls>
+                <PaginationButton
+                  onClick={() => setCustomRolesPage((p) => Math.max(0, p - 1))}
+                  disabled={customRolesPage === 0}
+                >
+                  ← Trước
+                </PaginationButton>
+                <PageInfo>
+                  Trang {customRolesPage + 1}/{totalCustomPages}
+                </PageInfo>
+                <PaginationButton
+                  onClick={() =>
+                    setCustomRolesPage((p) =>
+                      Math.min(totalCustomPages - 1, p + 1)
+                    )
+                  }
+                  disabled={customRolesPage >= totalCustomPages - 1}
+                >
+                  Tiếp →
+                </PaginationButton>
+              </PaginationControls>
+            )}
           </SidebarSection>
         </Sidebar>
 
         {/* --- CONTENT (Bên phải) - ĐÃ SỬA LẠI ĐẦY ĐỦ --- */}
-        <Content ref={memberListRef} style={{ maxHeight: memberListHeight }}>
+        <Content ref={memberListRef}>
           {selectedRoleData ? (
             <>
               <ContentHeader>
@@ -1401,10 +1789,28 @@ const RolesPage: React.FC = () => {
                   </MemberList>
                 )}
 
-                {/* (Member Pagination giữ nguyên) */}
+                {/* Member Pagination */}
                 {totalMemberPages > 1 && (
                   <PaginationControls>
-                    {/* ... (Các nút Pagination) ... */}
+                    <PaginationButton
+                      onClick={() => setMembersPage((p) => Math.max(0, p - 1))}
+                      disabled={membersPage === 0}
+                    >
+                      ← Trước
+                    </PaginationButton>
+                    <PageInfo>
+                      Trang {membersPage + 1}/{totalMemberPages}
+                    </PageInfo>
+                    <PaginationButton
+                      onClick={() =>
+                        setMembersPage((p) =>
+                          Math.min(totalMemberPages - 1, p + 1)
+                        )
+                      }
+                      disabled={membersPage >= totalMemberPages - 1}
+                    >
+                      Tiếp →
+                    </PaginationButton>
                   </PaginationControls>
                 )}
               </Panel>
@@ -1436,36 +1842,79 @@ const RolesPage: React.FC = () => {
 
               <FormGroup>
                 <Label>Quyền hạn</Label>
-                <PermissionsColumn style={{ flex: 1 }}>
-                  {groupPermissionsByCategory(allPermissions).map(
-                    (category) => (
-                      <PermissionGroup key={category.name}>
-                        <GroupTitle>{category.name}</GroupTitle>
-                        {category.permissions.map((item) => {
-                          const isReadOnly =
-                            item.action.toLowerCase() === "readonly";
-                         return (
-                            <PermissionRow key={item.id}>
-                              <div>
-                                {item.name} ({item.action})
-                              </div>
-                              <ToggleSwitch>
-                                <input
-                                  type="checkbox"
-                                  checked={modalPermissions.has(item.id)}
-                                  onChange={() =>
-                                    handleModalPermissionToggle(item.id)
-                                  }
-                                  disabled={isReadOnly}
-                                />
-                                <span />
-                              </ToggleSwitch>
-                            </PermissionRow>
-                          );
-                        })}
-                      </PermissionGroup>
-                    )
-                  )}
+                <PermissionsColumn>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.75rem",
+                    }}
+                  >
+                    {groupPermissionsByCategory(allPermissions).map(
+                      (category) => {
+                        const isOpen = openPermissionGroups.has(category.name);
+                        const selectedCount = category.permissions.filter((p) =>
+                          modalPermissions.has(p.id)
+                        ).length;
+                        return (
+                          <PermissionGroup key={category.name}>
+                            <GroupDropdownWrapper>
+                              <GroupDropdownButton
+                                type="button"
+                                onClick={() =>
+                                  togglePermissionGroup(category.name)
+                                }
+                                data-open={isOpen}
+                              >
+                                <span>
+                                  {category.name}
+                                  {selectedCount > 0 && (
+                                    <span
+                                      style={{
+                                        marginLeft: "0.5rem",
+                                        color: "#dc2626",
+                                        fontSize: "0.85rem",
+                                      }}
+                                    >
+                                      ({selectedCount}/
+                                      {category.permissions.length})
+                                    </span>
+                                  )}
+                                </span>
+                                <FaChevronDown />
+                              </GroupDropdownButton>
+                              <GroupDropdownContent $isOpen={isOpen}>
+                                {category.permissions.map((item) => {
+                                  const isReadOnly =
+                                    item.action.toLowerCase() === "readonly";
+                                  return (
+                                    <PermissionRow key={item.id}>
+                                      <div>
+                                        {item.name} ({item.action})
+                                      </div>
+                                      <ToggleSwitch>
+                                        <input
+                                          type="checkbox"
+                                          checked={modalPermissions.has(
+                                            item.id
+                                          )}
+                                          onChange={() =>
+                                            handleModalPermissionToggle(item.id)
+                                          }
+                                          disabled={isReadOnly}
+                                        />
+                                        <span />
+                                      </ToggleSwitch>
+                                    </PermissionRow>
+                                  );
+                                })}
+                              </GroupDropdownContent>
+                            </GroupDropdownWrapper>
+                          </PermissionGroup>
+                        );
+                      }
+                    )}
+                  </div>
                 </PermissionsColumn>
               </FormGroup>
             </ModalBody>
