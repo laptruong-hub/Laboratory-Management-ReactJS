@@ -1,6 +1,6 @@
 import axios, { type AxiosError } from 'axios';
 
-const BASE_URL = 'http://localhost:8090';
+const BASE_URL = 'http://localhost:8000';
 
 
 const apiPublic = axios.create({
