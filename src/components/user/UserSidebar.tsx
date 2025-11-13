@@ -1,4 +1,5 @@
-import { User, Mail, Phone, CreditCard, Zap, LogOut } from 'lucide-react';
+import { User, Mail, Phone, CreditCard, Zap, LogOut, DrumIcon, DrillIcon, ListCheckIcon } from 'lucide-react';
+import { DiIllustrator } from 'react-icons/di';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const UserSidebar = () => {
@@ -119,7 +120,43 @@ const UserSidebar = () => {
           <User size={16} />
           Hồ sơ cá nhân
         </button>
+
+        <button
+          onClick={() => navigate('/user/medical')}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            border: 'none',
+            borderRadius: '6px',
+            backgroundColor: isActive('/user/medical') ? '#FFE7E6' : 'transparent',
+            color: isActive('/user/medical') ? '#FF4D4F' : '#262626',
+            textAlign: 'left',
+            cursor: 'pointer',
+            fontWeight: isActive('/user/medical') ? 500 : 400,
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            if (!isActive('/user/medical')) {
+              e.currentTarget.style.backgroundColor = '#FAFAFA';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isActive('/user/medical')) {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }
+          }}
+        >
+          <ListCheckIcon size={16} />
+          Hồ sơ bệnh án
+        </button>
       </div>
+
+
+      
 
       <button style={{
         width: '100%',
@@ -151,3 +188,4 @@ const UserSidebar = () => {
 };
 
 export default UserSidebar;
+//commit

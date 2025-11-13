@@ -27,7 +27,7 @@ import RolesPage from "./pages/role/RolesPage.tsx";
 
 // Components - User
 import UserProfile from "./components/user/UserProfile.tsx";
-import Index from "./components/user/index.tsx";
+import MedicalRecord from "./components/user/MedicalRecord.tsx";
 
 // Pages - Error
 import NotFound from "./pages/error/NotFound.tsx";
@@ -74,6 +74,11 @@ const router = createBrowserRouter([
         element: <UserProfile />,
       },
       
+      {
+        path:"medical",
+        element: <MedicalRecord />,
+      },
+      
     ],
   },
   {
@@ -114,3 +119,4 @@ function App() {
 }
 
 export default App;
+//comment
