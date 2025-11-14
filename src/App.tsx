@@ -12,6 +12,9 @@ import WorkingLayout from "./components/layout/WorkingLayout.tsx";
 
 // Pages - Home
 import Home from "./pages/home/Homepage.tsx";
+import BookingPage from "./pages/booking/BookingPage.tsx";
+
+
 
 // Pages - Authentication
 import Login from "./pages/authentication/Login.tsx";
@@ -45,6 +48,10 @@ const router = createBrowserRouter([
         path: "/",
         element: <Home />,
       },
+       {
+      path: "/booking",
+      element: <BookingPage />,
+    },
     ],
   },
   {
@@ -65,6 +72,11 @@ const router = createBrowserRouter([
       },
     ],
   },
+
+
+
+
+
   {
     path: "/user",
     element: <UserLayout />,

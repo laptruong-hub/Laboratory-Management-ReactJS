@@ -1,5 +1,6 @@
 import React from "react";
 import styled, { css } from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 import {
   FaFlask,
@@ -380,28 +381,41 @@ const AsideCard = styled.div`
   margin-bottom: 0.9rem;
 `;
 
-const HeroSection: React.FC = () => (
-  <HeroWrapper>
-    <HeroContent>
-      <HeroLeft>
-        <HeroTitle>
-          Xét Nghiệm Máu
-          <br />
-          Chính Xác & Nhanh Chóng
-        </HeroTitle>
-        <HeroSubtitle>
-          Phòng lab hiện đại với đội ngũ chuyên gia giàu kinh nghiệm, cam kết
-          mang đến kết quả chính xác và dịch vụ tận tâm.
-        </HeroSubtitle>
-        <HeroCTA>
-          <Button>Đặt Lịch Xét Nghiệm</Button>
-          <ScheduleInput placeholder="Nhập số điện thoại hoặc mã đăng ký" />
-          <Button $outline>Tìm Hiểu Thêm</Button>
-        </HeroCTA>
-      </HeroLeft>
-    </HeroContent>
-  </HeroWrapper>
-);
+const HeroSection: React.FC = () => {
+  const navigate = useNavigate();
+
+  return (
+    <HeroWrapper>
+      <HeroContent>
+        <HeroLeft>
+          <HeroTitle>
+            Xét Nghiệm Máu
+            <br />
+            Chính Xác & Nhanh Chóng
+          </HeroTitle>
+
+          <HeroSubtitle>
+            Phòng lab hiện đại với đội ngũ chuyên gia giàu kinh nghiệm, cam kết
+            mang đến kết quả chính xác và dịch vụ tận tâm.
+          </HeroSubtitle>
+
+          <HeroCTA>
+            <Button onClick={() => navigate("/booking")}>
+              Đặt Lịch Xét Nghiệm
+            </Button>
+
+            <ScheduleInput placeholder="Nhập số điện thoại hoặc mã đăng ký" />
+
+            <Button $outline>
+              Tìm Hiểu Thêm
+            </Button>
+          </HeroCTA>
+        </HeroLeft>
+      </HeroContent>
+    </HeroWrapper>
+  );
+};
+
 
 const ServicesSection: React.FC = () => (
   <Section color={theme.colors.backgroundLight}>
