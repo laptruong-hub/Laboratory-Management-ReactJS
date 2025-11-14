@@ -13,6 +13,9 @@ import WorkingLayout from "./components/layout/WorkingLayout.tsx";
 
 // Pages - Home
 import Home from "./pages/home/Homepage.tsx";
+import BookingPage from "./pages/booking/BookingPage.tsx";
+
+
 
 // Pages - Authentication
 import Login from "./pages/authentication/Login.tsx";
@@ -25,7 +28,8 @@ import AccountManage from "./pages/admin/AccountManage.tsx";
 import RolesPage from "./pages/role/RolesPage.tsx";
 
 // Components - User
-import Security from "./components/user/Security.tsx";
+import UserProfile from "./components/user/UserProfile.tsx";
+import MedicalRecord from "./components/user/MedicalRecord.tsx";
 
 // Pages - Error
 import NotFound from "./pages/error/NotFound.tsx";
@@ -35,6 +39,20 @@ import Forbidden from "./pages/error/Forbidden.tsx";
 import "./App.css";
 
 const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <MainLayout />,
+    children: [
+      {
+        path: "/",
+        element: <Home />,
+      },
+       {
+      path: "/booking",
+      element: <BookingPage />,
+    },
+    ],
+  },
   {
     path: "/auth",
     element: <AuthLayout />,
@@ -50,6 +68,46 @@ const router = createBrowserRouter([
       {
         path: "signup",
         element: <Signup />,
+      },
+    ],
+  },
+
+
+
+
+
+  {
+    path: "/user",
+    element: <UserLayout />,
+    children: [
+      {
+        path: "profile",
+        element: <UserProfile />,
+      },
+      
+      {
+        path:"medical",
+        element: <MedicalRecord />,
+      },
+      
+    ],
+  },
+  {
+    path: "/admin",
+    element: <WorkingLayout />,
+    children: [
+      {
+        path: "admin-dashboard",
+        element: <AdminDashboardPage />,
+      },
+      
+      {
+        path: "roles",
+        element: <RolesPage />,
+      },
+      {
+        path: "account",
+        element: <AccountManage />,
       },
     ],
   },
