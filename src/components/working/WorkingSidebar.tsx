@@ -8,11 +8,14 @@ import {
   FaFlask,
   FaCog,
   FaChartBar,
+  FaSignOutAlt,
 } from "react-icons/fa";
+import { useAuth } from "../../context/AuthContext";
 
 const SidebarContainer = styled.div`
   flex: 1;
   overflow-y: auto;
+
   padding: 1rem 0;
   background-color: #ffffff;
 `;
@@ -64,6 +67,33 @@ const NavItem = styled(NavLink)`
   }
 `;
 
+const LogoutButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: transparent;
+  color: #dc2626;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #fee2e2;
+    color: #dc2626;
+  }
+
+  svg {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+`;
+
 const Divider = styled.div`
   height: 1px;
   background-color: #e5e7eb;
@@ -71,10 +101,15 @@ const Divider = styled.div`
 `;
 
 const WorkingSidebar: React.FC = () => {
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
   return (
     <SidebarContainer>
       <SidebarTitle>Quản lý hệ thống</SidebarTitle>
-
       <NavList>
         <NavItem to="/admin/admin-dashboard">
           <FaChartBar />
@@ -91,27 +126,33 @@ const WorkingSidebar: React.FC = () => {
           <span>Quản lý vai trò</span>
         </NavItem>
       </NavList>
-
       <Divider />
-
       <SidebarTitle>Quản lý xét nghiệm</SidebarTitle>
-
       <NavList>
         <NavItem to="/features/tests">
           <FaFlask />
           <span>Danh sách xét nghiệm</span>
         </NavItem>
+
+        <NavItem to="/features/orders">
+          <FaClipboardList />
+          <span>Đơn hàng</span>
+        </NavItem>
       </NavList>
-
       <Divider />
-
       <SidebarTitle>Cài đặt</SidebarTitle>
-
       <NavList>
         <NavItem to="/working/settings">
           <FaCog />
           <span>Cài đặt</span>
         </NavItem>
+      </NavList>
+      <Divider />
+      <NavList>
+        <LogoutButton onClick={handleLogout}>
+          <FaSignOutAlt />
+          <span>Đăng xuất</span>
+        </LogoutButton>
       </NavList>
     </SidebarContainer>
   );

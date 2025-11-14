@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react"; // <-- 1. SỬA LỖI IMPORT Ở ĐÂY
 import styled, { css } from "styled-components";
 import { useNavigate } from "react-router-dom";
 
@@ -17,6 +17,10 @@ import {
   FaEnvelope,
   FaPhoneAlt,
 } from "react-icons/fa";
+
+import { apiClient } from "../../api/apiClient";
+
+// --- (TẤT CẢ STYLED-COMPONENTS VÀ DATA CỦA BẠN BẮT ĐẦU TỪ ĐÂY) ---
 
 const theme = {
   colors: {
@@ -602,16 +606,56 @@ const ContactSection: React.FC = () => (
   </Section>
 );
 
-const HomePage: React.FC = () => (
-  <div style={{width: "100%", overflow: "hidden"}}>
-    <main>
-      <HeroSection />
-      <ServicesSection />
-      <WhyChooseUsSection />
-      <ProcessSection />
-      <ContactSection />
-    </main>
-  </div>
-);
+const HomePage: React.FC = () => {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+
+    const fetchMyProfile = async () => {
+      try {
+        const response = await apiClient.get('/api/users/me');
+        setUser(response.data); // Lưu thông tin user vào state
+      } catch (error) {
+        console.error("Không thể lấy thông tin user (có thể token hết hạn):", error);
+      } finally {
+        setLoading(false); // Dù thành công hay thất bại, cũng tắt loading
+      }
+    };
+
+    const token = localStorage.getItem('accessToken');
+
+    if (token) {
+      // NẾU CÓ TOKEN (Đã đăng nhập) -> Mới gọi API
+      fetchMyProfile();
+    } else {
+      // NẾU KHÔNG CÓ TOKEN (Khách) -> Không làm gì cả, chỉ tắt loading
+      setLoading(false);
+    }
+
+  }, []); // [] = Chỉ chạy 1 lần duy nhất khi trang tải
+
+
+  // Hiển thị "loading" trong khi đang check token hoặc fetch API
+  if (loading) {
+    return <div>Đang tải trang...</div>; // (Bạn có thể làm component Spinner đẹp hơn)
+  }
+
+  // Sau khi loading=false, render trang chính
+  return (
+    <div style={{ width: "100%", overflow: "hidden" }}>
+      <main>
+        {/* - Nếu là Khách: user=null -> "Xin chào, bạn!"
+          - Nếu đã Login: user={...} -> "Xin chào, [Admin]!"
+        */}
+        <HeroSection user={user} />
+
+        <ServicesSection />
+        <WhyChooseUsSection />
+        <ProcessSection />
+        <ContactSection />
+      </main>
+    </div>
+  );
+};
 
 export default HomePage;

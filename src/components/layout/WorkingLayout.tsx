@@ -1,15 +1,17 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import styled from 'styled-components';
-import WorkingSidebar from '../working/WorkingSidebar';
-import WorkingUserInfo from '../working/WorkingUserInfo';
+import React from "react";
+import { Outlet } from "react-router-dom";
+import styled from "styled-components";
+import WorkingSidebar from "../working/WorkingSidebar";
+import WorkingUserInfo from "../working/WorkingUserInfo";
 
 const LayoutContainer = styled.div`
   display: flex;
   height: 100vh;
   width: 100%;
+  max-width: 100%;
   overflow: hidden;
   background-color: #f5f5f5;
+  box-sizing: border-box;
 `;
 
 const LeftPanel = styled.div`
@@ -18,7 +20,7 @@ const LeftPanel = styled.div`
   flex-direction: column;
   background-color: #ffffff;
   border-right: 1px solid #e0e0e0;
-  
+
   @media (max-width: 768px) {
     width: 100%;
     position: absolute;
@@ -37,11 +39,14 @@ const RightPanel = styled.div`
 
 const ContentArea = styled.main`
   flex: 1;
-  overflow-y: auto;
-  padding: 2rem;
-  
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+
   @media (max-width: 768px) {
-    padding: 1rem;
+    padding: 0;
   }
 `;
 
@@ -52,7 +57,7 @@ const WorkingLayout: React.FC = () => {
         <WorkingUserInfo />
         <WorkingSidebar />
       </LeftPanel>
-      
+
       <RightPanel>
         <ContentArea>
           <Outlet />
