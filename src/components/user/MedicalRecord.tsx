@@ -110,4 +110,3 @@ const MedicalRecord = () => {
 };
 
 export default MedicalRecord;
-//commit
