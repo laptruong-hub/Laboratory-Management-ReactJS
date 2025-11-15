@@ -1,4 +1,4 @@
-import { X, Mail, Printer, FileText, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
+import { X, Mail, Printer, FileText, AlertCircle, CheckCircle, AlertTriangle, Send, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface TestResult {
@@ -23,7 +23,16 @@ const UserHistoryDetails: React.FC<UserHistoryDetailsProps> = ({
   onClose,
   testOrderId = 'TO-2025-001234'
 }) => {
-  const [activeTab, setActiveTab] = useState<'results' | 'trend' | 'info'>('results');
+  const [activeTab, setActiveTab] = useState<'results' | 'trend' | 'info' | 'notes'>('results');
+  const [noteText, setNoteText] = useState<string>('');
+  const [notes, setNotes] = useState<Array<{ id: number; author: string; date: string; text: string }>>([
+    {
+      id: 1,
+      author: 'BS. Trần Thị C',
+      date: '2025-03-15 10:45',
+      text: 'Bệnh nhân cần tái khám sau 2 tuần để kiểm tra lại chỉ số WBC'
+    }
+  ]);
 
   const testResults: TestResult[] = [
     {
@@ -222,7 +231,8 @@ const UserHistoryDetails: React.FC<UserHistoryDetailsProps> = ({
           {[
             { id: 'results', label: 'Kết quả CBC' },
             { id: 'trend', label: 'Xu hướng' },
-            { id: 'info', label: 'Thông tin' }
+            { id: 'info', label: 'Thông tin' },
+            { id: 'notes', label: 'Ghi chú' }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -694,6 +704,190 @@ const UserHistoryDetails: React.FC<UserHistoryDetailsProps> = ({
                   }}>
                     Kết quả xét nghiệm cho thấy chỉ số WBC cao hơn mức bình thường, điều này có thể chỉ ra tình trạng viêm nhiễm hoặc phản ứng miễn dịch. Hemoglobin và Hematocrit thấp hơn mức bình thường, gợi ý có khả năng thiếu máu. Khuyến cáo bệnh nhân nên tái khám và làm thêm các xét nghiệm chuyên sâu để xác định nguyên nhân chính xác.
                   </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'notes' && (
+            <div>
+              <div style={{ marginBottom: '24px' }}>
+                <h3 style={{
+                  margin: '0 0 16px 0',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: '#262626',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  📝 Ghi chú
+                </h3>
+
+                {/* Add Note Form */}
+                <div style={{
+                  padding: '16px',
+                  border: '1px solid #E5E5E5',
+                  borderRadius: '4px',
+                  backgroundColor: '#FAFAFA',
+                  marginBottom: '24px'
+                }}>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    color: '#262626',
+                    marginBottom: '8px'
+                  }}>
+                    Thêm ghi chú mới
+                  </label>
+                  <textarea
+                    value={noteText}
+                    onChange={(e) => setNoteText(e.target.value)}
+                    placeholder="Nhập ghi chú của bạn..."
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '1px solid #D9D9D9',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      color: '#262626',
+                      fontFamily: 'inherit',
+                      resize: 'vertical',
+                      minHeight: '100px',
+                      boxSizing: 'border-box',
+                      outline: 'none',
+                      transition: 'border-color 0.2s'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#de1919';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#D9D9D9';
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      if (noteText.trim()) {
+                        const newNote = {
+                          id: Date.now(),
+                          author: 'Bạn',
+                          date: new Date().toLocaleString('vi-VN'),
+                          text: noteText
+                        };
+                        setNotes([newNote, ...notes]);
+                        setNoteText('');
+                      }
+                    }}
+                    style={{
+                      marginTop: '12px',
+                      padding: '8px 16px',
+                      backgroundColor: '#de1919',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#c41515';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#de1919';
+                    }}
+                  >
+                    <Send size={14} />
+                    Thêm ghi chú
+                  </button>
+                </div>
+
+                {/* Notes List */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}>
+                  {notes.length > 0 ? (
+                    notes.map((note) => (
+                      <div
+                        key={note.id}
+                        style={{
+                          padding: '16px',
+                          border: '1px solid #E5E5E5',
+                          borderRadius: '4px',
+                          backgroundColor: '#fff'
+                        }}
+                      >
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                          marginBottom: '8px'
+                        }}>
+                          <div>
+                            <p style={{
+                              margin: '0 0 4px 0',
+                              fontSize: '13px',
+                              fontWeight: 600,
+                              color: '#262626'
+                            }}>
+                              {note.author}
+                            </p>
+                            <p style={{
+                              margin: 0,
+                              fontSize: '11px',
+                              color: '#8C8C8C'
+                            }}>
+                              {note.date}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setNotes(notes.filter((n) => n.id !== note.id));
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: '4px',
+                              color: '#8C8C8C',
+                              transition: 'color 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = '#FF4D4F';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = '#8C8C8C';
+                            }}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                        <p style={{
+                          margin: 0,
+                          fontSize: '13px',
+                          color: '#262626',
+                          lineHeight: '1.6'
+                        }}>
+                          {note.text}
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p style={{
+                      textAlign: 'center',
+                      color: '#8C8C8C',
+                      fontSize: '13px',
+                      padding: '24px'
+                    }}>
+                      Chưa có ghi chú nào. Thêm ghi chú đầu tiên của bạn.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
