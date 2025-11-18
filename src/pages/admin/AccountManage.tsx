@@ -133,14 +133,163 @@ const LayoutStyles = () => (
       flex-direction: row;
       gap: 24px;
       margin-top: 16px;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
     }
     .am-table, .am-pagination {
       display: none; /* (Ẩn table và pagination cũ) */
     }
 
+    @media (max-width: 1024px) {
+      .am-layout-wrapper {
+        flex-direction: column;
+        gap: 16px;
+      }
+      .am-list-pane {
+        width: 100%;
+        height: 300px;
+        min-height: 300px;
+        max-height: 300px;
+      }
+      .am-detail-pane {
+        height: auto;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+      .am-detail-card {
+        padding: 20px;
+      }
+      .am-detail-grid {
+        gap: 14px 16px;
+      }
+      .am-detail-header {
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+      }
+      .am-detail-avatar {
+        width: 80px;
+        height: 80px;
+        font-size: 36px;
+        margin-bottom: 10px;
+      }
+      .am-detail-name {
+        font-size: 20px;
+      }
+      .am-detail-email {
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .am-layout-wrapper {
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .am-list-pane {
+        height: 250px;
+        min-height: 250px;
+        max-height: 250px;
+      }
+      .am-detail-card {
+        padding: 16px;
+      }
+      .am-detail-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .am-detail-header {
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+      }
+      .am-detail-avatar {
+        width: 70px;
+        height: 70px;
+        font-size: 32px;
+        margin-bottom: 8px;
+      }
+      .am-detail-name {
+        font-size: 18px;
+      }
+      .am-detail-email {
+        font-size: 13px;
+      }
+      .am-detail-field label {
+        font-size: 12px;
+      }
+      .am-detail-field .value {
+        font-size: 14px;
+      }
+      .am-detail-actions {
+        flex-wrap: wrap;
+        margin-top: 12px;
+        padding-top: 12px;
+        gap: 8px;
+      }
+      .am-detail-actions button {
+        flex: 1;
+        min-width: 120px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .am-layout-wrapper {
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .am-list-pane {
+        height: 200px;
+        min-height: 200px;
+        max-height: 200px;
+      }
+      .am-detail-card {
+        padding: 12px;
+      }
+      .am-detail-grid {
+        gap: 10px;
+      }
+      .am-detail-header {
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+      }
+      .am-detail-avatar {
+        width: 60px;
+        height: 60px;
+        font-size: 28px;
+        margin-bottom: 6px;
+      }
+      .am-detail-name {
+        font-size: 16px;
+      }
+      .am-detail-email {
+        font-size: 12px;
+      }
+      .am-detail-field label {
+        font-size: 11px;
+      }
+      .am-detail-field .value {
+        font-size: 13px;
+      }
+      .am-detail-actions {
+        margin-top: 10px;
+        padding-top: 10px;
+        flex-direction: column;
+      }
+      .am-detail-actions button {
+        width: 100%;
+        min-width: auto;
+      }
+    }
+
     /* Cột danh sách (bên trái) */
     .am-list-pane {
       width: 350px;
+      min-width: 280px;
+      max-width: 350px;
       flex-shrink: 0;
       background: #fff;
       border-radius: 12px;
@@ -148,10 +297,26 @@ const LayoutStyles = () => (
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      box-sizing: border-box;
     }
     
     .am-list-scroller {
       padding: 8px;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      box-sizing: border-box;
+      
+      /* Ẩn scrollbar nhưng vẫn cho phép scroll */
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    }
+    
+    .am-list-scroller::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
     }
 
     .am-list-item {
@@ -231,8 +396,16 @@ const LayoutStyles = () => (
 
     /* Cột chi tiết (bên phải) */
     .am-detail-pane {
+      flex: 1;
       flex-grow: 1;
       min-width: 0;
+      min-height: 0;
+      height: 100%;
+      max-height: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
 
     .am-detail-card {
@@ -240,6 +413,21 @@ const LayoutStyles = () => (
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       padding: 24px;
+      height: 100%;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      
+      /* Ẩn scrollbar nhưng vẫn cho phép scroll */
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    }
+    
+    .am-detail-card::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
     }
     
     .am-detail-placeholder {
@@ -260,6 +448,8 @@ const LayoutStyles = () => (
       margin-bottom: 24px;
       padding-bottom: 24px;
       border-bottom: 1px solid #f1f5f9;
+      flex-shrink: 0;
+      min-height: 0;
     }
     .am-detail-avatar {
       width: 100px;
@@ -285,24 +475,34 @@ const LayoutStyles = () => (
       font-size: 24px;
       font-weight: 700;
       color: #1e293b;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
     .am-detail-email {
       font-size: 16px;
       color: #64748b;
       margin-top: 4px;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
 
     /* Grid chi tiết */
     .am-detail-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px 24px;
+      gap: 16px 20px;
+      flex: 1;
+      min-height: 0;
+      align-content: start;
+      box-sizing: border-box;
     }
     
     .am-detail-field {
       display: flex;
       flex-direction: column;
       gap: 4px;
+      min-width: 0;
+      word-break: break-word;
     }
     
     .am-detail-field label {
@@ -315,6 +515,8 @@ const LayoutStyles = () => (
       font-size: 15px;
       color: #1e293b;
       font-weight: 500;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
     .am-detail-field .badge-pill {
       align-self: flex-start;
@@ -325,13 +527,14 @@ const LayoutStyles = () => (
       display: flex;
       justify-content: flex-end;
       gap: 8px;
-      margin-top: 24px;
-      padding-top: 24px;
+      margin-top: 16px;
+      padding-top: 16px;
       border-top: 1px solid #f1f5f9;
+      flex-shrink: 0;
+      min-height: 0;
     }
   `}</style>
 );
-/* --- END STYLES --- */
 
 /* ---------- Helpers / UI ---------- */
 const formatDate = (iso?: string) =>
@@ -421,7 +624,7 @@ export default function AccountManage() {
   const searchRef = useRef<HTMLInputElement>(null);
 
   const [page, setPage] = useState(1);
-  const pageSize = 6;
+  const pageSize = 5;
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -1121,7 +1324,7 @@ export default function AccountManage() {
             <div className="am-detail-card">
               {/* Header chi tiết */}
               <div className="am-detail-header">
-                <div className="am-detail-avatar">
+                {/* <div className="am-detail-avatar">
                   {getAvatarFromStorage(selectedUser.id) ? (
                     <img
                       src={getAvatarFromStorage(selectedUser.id)!}
@@ -1146,23 +1349,22 @@ export default function AccountManage() {
                       .slice(-1)[0]?.[0]
                       ?.toUpperCase() ?? "U"
                   )}
-                </div>
+                </div> */}
                 <div className="am-detail-name">{selectedUser.name}</div>
                 <div className="am-detail-email">{selectedUser.email}</div>
               </div>
 
-              {/* Grid chi tiết (Một khối duy nhất) */}
               <div className="am-detail-grid">
-                {/* 1. Họ và Tên (Luôn tĩnh) */}
+
                 <DetailField label="Họ và Tên" value={selectedUser.name} />
 
-                {/* 2. Ngày sinh (Luôn tĩnh) */}
+
                 <DetailField
                   label="Ngày sinh"
                   value={formatDate(selectedUser.dob)}
                 />
 
-                {/* 3. Giới tính (Đổi thành input) */}
+
                 <DetailField label="Giới tính">
                   {isEditing ? (
                     <select

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 const Security: React.FC = () => {
-    const [activeTab, setActiveTab] = useState('security');
+    const [activeTab, setActiveTab] = useState<'personal' | 'security' | 'notifications' | 'sessions'>('security');
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -50,46 +50,35 @@ const Security: React.FC = () => {
 
             {/* Tabs */}
             <div style={{
-                marginBottom: '32px'
+                display: 'flex',
+                gap: 0,
+                marginBottom: '24px',
+                borderBottom: '1px solid #E5E5E5'
             }}>
-                <div style={{
-                    display: 'flex',
-                    backgroundColor: '#F5F5F5',
-                    borderRadius: '6px',
-                    padding: '4px'
-                }}>
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                padding: '6px 16px',
-                                border: 'none',
-                                background: activeTab === tab.id ? '#FAFAFA' : 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s',
-                                flex: 1,
-                                justifyContent: 'center',
-                                boxShadow: activeTab === tab.id ? '0px 1px 2px rgba(0, 0, 0, 0.05)' : 'none'
-                            }}
-                            onClick={() => setActiveTab(tab.id)}
-                        >
-                            <span style={{
-                                fontSize: '20px',
-                                opacity: 0.8,
-                                filter: 'grayscale(1)'
-                            }}>{tab.icon}</span>
-                            <span style={{
-                                fontSize: '13.2px',
-                                fontWeight: 600,
-                                color: activeTab === tab.id ? '#262626' : '#737373'
-                            }}>{tab.label}</span>
-                        </button>
-                    ))}
-                </div>
+                {tabs.map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as 'personal' | 'security' | 'notifications' | 'sessions')}
+                        style={{
+                            padding: '12px 16px',
+                            border: 'none',
+                            backgroundColor: 'transparent',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            color: activeTab === tab.id ? '#de1919' : '#8C8C8C',
+                            borderBottom: activeTab === tab.id ? '2px solid #de1919' : 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            transition: 'all 0.2s',
+                            marginBottom: '-1px'
+                        }}
+                    >
+                        <span>{tab.icon}</span>
+                        {tab.label}
+                    </button>
+                ))}
             </div>
 
             {/* Tab Content */}
@@ -325,7 +314,7 @@ const Security: React.FC = () => {
                                 </div>
 
                                 <button type="submit" style={{
-                                    backgroundColor: '#FF0033',
+                                    backgroundColor: '#de1919',
                                     color: 'white',
                                     border: 'none',
                                     padding: '8px 16px',
@@ -333,7 +322,7 @@ const Security: React.FC = () => {
                                     fontSize: '13.5px',
                                     fontWeight: 600,
                                     cursor: 'pointer',
-                                    transition: 'background-color 0.3s',
+                                    transition: 'background-color 0.2s',
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     justifyContent: 'center'
@@ -401,7 +390,7 @@ const Security: React.FC = () => {
                             </p>
 
                             <button style={{
-                                backgroundColor: '#FF0033',
+                                backgroundColor: '#de1919',
                                 color: 'white',
                                 border: 'none',
                                 padding: '8px 16px',
@@ -409,7 +398,7 @@ const Security: React.FC = () => {
                                 fontSize: '13.5px',
                                 fontWeight: 600,
                                 cursor: 'pointer',
-                                transition: 'background-color 0.3s',
+                                transition: 'background-color 0.2s',
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 justifyContent: 'center'
