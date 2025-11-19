@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiClient, apiPublic } from "../api/apiClient"; // Import trạm API
+import { getToken, clearAllAuthData } from "../utils/storage";
 
 // 1. Định nghĩa "kiểu" của User (hoặc dùng "any" nếu lười)
 interface User {
@@ -45,8 +46,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    // Kiểm tra xem có token không
-    const token = localStorage.getItem("accessToken");
+    // Kiểm tra xem có token không (checks both localStorage and sessionStorage)
+    const token = getToken("accessToken");
     if (token) {
       fetchMyProfile(); // Nếu có token -> mới fetch
     } else {
@@ -55,7 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const refreshUser = async () => {
-    const token = localStorage.getItem("accessToken");
+    const token = getToken("accessToken");
     if (token) {
       setLoading(true);
       await fetchMyProfile();
@@ -65,7 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       // Gọi API logout endpoint
-      const refreshToken = localStorage.getItem("refreshToken");
+      const refreshToken = getToken("refreshToken");
       if (refreshToken) {
         await apiPublic.post("/api/auth/logout", { refreshToken });
       }
@@ -75,9 +76,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error("Lỗi khi gọi API logout:", error);
       }
     } finally {
-      // Xóa tokens từ localStorage
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
+      // Clear all authentication data from both storages
+      clearAllAuthData();
 
       // Clear user từ state
       setUser(null);

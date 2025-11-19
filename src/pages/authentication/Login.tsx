@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import loginImg from "../../assets/img/login.jpg";
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { apiPublic } from "../../api/apiClient.ts";
+import { setToken, setRememberMe, setRememberedEmail, getRememberedEmail, getRememberMe } from "../../utils/storage";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -14,6 +15,17 @@ const Login: React.FC = () => {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
+
+  // Load remembered email on component mount
+  useEffect(() => {
+    const rememberedEmail = getRememberedEmail();
+    const wasRemembered = getRememberMe();
+
+    if (rememberedEmail && wasRemembered) {
+      setEmail(rememberedEmail);
+      setRememberMe(true); // Auto-check if email was remembered
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,9 +42,15 @@ const Login: React.FC = () => {
       if (response.data && response.data.accessToken) {
         const { accessToken, refreshToken } = response.data;
 
-        // 2c. LƯU CẢ HAI token
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
+        // 2c. LƯU CẢ HAI token based on "Remember Me" preference
+        setToken("accessToken", accessToken, rememberMe);
+        setToken("refreshToken", refreshToken, rememberMe);
+
+        // Save "Remember Me" preference
+        setRememberMe(rememberMe);
+
+        // Save email for convenience (only if Remember Me is checked)
+        setRememberedEmail(email, rememberMe);
 
         // Refresh user data and navigate
         navigate("/", { replace: true });

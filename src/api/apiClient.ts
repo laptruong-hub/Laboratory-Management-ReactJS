@@ -1,4 +1,5 @@
 import axios, { type AxiosError } from "axios";
+import { getToken, setToken, getRememberMe, clearAllAuthData } from "../utils/storage";
 
 const BASE_URL = "http://localhost:8000";
 
@@ -20,7 +21,8 @@ const apiClient = axios.create({
 // Nhiệm vụ: Tự động gắn Access Token vào header
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("accessToken");
+    // Check both localStorage and sessionStorage
+    const token = getToken("accessToken");
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -70,7 +72,8 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = localStorage.getItem("refreshToken");
+        // Get refresh token from storage (checks both localStorage and sessionStorage)
+        const refreshToken = getToken("refreshToken");
         if (!refreshToken) {
           throw new Error("No refresh token");
         }
@@ -80,8 +83,10 @@ apiClient.interceptors.response.use(
 
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } = rs.data;
 
-        localStorage.setItem("accessToken", newAccessToken);
-        localStorage.setItem("refreshToken", newRefreshToken);
+        // Preserve the original "Remember Me" preference when refreshing tokens
+        const rememberMe = getRememberMe();
+        setToken("accessToken", newAccessToken, rememberMe);
+        setToken("refreshToken", newRefreshToken, rememberMe);
 
         apiClient.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -91,8 +96,8 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
       } catch (_error) {
         processQueue(_error, null);
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
+        // Clear all auth data from both storages
+        clearAllAuthData();
         // Use window.location for interceptor since we're outside React context
         window.location.href = "/auth/login";
         return Promise.reject(_error);
