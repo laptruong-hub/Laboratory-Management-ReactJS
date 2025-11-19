@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
@@ -10,9 +10,9 @@ import { apiPublic } from "../../api/apiClient";
 const StyledNavbar = styled(Navbar)`
   .btn {
     margin-right: 5px;
-    font-size: 10px;                 
-    padding: 5px 30px;               
-    border-radius: 8px; 
+    font-size: 10px;
+    padding: 5px 30px;
+    border-radius: 8px;
     border: 2px solid #cbabab59;
     &:hover {
       background-color: #f99f9fff;
@@ -37,7 +37,7 @@ const StyledNavbar = styled(Navbar)`
   .nav-link[href="/auth/signup"] {
     font-weight: 600;
   }
-  
+
   /* Thêm style cho text "Xin chào" */
   .navbar-text {
     color: rgba(255, 255, 255, 0.8) !important;
@@ -47,24 +47,13 @@ const StyledNavbar = styled(Navbar)`
 `;
 
 const Header: React.FC = () => {
-
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
+  const navigate = useNavigate();
 
   // 3. ĐỊNH NGHĨA HÀM LOGOUT
   const handleLogout = async () => {
-    try {
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken) {
-        await apiPublic.post('/api/auth/logout', { refreshToken });
-      }
-    } catch (error) {
-      console.error("Lỗi khi gọi API logout:", error);
-    } finally {
-
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      window.location.href = '/';
-    }
+    await logout();
+    navigate("/", { replace: true });
   };
 
   return (
@@ -89,43 +78,26 @@ const Header: React.FC = () => {
           {/* 4. LOGIC HIỂN THỊ ĐỘNG (THAY ĐỔI TẠI ĐÂY) */}
           <Nav>
             {loading ? (
-
               <Navbar.Text>Đang tải...</Navbar.Text>
             ) : user ? (
-
               <>
-                <Navbar.Text>
-                  Xin chào, {user.fullName || user.email}
-                </Navbar.Text>
-                <Nav.Link
-                  as="button"
-                  onClick={handleLogout}
-                  className="btn btn-outline-primary text-white px-2"
-                >
+                <Navbar.Text>Xin chào, {user.fullName || user.email}</Navbar.Text>
+                <Nav.Link as="button" onClick={handleLogout} className="btn btn-outline-primary text-white px-2">
                   Đăng xuất
                 </Nav.Link>
               </>
             ) : (
               // Nếu LÀ KHÁCH (user là null)
               <>
-                <Nav.Link
-                  as={Link}
-                  to="/auth/login"
-                  className="btn btn-outline-primary text-white px-2"
-                >
+                <Nav.Link as={Link} to="/auth/login" className="btn btn-outline-primary text-white px-2">
                   Đăng nhập
                 </Nav.Link>
-                <Nav.Link
-                  as={Link}
-                  to="/auth/signup"
-                  className="btn btn-outline-primary text-white px-2"
-                >
+                <Nav.Link as={Link} to="/auth/signup" className="btn btn-outline-primary text-white px-2">
                   Đăng ký
                 </Nav.Link>
               </>
             )}
           </Nav>
-
         </Navbar.Collapse>
       </Container>
     </StyledNavbar>

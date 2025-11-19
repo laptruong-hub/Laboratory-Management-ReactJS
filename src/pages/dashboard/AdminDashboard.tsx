@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
-import OrdersTable, {
-  type OrderRow,
-} from "../../components/dashboard/OrdersTable";
-import UsersTable, {
-  type UserRow,
-} from "../../components/dashboard/UsersTable";
+import OrdersTable, { type OrderRow } from "../../components/dashboard/OrdersTable";
+import UsersTable, { type UserRow } from "../../components/dashboard/UsersTable";
 import { FaUsers, FaClipboardList, FaFlask, FaChartLine } from "react-icons/fa";
 import StatCard from "../../components/dashboard/DashboardCards/StatCard";
 import MiniBarChart from "../../components/dashboard/DashboardCards/MiniBarChart";
@@ -176,8 +172,7 @@ const ROLE_NAME_MAP: Record<string, UserRow["role"]> = {
   Technician: "Lab User",
 };
 
-const normalizeRoleName = (roleName: string): UserRow["role"] =>
-  ROLE_NAME_MAP[roleName] ?? "Lab User";
+const normalizeRoleName = (roleName: string): UserRow["role"] => ROLE_NAME_MAP[roleName] ?? "Lab User";
 
 const AdminDashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -187,9 +182,7 @@ const AdminDashboardPage: React.FC = () => {
     totalRoles: 0,
   });
   const [userRows, setUserRows] = useState<UserRow[]>([]);
-  const [orderRows] = useState<OrderRow[]>(
-    mockOrderRows.map((order) => ({ ...order }))
-  );
+  const [orderRows] = useState<OrderRow[]>(mockOrderRows.map((order) => ({ ...order })));
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -199,24 +192,21 @@ const AdminDashboardPage: React.FC = () => {
       const [usersResponse, rolesResponse] = await Promise.all([
         apiClient.get("/api/users"),
         apiClient.get("/api/roles"),
-      
       ]);
 
       const usersData: UserDtoFromApi[] = usersResponse.data;
       const rolesData = rolesResponse.data;
 
-      const convertedUserRows: UserRow[] = usersData
-        .slice(0, 10)
-        .map((user) => ({
-          id: user.id.toString(),
-          name: user.fullName,
-          email: user.email,
-          role: normalizeRoleName(user.roleName),
-          status: user.isActive ? "active" : "pending",
-          activity: user.isActive ? "Đang hoạt động" : "Chưa kích hoạt",
-          createdAt: user.createdAt,
-          online: user.isActive,
-        }));
+      const convertedUserRows: UserRow[] = usersData.slice(0, 10).map((user) => ({
+        id: user.id.toString(),
+        name: user.fullName,
+        email: user.email,
+        role: normalizeRoleName(user.roleName),
+        status: user.isActive ? "active" : "pending",
+        activity: user.isActive ? "Đang hoạt động" : "Chưa kích hoạt",
+        createdAt: user.createdAt,
+        online: user.isActive,
+      }));
 
       setUserRows(convertedUserRows);
       setDashboardData({
@@ -224,7 +214,9 @@ const AdminDashboardPage: React.FC = () => {
         totalRoles: rolesData.length,
       });
     } catch (err) {
-      console.error("Lỗi khi fetch dashboard data:", err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Lỗi khi fetch dashboard data:", err);
+      }
       setError("Không thể tải dữ liệu dashboard");
       setUserRows(
         mockUserRows.slice(0, 10).map((user) => ({
@@ -270,9 +262,7 @@ const AdminDashboardPage: React.FC = () => {
       <HeadingRow>
         <TitleGroup>
           <PageTitle>Dashboard tổng quan</PageTitle>
-          <PageDescription>
-            Hệ thống quản lý phòng xét nghiệm máu (Hematology Lab)
-          </PageDescription>
+          <PageDescription>Hệ thống quản lý phòng xét nghiệm máu (Hematology Lab)</PageDescription>
         </TitleGroup>
         <ActionsWrap>
           <TopBarActions onRefresh={handleRefresh} />
@@ -312,9 +302,7 @@ const AdminDashboardPage: React.FC = () => {
       <Section>
         <SectionHeader>
           <SectionTitle>Chỉ số vận hành</SectionTitle>
-          <SectionSubtitle>
-            Tổng quan nhanh các chỉ số chính của hệ thống
-          </SectionSubtitle>
+          <SectionSubtitle>Tổng quan nhanh các chỉ số chính của hệ thống</SectionSubtitle>
         </SectionHeader>
 
         <KPIGrid>
@@ -338,21 +326,14 @@ const AdminDashboardPage: React.FC = () => {
 
       <Section>
         <AnalyticsGrid>
-          <HorizontalBarChart
-            title={parameterDistribution.title}
-            data={parameterDistribution.data}
-          />
+          <HorizontalBarChart title={parameterDistribution.title} data={parameterDistribution.data} />
           <DonutChart
             title={roleDistribution.title}
             totalLabel="Tổng tài khoản"
             total={roleDistribution.total}
             data={roleDistribution.data}
           />
-          <HeatmapCalendar
-            title="Heatmap lịch hẹn"
-            month={heatmapData.month}
-            data={heatmapData.data}
-          />
+          <HeatmapCalendar title="Heatmap lịch hẹn" month={heatmapData.month} data={heatmapData.data} />
         </AnalyticsGrid>
       </Section>
     </PageContainer>
