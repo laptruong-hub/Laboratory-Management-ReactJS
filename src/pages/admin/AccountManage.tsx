@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import "../../components/admin/account-manage.css"; // (File CSS gốc)
 import { apiClient } from "../../api/apiClient";
+import { createPatient } from "../../api/apiPatient";
 import { toast } from "react-toastify";
 
 /* ---------- Types ---------- */
@@ -1000,6 +1001,42 @@ export default function AccountManage() {
         }
       }
 
+      // Kiểm tra nếu role là "Patient", tự động tạo record trong bảng patient
+      const selectedRole = allRoles.find((r) => r.id === Number(defaultRoleId));
+      const roleName = selectedRole?.name || newUserDto.roleName || "";
+
+      if (roleName.trim().toUpperCase() === "PATIENT") {
+        try {
+          // Convert gender boolean to string ("Nam" or "Nữ")
+          let genderString: string | undefined = undefined;
+          if (newUserDto.gender === true) {
+            genderString = "Nam";
+          } else if (newUserDto.gender === false) {
+            genderString = "Nữ";
+          }
+
+          await createPatient({
+            accountId: newUserDto.id,
+            fullName: newUserDto.fullName,
+            email: newUserDto.email,
+            phoneNumber: newUserDto.phone || undefined, // API uses phoneNumber
+            gender: genderString, // API uses string ("Nam"/"Nữ")
+            dob: newUserDto.dob || undefined,
+            isActive: newUserDto.isActive || false,
+          });
+          console.log("Đã tạo record patient trong database thứ 2");
+        } catch (patientErr: any) {
+          console.error("Lỗi khi tạo patient:", patientErr);
+          // Không throw error để không chặn việc tạo user thành công
+          // Chỉ log warning vì có thể backend đã tự động tạo
+          toast.warning(
+            `Đã tạo user thành công, nhưng không thể tạo record patient: ${
+              patientErr.response?.data?.message || patientErr.message
+            }`
+          );
+        }
+      }
+
       setShowCreateModal(false);
       const newUserForUI = adaptUser(newUserDto);
       setRows((prevRows) => [newUserForUI, ...prevRows]);
@@ -1355,15 +1392,12 @@ export default function AccountManage() {
               </div>
 
               <div className="am-detail-grid">
-
                 <DetailField label="Họ và Tên" value={selectedUser.name} />
-
 
                 <DetailField
                   label="Ngày sinh"
                   value={formatDate(selectedUser.dob)}
                 />
-
 
                 <DetailField label="Giới tính">
                   {isEditing ? (

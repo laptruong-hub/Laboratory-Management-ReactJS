@@ -1,4 +1,8 @@
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -24,6 +28,7 @@ import ForgotPassword from "./pages/authentication/ForgotPassword.tsx";
 // Pages - Admin
 import AdminDashboardPage from "./pages/dashboard/AdminDashboard.tsx";
 import AccountManage from "./pages/admin/AccountManage.tsx";
+import PatientManage from "./pages/admin/PatientManage.tsx";
 import RolesPage from "./pages/role/RolesPage.tsx";
 import TestOrder from "./pages/admin/TestOrder.tsx";
 
