@@ -70,10 +70,11 @@ const SearchBox = styled.div`
   align-items: center;
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   padding: 0.5rem 1rem;
   flex: 1;
-  max-width: 400px;
+  max-width: 25rem;
+  min-width: 0;
 
   input {
     border: none;
@@ -83,6 +84,7 @@ const SearchBox = styled.div`
     margin-left: 0.5rem;
     background: #ffffff;
     color: #1f2937;
+    min-width: 0;
 
     &::placeholder {
       color: #94a3b8;
@@ -90,6 +92,7 @@ const SearchBox = styled.div`
   }
   svg {
     color: #9ca3af;
+    flex-shrink: 0;
   }
 `;
 
@@ -105,14 +108,14 @@ const FilterWrapper = styled.div`
 
 const FilterDropdown = styled.div`
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 0.5rem);
   left: 0;
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
   padding: 0.5rem;
-  min-width: 220px;
+  min-width: 13.75rem;
   z-index: 60;
 `;
 
@@ -137,12 +140,14 @@ const Button = styled.button<{ $variant?: "primary" | "secondary" }>`
   align-items: center;
   gap: 0.5rem;
   padding: 0.65rem 1.25rem;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
   border: none;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
   ${(props) =>
     props.$variant === "primary"
       ? `background-color:#dc2626;color:white; &:hover{background-color:#b91c1c}`
@@ -161,9 +166,9 @@ const FlexLayout = styled.div`
 `;
 
 const Sidebar = styled.aside`
-  width: 320px;
-  min-width: 280px;
-  max-width: 320px;
+  width: 20rem;
+  min-width: 17.5rem;
+  max-width: 20rem;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -174,12 +179,33 @@ const Sidebar = styled.aside`
   overflow: hidden;
   box-sizing: border-box;
   align-items: stretch;
+
+  @media (max-width: 1024px) {
+    width: 17.5rem;
+    min-width: 16.25rem;
+    max-width: 17.5rem;
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 768px) {
+    width: 15rem;
+    min-width: 13.75rem;
+    max-width: 15rem;
+    gap: 0.6rem;
+  }
+
+  @media (max-width: 480px) {
+    width: 12.5rem;
+    min-width: 11.25rem;
+    max-width: 12.5rem;
+    gap: 0.5rem;
+  }
 `;
 
 const SidebarSection = styled.div`
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-radius: 0.75rem;
+  box-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.06);
   padding: 0.75rem;
   flex: 1 1 auto;
   min-height: 0;
@@ -199,6 +225,17 @@ const SidebarHeader = styled.div`
   border-bottom: 1px solid #eef2f6;
   flex-shrink: 0;
   min-height: 0;
+  font-size: 0.95rem;
+
+  @media (max-width: 768px) {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.85rem;
+  }
 `;
 
 const AddRoleButton = styled.button`
@@ -210,11 +247,12 @@ const AddRoleButton = styled.button`
   background: #dc2626;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 0.375rem;
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 
   &:hover {
     background: #b91c1c;
@@ -232,6 +270,16 @@ const CountBadge = styled.span`
   border-radius: 999px;
   font-weight: 700;
   font-size: 0.85rem;
+
+  @media (max-width: 768px) {
+    padding: 0.1rem 0.4rem;
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.08rem 0.35rem;
+    font-size: 0.75rem;
+  }
 `;
 
 const RoleList = styled.div`
@@ -254,7 +302,7 @@ const RoleList = styled.div`
   }
 `;
 
-// RoleList cho Default Roles - có scroll nếu cần
+// RoleList cho Default Roles - không cho phép scroll
 const DefaultRoleList = styled.div`
   display: flex;
   flex-direction: column;
@@ -262,23 +310,34 @@ const DefaultRoleList = styled.div`
   margin-top: 0.75rem;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   box-sizing: border-box;
+  width: 100%;
 
-  /* Ẩn scrollbar nhưng vẫn cho phép scroll */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  @media (max-width: 768px) {
+    gap: 0.2rem;
+    margin-top: 0.5rem;
+  }
 
-  &::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+  @media (max-width: 480px) {
+    gap: 0.15rem;
+    margin-top: 0.5rem;
   }
 `;
 
-// SidebarSection cho Default Roles - có flex để có thể scroll
+// SidebarSection cho Default Roles - responsive
 const DefaultRolesSection = styled(SidebarSection)`
   flex: 1 1 auto;
   min-height: 0;
+  max-height: 100%;
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.4rem;
+  }
 `;
 
 const RoleItem = styled.div<{ $active?: boolean; roleColor?: string }>`
@@ -286,24 +345,47 @@ const RoleItem = styled.div<{ $active?: boolean; roleColor?: string }>`
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   cursor: pointer;
   transition: background 0.12s ease, transform 0.08s ease;
   background: ${(props) => (props.$active ? "#f8fafc" : "transparent")};
   flex-shrink: 0;
   min-width: 0;
+  width: 100%;
 
   &:hover {
     background: #f9fafb;
-    transform: translateY(-1px);
+    transform: translateY(-0.0625rem);
+  }
+
+  @media (max-width: 768px) {
+    gap: 0.5rem;
+    padding: 0.4rem;
+  }
+
+  @media (max-width: 480px) {
+    gap: 0.4rem;
+    padding: 0.35rem;
+    border-radius: 0.375rem;
   }
 `;
 
 const RoleLeftStripe = styled.div`
-  width: 8px;
-  height: 40px;
-  border-radius: 6px;
+  width: 0.5rem;
+  height: 2.5rem;
+  border-radius: 0.375rem;
   flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    width: 0.375rem;
+    height: 2.25rem;
+  }
+
+  @media (max-width: 480px) {
+    width: 0.3125rem;
+    height: 2rem;
+    border-radius: 0.25rem;
+  }
 `;
 
 const RoleLabel = styled.div`
@@ -311,6 +393,7 @@ const RoleLabel = styled.div`
   flex-direction: column;
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 `;
 
 const RoleName = styled.div`
@@ -319,11 +402,30 @@ const RoleName = styled.div`
   word-break: break-word;
   overflow-wrap: break-word;
   min-width: 0;
+  font-size: 0.95rem;
+  line-height: 1.3;
+
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.85rem;
+  }
 `;
 
 const RoleMeta = styled.div`
   font-size: 0.8rem;
   color: #6b7280;
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.7rem;
+  }
 `;
 
 const PaginationControls = styled.div`
@@ -345,11 +447,12 @@ const PaginationButton = styled.button`
   padding: 0.5rem 1rem;
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  border-radius: 0.375rem;
   font-size: 0.85rem;
   color: #4b5563;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 
   &:hover:not(:disabled) {
     background: #f9fafb;
@@ -372,9 +475,9 @@ const Content = styled.main`
   min-width: 0;
   min-height: 0;
   background: white;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.06);
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
@@ -403,7 +506,7 @@ const ContentHeader = styled.div`
 
 const Panel = styled.section`
   background: white;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   padding: 1rem;
   border: 1px solid #eef2f6;
   flex: 1;
@@ -448,7 +551,7 @@ const MemberRow = styled.div`
   gap: 0.75rem;
   align-items: center;
   padding: 0.75rem;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   transition: background 0.12s ease;
   flex-shrink: 0;
   min-width: 0;
@@ -461,8 +564,10 @@ const MemberRow = styled.div`
 `;
 
 const Avatar = styled.div`
-  width: 40px;
-  height: 40px;
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
   border-radius: 50%;
   background: #e5e7eb;
   display: flex;
@@ -471,6 +576,7 @@ const Avatar = styled.div`
   color: #111827;
   font-weight: 700;
   flex-shrink: 0;
+  font-size: 1rem;
 `;
 
 const ModalOverlay = styled.div`
@@ -488,10 +594,10 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled.div`
   width: 100%;
-  max-width: 920px;
+  max-width: 57.5rem;
   max-height: calc(100vh - 2rem);
   background: white;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -521,17 +627,17 @@ const ModalBody = styled.div`
   -ms-overflow-style: none; /* IE and Edge */
 
   &::-webkit-scrollbar {
-    width: 8px;
+    width: 0.5rem;
   }
 
   &::-webkit-scrollbar-track {
     background: #f1f1f1;
-    border-radius: 4px;
+    border-radius: 0.25rem;
   }
 
   &::-webkit-scrollbar-thumb {
     background: #cbd5e1;
-    border-radius: 4px;
+    border-radius: 0.25rem;
   }
 
   &::-webkit-scrollbar-thumb:hover {
@@ -593,8 +699,8 @@ const GroupDropdownContent = styled.div<{ $isOpen: boolean }>`
   padding: 0.75rem;
   background: #f9fafb;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  max-height: 200px;
+  border-radius: 0.5rem;
+  max-height: 12.5rem;
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
@@ -604,17 +710,17 @@ const GroupDropdownContent = styled.div<{ $isOpen: boolean }>`
   -ms-overflow-style: none; /* IE and Edge */
 
   &::-webkit-scrollbar {
-    width: 6px;
+    width: 0.375rem;
   }
 
   &::-webkit-scrollbar-track {
     background: #f1f1f1;
-    border-radius: 3px;
+    border-radius: 0.1875rem;
   }
 
   &::-webkit-scrollbar-thumb {
     background: #cbd5e1;
-    border-radius: 3px;
+    border-radius: 0.1875rem;
   }
 
   &::-webkit-scrollbar-thumb:hover {
@@ -649,14 +755,15 @@ const ToggleSwitch = styled.label`
   display: inline-flex;
   align-items: center;
   cursor: pointer;
+  flex-shrink: 0;
 
   input {
     display: none;
   }
 
   span {
-    width: 44px;
-    height: 24px;
+    width: 2.75rem;
+    height: 1.5rem;
     background: #e5e7eb;
     border-radius: 999px;
     position: relative;
@@ -666,13 +773,13 @@ const ToggleSwitch = styled.label`
   span::after {
     content: "";
     position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 18px;
-    height: 18px;
+    top: 0.1875rem;
+    left: 0.1875rem;
+    width: 1.125rem;
+    height: 1.125rem;
     background: white;
     border-radius: 50%;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.06);
     transition: transform 0.12s ease;
   }
 
@@ -681,7 +788,7 @@ const ToggleSwitch = styled.label`
   }
 
   input:checked + span::after {
-    transform: translateX(20px);
+    transform: translateX(1.25rem);
   }
 `;
 
@@ -782,7 +889,7 @@ interface Member {
 
 // (Các hằng số)
 const MEMBERS_PER_PAGE = 5;
-const DEFAULT_ROLES_PER_PAGE = 2;
+// Default roles sẽ hiển thị tất cả, không phân trang
 // ROLES_PER_PAGE sẽ được tính động dựa trên không gian có sẵn
 const DEFAULT_ROLE_NAMES = new Set([
   "ADMIN",
@@ -852,7 +959,6 @@ const RolesPage: React.FC = () => {
   );
 
   // (State cho Pagination)
-  const [defaultRolesPage, setDefaultRolesPage] = useState(0);
   const [customRolesPage, setCustomRolesPage] = useState(0);
   const [membersPage, setMembersPage] = useState(0);
   const [customRolesPerPage, setCustomRolesPerPage] = useState(3); // PageSize động
@@ -1057,6 +1163,7 @@ const RolesPage: React.FC = () => {
       };
       await apiClient.post("/api/roles", createRequest);
       setShowCreateModal(false);
+      setCustomRolesPage(0); // Reset về trang đầu khi tạo role mới
       await fetchData(); // Tải lại
     } catch (err: any) {
       console.error("Lỗi khi tạo role:", err);
@@ -1350,14 +1457,7 @@ const RolesPage: React.FC = () => {
     a.name.localeCompare(b.name, "vi", { sensitivity: "base" })
   );
 
-  // Phân trang cho Default Roles
-  const totalDefaultPages = Math.ceil(
-    sortedDefaultRoles.length / DEFAULT_ROLES_PER_PAGE
-  );
-  const paginatedDefaultRoles = sortedDefaultRoles.slice(
-    defaultRolesPage * DEFAULT_ROLES_PER_PAGE,
-    (defaultRolesPage + 1) * DEFAULT_ROLES_PER_PAGE
-  );
+  // Default roles hiển thị tất cả, không phân trang
 
   const processedCustomRoles = (() => {
     const list = [...customRolesFiltered];
@@ -1409,12 +1509,18 @@ const RolesPage: React.FC = () => {
     // Tất cả custom roles (không phải default) đều có thể xóa được
     return true;
   };
-  const totalCustomPages = Math.ceil(
-    processedCustomRoles.length / customRolesPerPage
+  const totalCustomPages = Math.max(
+    1,
+    Math.ceil(processedCustomRoles.length / Math.max(1, customRolesPerPage))
+  );
+  // Đảm bảo customRolesPage không vượt quá totalCustomPages
+  const safeCustomRolesPage = Math.min(
+    customRolesPage,
+    Math.max(0, totalCustomPages - 1)
   );
   const paginatedCustomRoles = processedCustomRoles.slice(
-    customRolesPage * customRolesPerPage,
-    (customRolesPage + 1) * customRolesPerPage
+    safeCustomRolesPage * customRolesPerPage,
+    (safeCustomRolesPage + 1) * customRolesPerPage
   );
 
   const totalMemberPages = Math.ceil(members.length / MEMBERS_PER_PAGE);
@@ -1431,23 +1537,21 @@ const RolesPage: React.FC = () => {
     }
   };
 
-  // Reset default roles page when list changes
+  // Reset custom roles page when filtered/sorted list changes or when page size changes
   useEffect(() => {
-    if (defaultRolesPage >= totalDefaultPages && totalDefaultPages > 0) {
-      setDefaultRolesPage(0);
-    }
-  }, [totalDefaultPages, defaultRolesPage]);
-
-  // Reset custom roles page when filtered/sorted list changes
-  useEffect(() => {
-    if (customRolesPage >= totalCustomPages && totalCustomPages > 0) {
+    const maxPage = Math.max(0, totalCustomPages - 1);
+    if (customRolesPage > maxPage && totalCustomPages > 0) {
+      setCustomRolesPage(Math.max(0, maxPage));
+    } else if (totalCustomPages === 0 && customRolesPage > 0) {
       setCustomRolesPage(0);
     }
-  }, [totalCustomPages, customRolesPage, customRolesPerPage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalCustomPages, customRolesPerPage, processedCustomRoles.length]);
 
   // Tính toán pageSize động cho Custom Roles dựa trên không gian có sẵn
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null;
+    let previousPageSize = customRolesPerPage;
 
     const calculatePageSize = () => {
       if (!customRoleListRef.current) return;
@@ -1483,6 +1587,12 @@ const RolesPage: React.FC = () => {
         Math.floor((availableHeight - gap) / (itemHeight + gap))
       );
 
+      // Nếu page size thay đổi, reset về trang đầu để tránh glitch
+      if (itemsPerPage !== previousPageSize && previousPageSize > 0) {
+        setCustomRolesPage(0);
+      }
+
+      previousPageSize = itemsPerPage;
       setCustomRolesPerPage(itemsPerPage);
     };
 
@@ -1490,7 +1600,7 @@ const RolesPage: React.FC = () => {
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-      timeoutId = setTimeout(calculatePageSize, 100);
+      timeoutId = setTimeout(calculatePageSize, 150);
     };
 
     // Delay một chút để đảm bảo DOM đã render
@@ -1514,7 +1624,7 @@ const RolesPage: React.FC = () => {
       resizeObserver.disconnect();
       window.removeEventListener("resize", debouncedCalculate);
     };
-  }, [customRolesFiltered.length, paginatedCustomRoles.length]); // Recalculate when list changes
+  }, [customRolesFiltered.length]); // Recalculate when list changes
 
   // Reset to page 0 when search term or sort option changes
   useEffect(() => {
@@ -1621,11 +1731,11 @@ const RolesPage: React.FC = () => {
           {/* --- DEFAULT ROLES --- */}
           <DefaultRolesSection ref={defaultRolesRef}>
             <SidebarHeader>
-              Default Roles
+              Vai Trò Mặc Định
               <CountBadge>{sortedDefaultRoles.length}</CountBadge>
             </SidebarHeader>
             <DefaultRoleList>
-              {paginatedDefaultRoles.map((role) => (
+              {sortedDefaultRoles.map((role) => (
                 <RoleItem
                   key={role.id}
                   onClick={() => handleRoleSelect(role.id)}
@@ -1640,30 +1750,6 @@ const RolesPage: React.FC = () => {
                 </RoleItem>
               ))}
             </DefaultRoleList>
-            {/* Pagination Controls cho Default Roles */}
-            {totalDefaultPages > 1 && (
-              <PaginationControls>
-                <PaginationButton
-                  onClick={() => setDefaultRolesPage((p) => Math.max(0, p - 1))}
-                  disabled={defaultRolesPage === 0}
-                >
-                  ← Trước
-                </PaginationButton>
-                <PageInfo>
-                  Trang {defaultRolesPage + 1}/{totalDefaultPages}
-                </PageInfo>
-                <PaginationButton
-                  onClick={() =>
-                    setDefaultRolesPage((p) =>
-                      Math.min(totalDefaultPages - 1, p + 1)
-                    )
-                  }
-                  disabled={defaultRolesPage >= totalDefaultPages - 1}
-                >
-                  Tiếp →
-                </PaginationButton>
-              </PaginationControls>
-            )}
           </DefaultRolesSection>
 
           {/* --- CUSTOM ROLES --- */}
@@ -1705,12 +1791,12 @@ const RolesPage: React.FC = () => {
               <PaginationControls>
                 <PaginationButton
                   onClick={() => setCustomRolesPage((p) => Math.max(0, p - 1))}
-                  disabled={customRolesPage === 0}
+                  disabled={safeCustomRolesPage === 0}
                 >
                   ← Trước
                 </PaginationButton>
                 <PageInfo>
-                  Trang {customRolesPage + 1}/{totalCustomPages}
+                  Trang {safeCustomRolesPage + 1}/{totalCustomPages}
                 </PageInfo>
                 <PaginationButton
                   onClick={() =>
@@ -1718,7 +1804,7 @@ const RolesPage: React.FC = () => {
                       Math.min(totalCustomPages - 1, p + 1)
                     )
                   }
-                  disabled={customRolesPage >= totalCustomPages - 1}
+                  disabled={safeCustomRolesPage >= totalCustomPages - 1}
                 >
                   Tiếp →
                 </PaginationButton>
