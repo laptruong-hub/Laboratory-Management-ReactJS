@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import UserSidebar from "../user/UserSidebar";
-import UserHeader from "../user/UserHeader";
+import Header from "../common/Header";
 import { Menu, X } from "lucide-react";
 
 const UserLayout = () => {
@@ -16,9 +16,10 @@ const UserLayout = () => {
         backgroundColor: "#FAFAFA",
       }}
     >
-      <UserHeader />
+      <Header />
       <div
         style={{
+          height: "50px",
           display: "flex",
           flex: 1,
           maxWidth: "1200px",

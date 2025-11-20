@@ -500,7 +500,10 @@ const Header: React.FC = () => {
                   >
                     <FaUser />
                   </ProfileButton>
+
+                  
                   <DropdownMenu $isOpen={dropdownOpen} ref={dropdownRef}>
+                    
                     <DropdownHeader>
                       <DropdownAvatar>
                         {user.avatarUrl ? (
