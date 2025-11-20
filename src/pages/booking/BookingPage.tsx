@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import { Calendar, User, MapPin, Phone, Mail } from 'lucide-react';
+import React, { useState } from "react";
+import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
+import { Calendar, User, MapPin, Phone, Mail, ArrowLeft } from "lucide-react";
 
 const theme = {
   colors: {
@@ -36,7 +37,7 @@ const FormWrapper = styled.div`
   border-radius: 16px;
   box-shadow: ${theme.shadows.xl};
   padding: 2.5rem;
-  
+
   @media (max-width: 768px) {
     padding: 1.5rem;
   }
@@ -57,7 +58,7 @@ const IconWrapper = styled.div`
   border-radius: 20px;
   margin-bottom: 1.5rem;
   box-shadow: ${theme.shadows.lg};
-  
+
   svg {
     width: 40px;
     height: 40px;
@@ -78,13 +79,13 @@ const Subtitle = styled.p`
   margin: 0;
 `;
 
-const MessageBox = styled.div<{ $type: 'success' | 'error' }>`
+const MessageBox = styled.div<{ $type: "success" | "error" }>`
   padding: 1rem 1.25rem;
   border-radius: 10px;
   margin-bottom: 1.5rem;
-  background: ${p => p.$type === 'success' ? theme.colors.successLight : theme.colors.errorLight};
-  color: ${p => p.$type === 'success' ? theme.colors.success : theme.colors.error};
-  border: 1px solid ${p => p.$type === 'success' ? theme.colors.success : theme.colors.error};
+  background: ${(p) => (p.$type === "success" ? theme.colors.successLight : theme.colors.errorLight)};
+  color: ${(p) => (p.$type === "success" ? theme.colors.success : theme.colors.error)};
+  border: 1px solid ${(p) => (p.$type === "success" ? theme.colors.success : theme.colors.error)};
   font-weight: 500;
 `;
 
@@ -104,7 +105,7 @@ const Label = styled.label`
   font-size: 0.9rem;
   font-weight: 600;
   color: ${theme.colors.textDark};
-  
+
   span {
     color: ${theme.colors.primary};
   }
@@ -112,7 +113,7 @@ const Label = styled.label`
 
 const InputWrapper = styled.div`
   position: relative;
-  
+
   svg {
     position: absolute;
     left: 1rem;
@@ -127,24 +128,24 @@ const InputWrapper = styled.div`
 const Input = styled.input`
   width: 100%;
   padding: 0.875rem 1rem;
-  padding-left: ${p => p.type === 'date' || p.type === 'datetime-local' ? '1rem' : '3rem'};
+  padding-left: ${(p) => (p.type === "date" || p.type === "datetime-local" ? "1rem" : "3rem")};
   border: 2px solid ${theme.colors.border};
   border-radius: 10px;
   font-size: 1rem;
   transition: all 0.2s;
   box-sizing: border-box;
-  
+
   &:focus {
     outline: none;
     border-color: ${theme.colors.primary};
     box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
   }
-  
+
   &:read-only {
     background: ${theme.colors.backgroundLight};
     cursor: not-allowed;
   }
-  
+
   &::placeholder {
     color: ${theme.colors.textLight};
   }
@@ -161,13 +162,13 @@ const TextArea = styled.textarea`
   font-family: inherit;
   transition: all 0.2s;
   box-sizing: border-box;
-  
+
   &:focus {
     outline: none;
     border-color: ${theme.colors.primary};
     box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
   }
-  
+
   &::placeholder {
     color: ${theme.colors.textLight};
   }
@@ -177,7 +178,7 @@ const GridRow = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
-  
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
@@ -194,19 +195,43 @@ const GenderLabel = styled.label<{ $selected: boolean }>`
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  border: 2px solid ${p => p.$selected ? theme.colors.primary : theme.colors.border};
+  border: 2px solid ${(p) => (p.$selected ? theme.colors.primary : theme.colors.border)};
   border-radius: 10px;
-  background: ${p => p.$selected ? 'rgba(220, 38, 38, 0.05)' : theme.colors.white};
+  background: ${(p) => (p.$selected ? "rgba(220, 38, 38, 0.05)" : theme.colors.white)};
   cursor: pointer;
   transition: all 0.2s;
   font-weight: 600;
-  
+
   &:hover {
     border-color: ${theme.colors.primary};
   }
-  
+
   input {
     display: none;
+  }
+`;
+
+const BackArrow = styled.div`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: ${theme.colors.textDark};
+  margin-bottom: 1rem;
+
+  &:hover {
+    background: ${theme.colors.backgroundLight};
+    color: ${theme.colors.primary};
+    transform: translateX(-2px);
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
   }
 `;
 
@@ -222,12 +247,12 @@ const SubmitButton = styled.button`
   cursor: pointer;
   transition: all 0.3s;
   box-shadow: ${theme.shadows.md};
-  
+
   &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: ${theme.shadows.lg};
   }
-  
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -235,21 +260,22 @@ const SubmitButton = styled.button`
 `;
 
 const BookingPage: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    fullName: '',
-    dateOfBirth: '',
-    age: '',
-    gender: '',
-    address: '',
-    phoneNumber: '',
-    email: '',
-    appointmentDate: '',
+    fullName: "",
+    dateOfBirth: "",
+    age: "",
+    gender: "",
+    address: "",
+    phoneNumber: "",
+    email: "",
+    appointmentDate: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const calculateAge = (dob: string) => {
-    if (!dob) return '';
+    if (!dob) return "";
     const birthDate = new Date(dob);
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
@@ -271,12 +297,18 @@ const BookingPage: React.FC = () => {
 
   const handleSubmit = async () => {
     // Validate required fields
-    if (!formData.fullName || !formData.dateOfBirth || !formData.gender || 
-        !formData.address || !formData.phoneNumber || !formData.email || 
-        !formData.appointmentDate) {
+    if (
+      !formData.fullName ||
+      !formData.dateOfBirth ||
+      !formData.gender ||
+      !formData.address ||
+      !formData.phoneNumber ||
+      !formData.email ||
+      !formData.appointmentDate
+    ) {
       setMessage({
-        type: 'error',
-        text: 'Vui lòng điền đầy đủ thông tin bắt buộc.',
+        type: "error",
+        text: "Vui lòng điền đầy đủ thông tin bắt buộc.",
       });
       return;
     }
@@ -286,8 +318,8 @@ const BookingPage: React.FC = () => {
 
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       // In production, replace with actual Supabase call:
       // const { error } = await supabase.from('blood_test_appointments').insert([{
       //   full_name: formData.fullName,
@@ -299,30 +331,30 @@ const BookingPage: React.FC = () => {
       //   email: formData.email,
       //   appointment_date: formData.appointmentDate,
       // }]);
-      
-      console.log('Form data:', formData);
-      
+
+      console.log("Form data:", formData);
+
       setMessage({
-        type: 'success',
-        text: 'Đăng ký xét nghiệm thành công! Chúng tôi sẽ liên hệ với bạn sớm.',
+        type: "success",
+        text: "Đăng ký xét nghiệm thành công! Chúng tôi sẽ liên hệ với bạn sớm.",
       });
-      
+
       setFormData({
-        fullName: '',
-        dateOfBirth: '',
-        age: '',
-        gender: '',
-        address: '',
-        phoneNumber: '',
-        email: '',
-        appointmentDate: '',
+        fullName: "",
+        dateOfBirth: "",
+        age: "",
+        gender: "",
+        address: "",
+        phoneNumber: "",
+        email: "",
+        appointmentDate: "",
       });
     } catch (error) {
       setMessage({
-        type: 'error',
-        text: 'Có lỗi xảy ra. Vui lòng thử lại.',
+        type: "error",
+        text: "Có lỗi xảy ra. Vui lòng thử lại.",
       });
-      console.error('Error:', error);
+      console.error("Error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -331,6 +363,9 @@ const BookingPage: React.FC = () => {
   return (
     <PageContainer>
       <FormWrapper>
+        <BackArrow onClick={() => navigate(-1)}>
+          <ArrowLeft />
+        </BackArrow>
         <Header>
           <IconWrapper>
             <Calendar />
@@ -339,11 +374,7 @@ const BookingPage: React.FC = () => {
           <Subtitle>Vui lòng điền đầy đủ thông tin để đăng ký lịch xét nghiệm</Subtitle>
         </Header>
 
-        {message && (
-          <MessageBox $type={message.type}>
-            {message.text}
-          </MessageBox>
-        )}
+        {message && <MessageBox $type={message.type}>{message.text}</MessageBox>}
 
         <FormContainer>
           <FormGroup>
@@ -370,18 +401,13 @@ const BookingPage: React.FC = () => {
                 type="date"
                 value={formData.dateOfBirth}
                 onChange={handleDateOfBirthChange}
-                max={new Date().toISOString().split('T')[0]}
+                max={new Date().toISOString().split("T")[0]}
               />
             </FormGroup>
 
             <FormGroup>
               <Label>Tuổi</Label>
-              <Input
-                type="number"
-                readOnly
-                value={formData.age}
-                placeholder="Tự động tính"
-              />
+              <Input type="number" readOnly value={formData.age} placeholder="Tự động tính" />
             </FormGroup>
           </GridRow>
 
@@ -390,7 +416,7 @@ const BookingPage: React.FC = () => {
               Giới tính <span>*</span>
             </Label>
             <GenderGrid>
-              {['Nam', 'Nữ', 'Khác'].map((gender) => (
+              {["Nam", "Nữ", "Khác"].map((gender) => (
                 <GenderLabel key={gender} $selected={formData.gender === gender}>
                   <input
                     type="radio"
@@ -409,7 +435,7 @@ const BookingPage: React.FC = () => {
               Địa chỉ <span>*</span>
             </Label>
             <InputWrapper>
-              <MapPin style={{ top: '1rem', transform: 'none' }} />
+              <MapPin style={{ top: "1rem", transform: "none" }} />
               <TextArea
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
@@ -462,7 +488,7 @@ const BookingPage: React.FC = () => {
           </FormGroup>
 
           <SubmitButton onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? 'Đang xử lý...' : 'Đăng ký xét nghiệm'}
+            {isSubmitting ? "Đang xử lý..." : "Đăng ký xét nghiệm"}
           </SubmitButton>
         </FormContainer>
       </FormWrapper>

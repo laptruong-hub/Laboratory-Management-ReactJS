@@ -1,13 +1,19 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import LoadingSpinner from "./LoadingSpinner";
 
 const PrivateRoute = () => {
-    const isAuthenticated = !!localStorage.getItem('accessToken');
+  const { isAuthenticated, loading } = useAuth();
 
-    if (!isAuthenticated) {
-        return <Navigate to="/auth/login" replace />;
-    }
+  if (loading) {
+    return <LoadingSpinner fullScreen text="Đang tải..." />;
+  }
 
-    return <Outlet />;
+  if (!isAuthenticated) {
+    return <Navigate to="/auth/login" replace />;
+  }
+
+  return <Outlet />;
 };
 
 export default PrivateRoute;

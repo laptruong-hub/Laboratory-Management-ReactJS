@@ -4,7 +4,6 @@ import styled from "styled-components";
 import {
   FaUsers,
   FaUserShield,
-  FaClipboardList,
   FaFlask,
   FaCog,
   FaChartBar,
@@ -125,18 +124,18 @@ const WorkingSidebar: React.FC = () => {
           <FaUserShield />
           <span>Quản lý vai trò</span>
         </NavItem>
+
+        <NavItem to="/admin/patients">
+          <FaUsers />
+          <span>Danh sách bện nhân</span>
+        </NavItem>
       </NavList>
       <Divider />
       <SidebarTitle>Quản lý xét nghiệm</SidebarTitle>
       <NavList>
-        <NavItem to="/features/tests">
+        <NavItem to="/admin/test-order">
           <FaFlask />
           <span>Danh sách xét nghiệm</span>
-        </NavItem>
-
-        <NavItem to="/features/orders">
-          <FaClipboardList />
-          <span>Đơn hàng</span>
         </NavItem>
       </NavList>
       <Divider />

@@ -1,9 +1,14 @@
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import PrivateRoute from "./components/common/PrivateRoute.tsx";
+import ErrorBoundary from "./components/common/ErrorBoundary.tsx";
 
 // Layouts
 import MainLayout from "./components/layout/MainLayout.tsx";
@@ -15,8 +20,6 @@ import WorkingLayout from "./components/layout/WorkingLayout.tsx";
 import Home from "./pages/home/Homepage.tsx";
 import BookingPage from "./pages/booking/BookingPage.tsx";
 
-
-
 // Pages - Authentication
 import Login from "./pages/authentication/Login.tsx";
 import Signup from "./pages/authentication/Signup.tsx";
@@ -25,7 +28,9 @@ import ForgotPassword from "./pages/authentication/ForgotPassword.tsx";
 // Pages - Admin
 import AdminDashboardPage from "./pages/dashboard/AdminDashboard.tsx";
 import AccountManage from "./pages/admin/AccountManage.tsx";
+import PatientManage from "./pages/admin/PatientManage.tsx";
 import RolesPage from "./pages/role/RolesPage.tsx";
+import TestOrder from "./pages/admin/TestOrder.tsx";
 
 // Components - User
 import UserProfile from "./components/user/UserProfile.tsx";
@@ -44,13 +49,13 @@ const router = createBrowserRouter([
     element: <MainLayout />,
     children: [
       {
-        path: "/",
+        index: true,
         element: <Home />,
       },
-       {
-      path: "/booking",
-      element: <BookingPage />,
-    },
+      {
+        path: "booking",
+        element: <BookingPage />,
+      },
     ],
   },
   {
@@ -71,72 +76,22 @@ const router = createBrowserRouter([
       },
     ],
   },
-
-
-
-
-
-  {
-    path: "/user",
-    element: <UserLayout />,
-    children: [
-      {
-        path: "profile",
-        element: <UserProfile />,
-      },
-      
-      {
-        path:"medical",
-        element: <MedicalRecord />,
-      },
-      
-    ],
-  },
-  {
-    path: "/admin",
-    element: <WorkingLayout />,
-    children: [
-      {
-        path: "admin-dashboard",
-        element: <AdminDashboardPage />,
-      },
-      
-      {
-        path: "roles",
-        element: <RolesPage />,
-      },
-      {
-        path: "account",
-        element: <AccountManage />,
-      },
-    ],
-  },
-  {
-    path: "/forbidden",
-    element: <Forbidden />,
-  },
-  {
-    path: "/not-found",
-    element: <NotFound />,
-  },
-
-  {
-    path: "/",
-    element: <MainLayout />,
-    children: [
-      {
-        path: "/",
-        element: <Home />,
-      },
-    ],
-  },
-
   {
     element: <PrivateRoute />,
     children: [
       {
         path: "/user",
         element: <UserLayout />,
+        children: [
+          {
+            path: "profile",
+            element: <UserProfile />,
+          },
+          {
+            path: "medical",
+            element: <MedicalRecord />,
+          },
+        ],
       },
       {
         path: "/admin",
@@ -154,11 +109,22 @@ const router = createBrowserRouter([
             path: "account",
             element: <AccountManage />,
           },
+          {
+            path: "test-order",
+            element: <TestOrder />,
+          },
         ],
       },
     ],
   },
-
+  {
+    path: "/forbidden",
+    element: <Forbidden />,
+  },
+  {
+    path: "/not-found",
+    element: <NotFound />,
+  },
   {
     path: "*",
     element: <Navigate to="/not-found" replace />,
@@ -167,7 +133,7 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <>
+    <ErrorBoundary>
       <RouterProvider router={router} />
       <ToastContainer
         position="top-right"
@@ -179,11 +145,10 @@ function App() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="light"
+        theme="colored"
       />
-    </>
+    </ErrorBoundary>
   );
 }
 
 export default App;
-//comment
