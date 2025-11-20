@@ -1506,7 +1506,7 @@ const RolesPage: React.FC = () => {
       return false;
     }
 
-    // Tất cả custom roles (không phải default) đều có thể xóa được
+   
     return true;
   };
   const totalCustomPages = Math.max(
@@ -1755,7 +1755,7 @@ const RolesPage: React.FC = () => {
           {/* --- CUSTOM ROLES --- */}
           <SidebarSection ref={customRolesRef}>
             <SidebarHeader>
-              Custom Roles
+              Vai Trò Tùy Chỉnh
               <div
                 style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}
               >
@@ -1786,7 +1786,7 @@ const RolesPage: React.FC = () => {
                 ))
               )}
             </RoleList>
-            {/* Pagination Controls cho Custom Roles - Đặt ngoài RoleList */}
+     
             {customRolesFiltered.length > 0 && totalCustomPages > 1 && (
               <PaginationControls>
                 <PaginationButton
