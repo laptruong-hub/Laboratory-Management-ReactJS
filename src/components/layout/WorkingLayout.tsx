@@ -39,7 +39,7 @@ const RightPanel = styled.div`
 
 const ContentArea = styled.main`
   flex: 1;
-  overflow: hidden;
+  overflow: auto;
   display: flex;
   flex-direction: column;
   min-height: 0;

@@ -25,6 +25,7 @@ import ForgotPassword from "./pages/authentication/ForgotPassword.tsx";
 import AdminDashboardPage from "./pages/dashboard/AdminDashboard.tsx";
 import AccountManage from "./pages/admin/AccountManage.tsx";
 import RolesPage from "./pages/role/RolesPage.tsx";
+import TestOrder from "./pages/admin/TestOrder.tsx";
 
 // Components - User
 import UserProfile from "./components/user/UserProfile.tsx";
@@ -102,6 +103,10 @@ const router = createBrowserRouter([
           {
             path: "account",
             element: <AccountManage />,
+          },
+          {
+            path: "test-order",
+            element: <TestOrder />,
           },
         ],
       },

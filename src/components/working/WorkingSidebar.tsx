@@ -129,7 +129,7 @@ const WorkingSidebar: React.FC = () => {
       <Divider />
       <SidebarTitle>Quản lý xét nghiệm</SidebarTitle>
       <NavList>
-        <NavItem to="/features/tests">
+        <NavItem to="/admin/test-order">
           <FaFlask />
           <span>Danh sách xét nghiệm</span>
         </NavItem>
