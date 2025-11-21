@@ -23,7 +23,7 @@ export interface CreatePatientRequest {
   email?: string; // Optional, but must be valid email if provided
   phoneNumber?: string;
   address?: string;
-  gender?: string; // "Nam" | "Nữ"
+  gender?: boolean; // boolean: true = Nam, false = Nữ
   dob?: string | Date; // Format: "YYYY-MM-DD"
 }
 
@@ -36,7 +36,7 @@ export interface UpdatePatientRequest {
   email?: string; // Optional, but must be valid email if provided
   phoneNumber?: string;
   address?: string;
-  gender?: string; // "Nam" | "Nữ"
+  gender?: boolean; // boolean: true = Nam, false = Nữ
   dob?: string | Date; // Format: "YYYY-MM-DD"
   isActive?: boolean;
 }
@@ -65,7 +65,7 @@ export interface PatientDto {
   email: string;
   phoneNumber?: string; // API sử dụng phoneNumber
   address?: string;
-  gender?: string; // API sử dụng string ("Nam", "Nữ")
+  gender?: boolean; // API có thể trả về boolean (true = Nam, false = Nữ)
   dob?: string; // Format: "YYYY-MM-DD"
   latestTestDate?: string; // Format: "YYYY-MM-DD"
   isActive: boolean;
