@@ -110,6 +110,10 @@ const router = createBrowserRouter([
             element: <AccountManage />,
           },
           {
+            path: "patients",
+            element: <PatientManage />,
+          },
+          {
             path: "test-order",
             element: <TestOrder />,
           },

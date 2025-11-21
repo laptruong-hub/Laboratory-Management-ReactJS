@@ -127,7 +127,7 @@ const WorkingSidebar: React.FC = () => {
 
         <NavItem to="/admin/patients">
           <FaUsers />
-          <span>Danh sách bện nhân</span>
+          <span>Danh sách bệnh nhân</span>
         </NavItem>
       </NavList>
       <Divider />

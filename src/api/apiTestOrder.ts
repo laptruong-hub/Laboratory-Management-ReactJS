@@ -5,7 +5,7 @@ export interface TestOrder {
   id?: number;
   orderNumber?: string;
   patientId: number;
-  testType?: string;g
+  testType?: string;
   status?: string;
   orderDate?: string | Date;
   dueDate?: string | Date;

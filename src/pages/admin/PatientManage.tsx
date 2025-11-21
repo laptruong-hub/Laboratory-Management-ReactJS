@@ -13,6 +13,7 @@ import {
 import { apiClient } from "../../api/apiClient";
 import {
   getAllPatients,
+  getPatientsFromIam,
   updatePatient,
   deletePatient,
   type PatientDto,
@@ -581,11 +582,21 @@ const FormTextarea = styled.textarea`
 const formatDate = (dateStr?: string): string => {
   if (!dateStr) return "—";
   try {
+    // Backend trả về LocalDate format "YYYY-MM-DD" (không có time)
+    // Nếu có format "YYYY-MM-DD", parse trực tiếp để tránh timezone issues
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      const [year, month, day] = dateStr.split("-");
+      return `${day}/${month}/${year}`;
+    }
+
+    // Nếu có format khác (ISO 8601 với time), dùng Date object
     const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "—";
+
     const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    const monthStr = String(date.getMonth() + 1).padStart(2, "0");
+    const yearStr = date.getFullYear();
+    return `${day}/${monthStr}/${yearStr}`;
   } catch {
     return "—";
   }
@@ -638,6 +649,7 @@ const adaptPatientFromDto = (dto: PatientDto): Patient => {
     email: dto.email,
     phone: dto.phoneNumber,
     gender: genderBoolean,
+    dob: dto.dob, // Map ngày sinh từ DTO
     bloodType: undefined, // Not in API
     rhFactor: undefined, // Not in API
     status: dto.isActive ? "active" : "pending",
@@ -692,30 +704,49 @@ const PatientManage: React.FC = () => {
         setLoading(true);
         setError("");
 
-        // Ưu tiên sử dụng API patient từ bảng patient
+        // Luồng mới: Backend đã tự động sync accounts từ iam-service vào bảng Patient
+        // 1. Gọi endpoint sync - backend sẽ tự động sync accounts từ iam-service vào bảng Patient
+        // 2. Sau khi sync thành công, gọi API lấy tất cả patients từ bảng Patient để hiển thị
         try {
+          // Bước 1: Gọi endpoint sync để đồng bộ accounts từ iam-service vào bảng Patient
+          await getPatientsFromIam();
+
+          // Bước 2: Sau khi sync thành công, lấy tất cả patients từ bảng Patient để hiển thị
           const patientData = await getAllPatients();
           const adapted = patientData.map(adaptPatientFromDto);
           setPatients(adapted);
-        } catch (patientApiErr: any) {
-          // Nếu API patient chưa có hoặc lỗi, fallback về filter từ users
+        } catch (syncErr: any) {
+          // Fallback: Nếu endpoint sync không khả dụng, thử lấy trực tiếp từ bảng Patient
           console.warn(
-            "API /api/patients không khả dụng, sử dụng /api/users làm fallback:",
-            patientApiErr
+            "API /api/patients/sync-from-iam không khả dụng, thử lấy từ bảng Patient:",
+            syncErr
           );
 
-          const response = await apiClient.get("/api/users");
-          const data: PatientDtoFromUsers[] = response.data;
+          try {
+            // Fallback: Lấy trực tiếp từ bảng Patient (không sync)
+            const patientData = await getAllPatients();
+            const adapted = patientData.map(adaptPatientFromDto);
+            setPatients(adapted);
+          } catch (patientApiErr: any) {
+            // Fallback cuối: Lấy từ users và filter role="Patient"
+            console.warn(
+              "API /api/patients không khả dụng, sử dụng /api/users làm fallback:",
+              patientApiErr
+            );
 
-          // Lọc chỉ lấy những người có role "Patient" 
-          const patientData = data.filter((user) => {
-            if (!user.roleName) return false;
-            const roleName = user.roleName.trim().toUpperCase();
-            return roleName === "PATIENT";
-          });
+            const response = await apiClient.get("/api/users");
+            const data: PatientDtoFromUsers[] = response.data;
 
-          const adapted = patientData.map(adaptPatientFromUsers);
-          setPatients(adapted);
+            // Lọc chỉ lấy những người có role "Patient"
+            const patientData = data.filter((user) => {
+              if (!user.roleName) return false;
+              const roleName = user.roleName.trim().toUpperCase();
+              return roleName === "PATIENT";
+            });
+
+            const adapted = patientData.map(adaptPatientFromUsers);
+            setPatients(adapted);
+          }
         }
       } catch (err: any) {
         console.error("Lỗi khi tải dữ liệu:", err);
@@ -760,8 +791,8 @@ const PatientManage: React.FC = () => {
         patient.gender === true
           ? "true"
           : patient.gender === false
-          ? "false"
-          : "",
+            ? "false"
+            : "",
       dob: patient.dob ? patient.dob.split("T")[0] : "",
       bloodType: patient.bloodType || "",
       rhFactor: patient.rhFactor || "Không rõ",
@@ -786,7 +817,7 @@ const PatientManage: React.FC = () => {
     if (!editingPatient) return;
 
     try {
-      const accountId = parseInt(editingPatient.id); 
+      const accountId = parseInt(editingPatient.id);
 
       // Prepare update request for API patient (uses phoneNumber and gender string)
       const patientUpdateRequest: {
@@ -804,8 +835,8 @@ const PatientManage: React.FC = () => {
           editData.gender === "true"
             ? "Nam"
             : editData.gender === "false"
-            ? "Nữ"
-            : undefined,
+              ? "Nữ"
+              : undefined,
         dob: editData.dob ? editData.dob : undefined,
         isActive: editingPatient.status === "active",
       };
@@ -819,19 +850,19 @@ const PatientManage: React.FC = () => {
           editData.gender === "true"
             ? true
             : editData.gender === "false"
-            ? false
-            : null,
+              ? false
+              : null,
         dob: editData.dob ? new Date(editData.dob) : null,
         bloodType:
           editData.bloodType &&
-          editData.bloodType !== "" &&
-          editData.bloodType !== "—"
+            editData.bloodType !== "" &&
+            editData.bloodType !== "—"
             ? editData.bloodType
             : null,
         rhFactor:
           editData.rhFactor &&
-          editData.rhFactor !== "" &&
-          editData.rhFactor !== "Không rõ"
+            editData.rhFactor !== "" &&
+            editData.rhFactor !== "Không rõ"
             ? editData.rhFactor
             : null,
         medicalHistory:
@@ -876,7 +907,7 @@ const PatientManage: React.FC = () => {
           roleId: roleId,
         });
       }
-          // Update state trực tiếp với dữ liệu mới từ form
+      // Update state trực tiếp với dữ liệu mới từ form
       setPatients((prev) => {
         return prev.map((p) => {
           if (p.id === editingPatient.id) {
@@ -887,19 +918,19 @@ const PatientManage: React.FC = () => {
                 editData.gender === "true"
                   ? true
                   : editData.gender === "false"
-                  ? false
-                  : undefined,
+                    ? false
+                    : undefined,
               dob: editData.dob || undefined,
               bloodType:
                 editData.bloodType &&
-                editData.bloodType !== "" &&
-                editData.bloodType !== "—"
+                  editData.bloodType !== "" &&
+                  editData.bloodType !== "—"
                   ? editData.bloodType
                   : undefined,
               rhFactor:
                 editData.rhFactor &&
-                editData.rhFactor !== "" &&
-                editData.rhFactor !== "Không rõ"
+                  editData.rhFactor !== "" &&
+                  editData.rhFactor !== "Không rõ"
                   ? editData.rhFactor
                   : undefined,
               medicalHistory:
@@ -920,21 +951,21 @@ const PatientManage: React.FC = () => {
       // Fetch lại dữ liệu từ server sau một khoảng thời gian ngắn để đảm bảo đồng bộ
       setTimeout(async () => {
         try {
+          // Sync từ iam-service trước, sau đó lấy tất cả từ bảng Patient
           try {
-            const patientData = await getAllPatients();
+            await getPatientsFromIam(); // Sync trước
+            const patientData = await getAllPatients(); // Sau đó lấy từ DB
             const adapted = patientData.map(adaptPatientFromDto);
             setPatients(adapted);
-          } catch (patientApiErr: any) {
-            // Fallback: fetch từ users API
-            const response = await apiClient.get("/api/users");
-            const data: PatientDtoFromUsers[] = response.data;
-            const patientData = data.filter((user) => {
-              if (!user.roleName) return false;
-              const roleName = user.roleName.trim().toUpperCase();
-              return roleName === "PATIENT";
-            });
-            const adapted = patientData.map(adaptPatientFromUsers);
-            setPatients(adapted);
+          } catch (syncErr: any) {
+            // Fallback: thử lấy trực tiếp từ bảng Patient (không sync)
+            try {
+              const patientData = await getAllPatients();
+              const adapted = patientData.map(adaptPatientFromDto);
+              setPatients(adapted);
+            } catch (patientApiErr: any) {
+              console.error("Lỗi khi refresh dữ liệu:", patientApiErr);
+            }
           }
         } catch (err) {
           console.error("Lỗi khi refresh dữ liệu:", err);
@@ -1020,7 +1051,7 @@ const PatientManage: React.FC = () => {
             }}
           />
         </SearchBox>
-        
+
       </Toolbar>
 
       <TableContainer>
