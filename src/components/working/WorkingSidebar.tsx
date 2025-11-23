@@ -8,6 +8,7 @@ import {
   FaCog,
   FaChartBar,
   FaSignOutAlt,
+  FaCalendarAlt,
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 
@@ -136,6 +137,14 @@ const WorkingSidebar: React.FC = () => {
         <NavItem to="/admin/test-order">
           <FaFlask />
           <span>Danh sách xét nghiệm</span>
+        </NavItem>
+      </NavList>
+      <Divider />
+      <SidebarTitle>Quản lý lịch làm việc</SidebarTitle>
+      <NavList>
+        <NavItem to="/admin/work-slots">
+          <FaCalendarAlt />
+          <span>Lịch làm việc bác sĩ</span>
         </NavItem>
       </NavList>
       <Divider />
