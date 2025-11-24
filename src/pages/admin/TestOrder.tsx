@@ -1,12 +1,16 @@
-
 import { useState } from "react";
-import { 
-  FileText, 
-  User, 
-  Calendar, 
-  Activity, 
+import {
+  FileText,
+  User,
+  Calendar,
+  Activity,
   Search,
-  Download
+  Download,
+  Check,
+  Trash2,
+  Filter,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 interface TestResult {
@@ -25,19 +29,24 @@ interface PatientInfo {
   age: number;
   gender: string;
   date: string;
+  confirmed: boolean;
 }
 
 const TestOrder = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPatient, setSelectedPatient] = useState<string>("PT-001");
+  const [confirmationFilter, setConfirmationFilter] = useState<string>("all");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const patientsPerPage = 4;
 
-  const patients: PatientInfo[] = [
-    { id: "PT-001", name: "Nguyễn Văn A", age: 35, gender: "Nam", date: "2024-01-15" },
-    { id: "PT-002", name: "Trần Thị B", age: 28, gender: "Nữ", date: "2024-01-16" },
-    { id: "PT-003", name: "Lê Văn C", age: 42, gender: "Nam", date: "2024-01-16" },
-    { id: "PT-004", name: "Phạm Thị D", age: 31, gender: "Nữ", date: "2024-01-17" },
-    { id: "PT-005", name: "Hoàng Văn E", age: 55, gender: "Nam", date: "2024-01-17" }
-  ];
+  const [patients, setPatients] = useState<PatientInfo[]>([
+    { id: "PT-001", name: "Nguyễn Văn A", age: 35, gender: "Nam", date: "2024-01-15", confirmed: false },
+    { id: "PT-002", name: "Trần Thị B", age: 28, gender: "Nữ", date: "2024-01-16", confirmed: true },
+    { id: "PT-003", name: "Lê Văn C", age: 42, gender: "Nam", date: "2024-01-16", confirmed: false },
+    { id: "PT-004", name: "Phạm Thị D", age: 31, gender: "Nữ", date: "2024-01-17", confirmed: true },
+    { id: "PT-005", name: "Hoàng Văn E", age: 55, gender: "Nam", date: "2024-01-17", confirmed: false }
+  ]);
 
   const allTestResults: Record<string, TestResult[]> = {
     "PT-001": [
@@ -61,8 +70,48 @@ const TestOrder = () => {
     ]
   };
 
-  const currentPatient = patients.find(p => p.id === selectedPatient);
+  const confirmPatient = (patientId: string) => {
+    setPatients(prevPatients =>
+      prevPatients.map(p =>
+        p.id === patientId ? { ...p, confirmed: true } : p
+      )
+    );
+  };
+
+  const deletePatient = (patientId: string) => {
+    setPatients(prevPatients => prevPatients.filter(p => p.id !== patientId));
+    if (selectedPatient === patientId && patients.length > 1) {
+      const remainingPatients = patients.filter(p => p.id !== patientId);
+      setSelectedPatient(remainingPatients[0]?.id || "");
+    }
+    setShowDeleteConfirm(null);
+
+    if (paginatedPatients.length === 1 && currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const filteredPatients = patients.filter(patient => {
+    if (confirmationFilter === "confirmed" && !patient.confirmed) {
+      return false;
+    }
+    if (confirmationFilter === "unconfirmed" && patient.confirmed) {
+      return false;
+    }
+    return true;
+  });
+
+  const totalPages = Math.ceil(filteredPatients.length / patientsPerPage);
+  const startIndex = (currentPage - 1) * patientsPerPage;
+  const endIndex = startIndex + patientsPerPage;
+  const paginatedPatients = filteredPatients.slice(startIndex, endIndex);
+
+  const currentPatient = filteredPatients.find(p => p.id === selectedPatient);
   const testResults = allTestResults[selectedPatient] || [];
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   const getStatusBadge = (status: string) => {
     const styles = {
@@ -107,15 +156,28 @@ const TestOrder = () => {
         }
 
         .btn-add{
-        margin-left:30px;
-        border-radius:8px;
-        background: #f1a6a6ff;
+          margin-left: 30px;
+          border-radius: 8px;
+          background: #f1a6a6ff;
           font-size: 14px;
           font-weight: 500;
+          padding: 10px 16px;
+          cursor: pointer;
+          border: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          color: #333;
+          transition: all 0.2s;
+        }
+
+        .btn-add:hover {
+          background: #e89595;
         }
 
         .header {
           box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+          background: white;
         }
 
         .header-content {
@@ -131,13 +193,12 @@ const TestOrder = () => {
           font-weight: 700;
           color: #271111ff;
         }
-         
+
         .search-test{
-        margin-left: 30px;
+          margin-left: 30px;
         }
 
-
-        .btn { 
+        .btn {
           margin-left: 30px;
           color: white;
           border-radius: 8px;
@@ -146,13 +207,14 @@ const TestOrder = () => {
           font-weight: 500;
           display: inline-flex;
           align-items: center;
+          gap: 8px;
           transition: all 0.2s;
+          padding: 10px 16px;
+          cursor: pointer;
         }
-          
 
         .btn {
           background: #C51F1F;
-          
         }
 
         .btn:hover {
@@ -169,6 +231,32 @@ const TestOrder = () => {
           background: #f9fafb;
         }
 
+        .btn-success {
+          background: #16a34a;
+          color: white;
+          border: none;
+        }
+
+        .btn-success:hover {
+          background: #15803d;
+        }
+
+        .btn-danger {
+          background: #dc2626;
+          color: white;
+          border: none;
+        }
+
+        .btn-danger:hover {
+          background: #b91c1c;
+        }
+
+        .btn-small {
+          padding: 6px 12px;
+          font-size: 13px;
+          margin-left: 0;
+        }
+
         .main {
           max-width: 1280px;
           margin: 0 auto;
@@ -181,7 +269,15 @@ const TestOrder = () => {
           gap: 24px;
         }
 
-        
+        .card {
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card-body {
+          padding: 16px;
+        }
 
         .card-header {
           padding: 12px 16px;
@@ -197,11 +293,49 @@ const TestOrder = () => {
           color: #111827;
         }
 
-        
-
         .patient-list {
-          max-height: 600px;
+          max-height: auto;
           overflow-y: auto;
+        }
+
+        .pagination {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+          padding: 16px;
+          border-top: 1px solid #e5e7eb;
+        }
+
+        .pagination-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          border: 1px solid #d1d5db;
+          border-radius: 8px;
+          background: white;
+          cursor: pointer;
+          transition: all 0.2s;
+          color: #374151;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+          background: #f9fafb;
+          border-color: #C51F1F;
+          color: #C51F1F;
+        }
+
+        .pagination-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .pagination-info {
+          font-size: 14px;
+          color: #6b7280;
+          font-weight: 500;
         }
 
         .patient-item {
@@ -229,6 +363,27 @@ const TestOrder = () => {
         .patient-name {
           font-weight: 500;
           color: #111827;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .confirmed-badge {
+          background: #dcfce7;
+          color: #166534;
+          padding: 2px 8px;
+          border-radius: 8px;
+          font-size: 11px;
+          font-weight: 500;
+        }
+
+        .unconfirmed-badge {
+          background: #fef3c7;
+          color: #92400e;
+          padding: 2px 8px;
+          border-radius: 8px;
+          font-size: 11px;
+          font-weight: 500;
         }
 
         .patient-id {
@@ -248,6 +403,12 @@ const TestOrder = () => {
           display: flex;
           align-items: center;
           gap: 4px;
+        }
+
+        .patient-actions {
+          display: flex;
+          gap: 8px;
+          margin-top: 8px;
         }
 
         .info-grid {
@@ -283,7 +444,7 @@ const TestOrder = () => {
 
         .search-input:focus {
           border-color: #C51F1F;
-          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+          box-shadow: 0 0 0 3px rgba(197, 31, 31, 0.1);
         }
 
         .search-icon {
@@ -292,6 +453,27 @@ const TestOrder = () => {
           top: 50%;
           transform: translateY(-50%);
           color: #9ca3af;
+        }
+
+        .date-filter {
+          margin-left: 30px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .date-filter select {
+          padding: 10px 16px;
+          border: 1px solid #d1d5db;
+          border-radius: 8px;
+          font-size: 14px;
+          outline: none;
+          cursor: pointer;
+        }
+
+        .date-filter select:focus {
+          border-color: #C51F1F;
+          box-shadow: 0 0 0 3px rgba(197, 31, 31, 0.1);
         }
 
         .right-content {
@@ -409,26 +591,80 @@ const TestOrder = () => {
         .test-content {
           flex: 1;
         }
+
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+
+        .modal {
+          background: white;
+          border-radius: 12px;
+          padding: 24px;
+          max-width: 400px;
+          width: 90%;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal h3 {
+          font-size: 18px;
+          font-weight: 600;
+          margin-bottom: 12px;
+          color: #111827;
+        }
+
+        .modal p {
+          color: #6b7280;
+          margin-bottom: 24px;
+        }
+
+        .modal-actions {
+          display: flex;
+          gap: 12px;
+          justify-content: flex-end;
+        }
       `}</style>
 
       <header className="header">
         <div className="header-content">
           <h1>Quản lý Xét nghiệm</h1>
           <div className="search-test">
-              <div className="search-body">
-                <div className="search-box">
-                  <Search size={16} className="search-icon" />
-                  <input
-                    type="text"
-                    placeholder="Tìm kiếm "
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="search-input"
-                  />
-                </div>
+            <div className="search-body">
+              <div className="search-box">
+                <Search size={16} className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="search-input"
+                />
               </div>
             </div>
-          <button className=" btn-add">
+          </div>
+          <div className="date-filter">
+            <Filter size={16} style={{ color: '#C51F1F' }} />
+            <select
+              value={confirmationFilter}
+              onChange={(e) => {
+                setConfirmationFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+            >
+              <option value="all">Tất cả trạng thái</option>
+              <option value="confirmed">Đã xác nhận</option>
+              <option value="unconfirmed">Chưa xác nhận</option>
+            </select>
+          </div>
+          <button className="btn-add">
             <Download size={16} />
             Thêm
           </button>
@@ -437,12 +673,11 @@ const TestOrder = () => {
             <Download size={16} />
             Xuất báo cáo
           </button>
-        </div>        
+        </div>
       </header>
 
       <main className="main">
         <div className="grid">
-          {/* Danh sách bệnh nhân */}
           <div className="card">
             <div className="card-header">
               <h2>
@@ -451,7 +686,7 @@ const TestOrder = () => {
               </h2>
             </div>
             <div className="patient-list">
-              {patients.map((patient) => (
+              {paginatedPatients.map((patient) => (
                 <div
                   key={patient.id}
                   onClick={() => setSelectedPatient(patient.id)}
@@ -459,7 +694,14 @@ const TestOrder = () => {
                 >
                   <div className="patient-item-header">
                     <div>
-                      <div className="patient-name">{patient.name}</div>
+                      <div className="patient-name">
+                        {patient.name}
+                        {patient.confirmed ? (
+                          <span className="confirmed-badge">Đã xác nhận</span>
+                        ) : (
+                          <span className="unconfirmed-badge">Chưa xác nhận</span>
+                        )}
+                      </div>
                       <div className="patient-id">{patient.id}</div>
                     </div>
                     <div className="patient-age">{patient.age} tuổi</div>
@@ -468,93 +710,169 @@ const TestOrder = () => {
                     <Calendar size={12} />
                     {new Date(patient.date).toLocaleDateString('vi-VN')}
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Thông tin chi tiết */}
-          <div className="right-content">
-            {/* Thông tin bệnh nhân */}
-            <div className="card">
-              <div className="card-header">
-                <h2>Thông tin bệnh nhân</h2>
-              </div>
-              <div className="card-body">
-                <div className="info-grid">
-                  <div className="info-item">
-                    <label>Mã BN</label>
-                    <p>{currentPatient?.id}</p>
-                  </div>
-                  <div className="info-item">
-                    <label>Họ tên</label>
-                    <p>{currentPatient?.name}</p>
-                  </div>
-                  <div className="info-item">
-                    <label>Tuổi</label>
-                    <p>{currentPatient?.age}</p>
-                  </div>
-                  <div className="info-item">
-                    <label>Giới tính</label>
-                    <p>{currentPatient?.gender}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            
-
-            {/* Kết quả xét nghiệm */}
-            <div className="test-list">
-              {filteredResults.map((test) => (
-                <div key={test.id} className="card test-item">
-                  <div className="test-actions">
-                    <div className="test-content">
-                      <div className="test-header">
-                        <FileText size={20} style={{ color: '#C51F1F' }} />
-                        <div className="test-name">{test.testName}</div>
-                        {getStatusBadge(test.status)}
-                      </div>
-                      <div className="test-details">
-                        <div className="test-detail-item">
-                          <label>Mã XN</label>
-                          <p>{test.id}</p>
-                        </div>
-                        <div className="test-detail-item">
-                          <label>Ngày XN</label>
-                          <p>{new Date(test.date).toLocaleDateString('vi-VN')}</p>
-                        </div>
-                        <div className="test-detail-item">
-                          <label>Kết quả</label>
-                          <p>{test.result} {test.unit || ""}</p>
-                        </div>
-                      </div>
-                      {test.normalRange && (
-                        <div className="test-normal-range">
-                          <span>Giá trị bình thường: </span>
-                          <strong>{test.normalRange} {test.unit}</strong>
-                        </div>
-                      )}
-                    </div>
-                    {test.status === "completed" && (
-                      <button className="btn btn-outline">Xem chi tiết</button>
+                  <div className="patient-actions" onClick={(e) => e.stopPropagation()}>
+                    {!patient.confirmed && (
+                      <button
+                        className="btn btn-success btn-small"
+                        onClick={() => confirmPatient(patient.id)}
+                      >
+                        <Check size={14} />
+                        Xác nhận
+                      </button>
                     )}
+                    <button
+                      className="btn btn-danger btn-small"
+                      onClick={() => setShowDeleteConfirm(patient.id)}
+                    >
+                      <Trash2 size={14} />
+                      Xóa
+                    </button>
                   </div>
                 </div>
               ))}
-
-              {filteredResults.length === 0 && (
-                <div className="card">
-                  <div className="card-body empty-state">
-                    <Activity size={48} className="empty-icon" />
-                    <p>Không tìm thấy kết quả xét nghiệm</p>
-                  </div>
+              {filteredPatients.length === 0 && (
+                <div className="empty-state">
+                  <User size={48} className="empty-icon" />
+                  <p>Không tìm thấy bệnh nhân</p>
                 </div>
               )}
             </div>
+            {filteredPatients.length > patientsPerPage && (
+              <div className="pagination">
+                <button
+                  className="pagination-btn"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <div className="pagination-info">
+                  Trang {currentPage} / {totalPages}
+                </div>
+                <button
+                  className="pagination-btn"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="right-content">
+            {currentPatient && (
+              <>
+                <div className="card">
+                  <div className="card-header">
+                    <h2>Thông tin bệnh nhân</h2>
+                  </div>
+                  <div className="card-body">
+                    <div className="info-grid">
+                      <div className="info-item">
+                        <label>Mã BN</label>
+                        <p>{currentPatient.id}</p>
+                      </div>
+                      <div className="info-item">
+                        <label>Họ tên</label>
+                        <p>{currentPatient.name}</p>
+                      </div>
+                      <div className="info-item">
+                        <label>Tuổi</label>
+                        <p>{currentPatient.age}</p>
+                      </div>
+                      <div className="info-item">
+                        <label>Giới tính</label>
+                        <p>{currentPatient.gender}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="test-list">
+                  {filteredResults.map((test) => (
+                    <div key={test.id} className="card test-item">
+                      <div className="test-actions">
+                        <div className="test-content">
+                          <div className="test-header">
+                            <FileText size={20} style={{ color: '#C51F1F' }} />
+                            <div className="test-name">{test.testName}</div>
+                            {getStatusBadge(test.status)}
+                          </div>
+                          <div className="test-details">
+                            <div className="test-detail-item">
+                              <label>Mã XN</label>
+                              <p>{test.id}</p>
+                            </div>
+                            <div className="test-detail-item">
+                              <label>Ngày XN</label>
+                              <p>{new Date(test.date).toLocaleDateString('vi-VN')}</p>
+                            </div>
+                            <div className="test-detail-item">
+                              <label>Kết quả</label>
+                              <p>{test.result} {test.unit || ""}</p>
+                            </div>
+                          </div>
+                          {test.normalRange && (
+                            <div className="test-normal-range">
+                              <span>Giá trị bình thường: </span>
+                              <strong>{test.normalRange} {test.unit}</strong>
+                            </div>
+                          )}
+                        </div>
+                        {test.status === "completed" && (
+                          <button className="btn btn-outline">Xem chi tiết</button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                  {filteredResults.length === 0 && (
+                    <div className="card">
+                      <div className="card-body empty-state">
+                        <Activity size={48} className="empty-icon" />
+                        <p>Không tìm thấy kết quả xét nghiệm</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {!currentPatient && (
+              <div className="card">
+                <div className="card-body empty-state">
+                  <User size={48} className="empty-icon" />
+                  <p>Chọn bệnh nhân để xem thông tin</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
+
+      {showDeleteConfirm && (
+        <div className="modal-overlay" onClick={() => setShowDeleteConfirm(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Xác nhận xóa</h3>
+            <p>Bạn có chắc chắn muốn xóa thông tin đặt lịch của bệnh nhân này không?</p>
+            <div className="modal-actions">
+              <button
+                className="btn btn-outline btn-small"
+                onClick={() => setShowDeleteConfirm(null)}
+              >
+                Hủy
+              </button>
+              <button
+                className="btn btn-danger btn-small"
+                onClick={() => deletePatient(showDeleteConfirm)}
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
