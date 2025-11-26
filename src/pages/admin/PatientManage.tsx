@@ -2,11 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import {
   FaSearch,
-  FaPlus,
   FaTrash,
-  FaFilter,
   FaEdit,
-  FaDownload,
   FaMars,
   FaVenus,
 } from "react-icons/fa";
@@ -124,12 +121,6 @@ const SearchBox = styled.div`
     color: #9ca3af;
     flex-shrink: 0;
   }
-`;
-
-const ActionButtons = styled.div`
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
 `;
 
 const Button = styled.button<{ $variant?: "primary" | "secondary" }>`
@@ -581,11 +572,21 @@ const FormTextarea = styled.textarea`
 const formatDate = (dateStr?: string): string => {
   if (!dateStr) return "—";
   try {
+    // Backend trả về LocalDate format "YYYY-MM-DD" (không có time)
+    // Nếu có format "YYYY-MM-DD", parse trực tiếp để tránh timezone issues
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      const [year, month, day] = dateStr.split("-");
+      return `${day}/${month}/${year}`;
+    }
+
+    // Nếu có format khác (ISO 8601 với time), dùng Date object
     const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "—";
+
     const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    const monthStr = String(date.getMonth() + 1).padStart(2, "0");
+    const yearStr = date.getFullYear();
+    return `${day}/${monthStr}/${yearStr}`;
   } catch {
     return "—";
   }
@@ -624,20 +625,14 @@ const getInitials = (name: string): string => {
 };
 
 const adaptPatientFromDto = (dto: PatientDto): Patient => {
-  // Convert gender string to boolean for UI
-  let genderBoolean: boolean | undefined = undefined;
-  if (dto.gender === "Nam") {
-    genderBoolean = true;
-  } else if (dto.gender === "Nữ") {
-    genderBoolean = false;
-  }
-
+  // Gender từ backend là boolean: true = Nam, false = Nữ
   return {
     id: dto.accountId.toString(),
     fullName: dto.fullName,
     email: dto.email,
     phone: dto.phoneNumber,
-    gender: genderBoolean,
+    gender: dto.gender, // boolean: true = Nam, false = Nữ
+    dob: dto.dob, // Map ngày sinh từ DTO
     bloodType: undefined, // Not in API
     rhFactor: undefined, // Not in API
     status: dto.isActive ? "active" : "pending",
@@ -646,6 +641,7 @@ const adaptPatientFromDto = (dto: PatientDto): Patient => {
 };
 
 // Adapt từ PatientDtoFromUsers (từ /api/users fallback)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const adaptPatientFromUsers = (dto: PatientDtoFromUsers): Patient => {
   const accountId = dto.id || dto.userId || 0;
 
@@ -692,31 +688,12 @@ const PatientManage: React.FC = () => {
         setLoading(true);
         setError("");
 
-        // Ưu tiên sử dụng API patient từ bảng patient
-        try {
-          const patientData = await getAllPatients();
-          const adapted = patientData.map(adaptPatientFromDto);
-          setPatients(adapted);
-        } catch (patientApiErr: any) {
-          // Nếu API patient chưa có hoặc lỗi, fallback về filter từ users
-          console.warn(
-            "API /api/patients không khả dụng, sử dụng /api/users làm fallback:",
-            patientApiErr
-          );
-
-          const response = await apiClient.get("/api/users");
-          const data: PatientDtoFromUsers[] = response.data;
-
-          // Lọc chỉ lấy những người có role "Patient" 
-          const patientData = data.filter((user) => {
-            if (!user.roleName) return false;
-            const roleName = user.roleName.trim().toUpperCase();
-            return roleName === "PATIENT";
-          });
-
-          const adapted = patientData.map(adaptPatientFromUsers);
-          setPatients(adapted);
-        }
+        // Luồng mới: Backend tự động sync accounts từ iam-service vào bảng Patient
+        // khi tạo account với role="PATIENT" (thông qua gRPC)
+        // Frontend chỉ cần gọi REST API để lấy danh sách patients
+        const patientData = await getAllPatients();
+        const adapted = patientData.map(adaptPatientFromDto);
+        setPatients(adapted);
       } catch (err: any) {
         console.error("Lỗi khi tải dữ liệu:", err);
         setError("Không thể tải dữ liệu. Vui lòng thử lại.");
@@ -760,8 +737,8 @@ const PatientManage: React.FC = () => {
         patient.gender === true
           ? "true"
           : patient.gender === false
-          ? "false"
-          : "",
+            ? "false"
+            : "",
       dob: patient.dob ? patient.dob.split("T")[0] : "",
       bloodType: patient.bloodType || "",
       rhFactor: patient.rhFactor || "Không rõ",
@@ -786,14 +763,14 @@ const PatientManage: React.FC = () => {
     if (!editingPatient) return;
 
     try {
-      const accountId = parseInt(editingPatient.id); 
+      const accountId = parseInt(editingPatient.id);
 
-      // Prepare update request for API patient (uses phoneNumber and gender string)
+      // Prepare update request for API patient (uses phoneNumber and gender boolean)
       const patientUpdateRequest: {
         fullName: string;
         email: string;
         phoneNumber?: string;
-        gender?: string; //  
+        gender?: boolean; // boolean: true = Nam, false = Nữ
         dob?: string | Date;
         isActive?: boolean;
       } = {
@@ -802,10 +779,10 @@ const PatientManage: React.FC = () => {
         phoneNumber: editData.phone || undefined,
         gender:
           editData.gender === "true"
-            ? "Nam"
+            ? true
             : editData.gender === "false"
-            ? "Nữ"
-            : undefined,
+              ? false
+              : undefined,
         dob: editData.dob ? editData.dob : undefined,
         isActive: editingPatient.status === "active",
       };
@@ -819,19 +796,19 @@ const PatientManage: React.FC = () => {
           editData.gender === "true"
             ? true
             : editData.gender === "false"
-            ? false
-            : null,
+              ? false
+              : null,
         dob: editData.dob ? new Date(editData.dob) : null,
         bloodType:
           editData.bloodType &&
-          editData.bloodType !== "" &&
-          editData.bloodType !== "—"
+            editData.bloodType !== "" &&
+            editData.bloodType !== "—"
             ? editData.bloodType
             : null,
         rhFactor:
           editData.rhFactor &&
-          editData.rhFactor !== "" &&
-          editData.rhFactor !== "Không rõ"
+            editData.rhFactor !== "" &&
+            editData.rhFactor !== "Không rõ"
             ? editData.rhFactor
             : null,
         medicalHistory:
@@ -876,7 +853,7 @@ const PatientManage: React.FC = () => {
           roleId: roleId,
         });
       }
-          // Update state trực tiếp với dữ liệu mới từ form
+      // Update state trực tiếp với dữ liệu mới từ form
       setPatients((prev) => {
         return prev.map((p) => {
           if (p.id === editingPatient.id) {
@@ -887,19 +864,19 @@ const PatientManage: React.FC = () => {
                 editData.gender === "true"
                   ? true
                   : editData.gender === "false"
-                  ? false
-                  : undefined,
+                    ? false
+                    : undefined,
               dob: editData.dob || undefined,
               bloodType:
                 editData.bloodType &&
-                editData.bloodType !== "" &&
-                editData.bloodType !== "—"
+                  editData.bloodType !== "" &&
+                  editData.bloodType !== "—"
                   ? editData.bloodType
                   : undefined,
               rhFactor:
                 editData.rhFactor &&
-                editData.rhFactor !== "" &&
-                editData.rhFactor !== "Không rõ"
+                  editData.rhFactor !== "" &&
+                  editData.rhFactor !== "Không rõ"
                   ? editData.rhFactor
                   : undefined,
               medicalHistory:
@@ -920,22 +897,9 @@ const PatientManage: React.FC = () => {
       // Fetch lại dữ liệu từ server sau một khoảng thời gian ngắn để đảm bảo đồng bộ
       setTimeout(async () => {
         try {
-          try {
-            const patientData = await getAllPatients();
-            const adapted = patientData.map(adaptPatientFromDto);
-            setPatients(adapted);
-          } catch (patientApiErr: any) {
-            // Fallback: fetch từ users API
-            const response = await apiClient.get("/api/users");
-            const data: PatientDtoFromUsers[] = response.data;
-            const patientData = data.filter((user) => {
-              if (!user.roleName) return false;
-              const roleName = user.roleName.trim().toUpperCase();
-              return roleName === "PATIENT";
-            });
-            const adapted = patientData.map(adaptPatientFromUsers);
-            setPatients(adapted);
-          }
+          const patientData = await getAllPatients();
+          const adapted = patientData.map(adaptPatientFromDto);
+          setPatients(adapted);
         } catch (err) {
           console.error("Lỗi khi refresh dữ liệu:", err);
         }
@@ -1020,7 +984,7 @@ const PatientManage: React.FC = () => {
             }}
           />
         </SearchBox>
-        
+
       </Toolbar>
 
       <TableContainer>
