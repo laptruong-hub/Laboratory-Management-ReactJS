@@ -239,7 +239,8 @@ const processData = [
 const HeroWrapper = styled.div`
   position: relative;
   color: ${theme.colors.white};
-  padding: 6.5rem 0;
+  padding: 9rem 0 6.5rem 0;
+
   background-image: url("https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=2070&auto=format&fit=crop");
   background-size: cover;
   background-position: center;

@@ -961,13 +961,6 @@ const PatientManage: React.FC = () => {
 
   return (
     <PageContainer>
-      <PageHeader>
-        <PageTitle>Quản lý bệnh nhân</PageTitle>
-        <Breadcrumb>
-          Đang hiển thị {paged.length}/{filtered.length} bệnh nhân
-        </Breadcrumb>
-      </PageHeader>
-
       <Toolbar>
         <SearchBox>
           <FaSearch />

@@ -1158,15 +1158,9 @@ export default function AccountManage() {
 
       {/* Toolbar */}
       <div className="am-toolbar">
-        <div className="am-title">
-          <h1 className="title">Quản lý tài khoản</h1>
-          <div className="muted">
-            {/* Đang hiển thị {paged.length}/{total} người dùng */}
-          </div>
-        </div>
-
-        <div className="am-tools">
-          <div className="am-search-input">
+        <div className="am-tools flex items-center gap-3">
+          {/* Search bar on the left */}
+          <div className="am-search-input flex-1">
             <FaSearch />
             <input
               ref={searchRef}
@@ -1181,11 +1175,16 @@ export default function AccountManage() {
               }}
             />
           </div>
-          <div className="am-actions">
+          {/* Buttons in a row */}
+          <div className="am-actions flex items-center gap-2 flex-shrink-0">
             {/* Filter Popup */}
-            <div className="am-filter-container" ref={filterRef}>
-              <button className="btn outline" onClick={toggleFilter}>
-                <FaFilter /> &nbsp;Lọc
+            <div className="am-filter-container relative" ref={filterRef}>
+              <button
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-all duration-200 hover:scale-105 active:scale-95"
+                onClick={toggleFilter}
+              >
+                <FaFilter className="w-3.5 h-3.5" />
+                <span>Lọc</span>
               </button>
 
               {/* --- UPDATED: Filter Popup JSX --- */}
@@ -1257,14 +1256,23 @@ export default function AccountManage() {
               )}
             </div>
 
-            <button className="btn primary" onClick={openCreateModal}>
-              <FaPlus /> &nbsp;Thêm người dùng
+            <button
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
+              style={{
+                backgroundColor: "oklch(0.52 0.2 23.22)",
+                color: "white",
+              }}
+              onClick={openCreateModal}
+            >
+              <FaPlus className="w-3.5 h-3.5" />
+              <span>Thêm người dùng</span>
             </button>
             <button
-              className="btn outline"
-              onClick={() => setShowImportModal(true)} // (Mở Modal mới)
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-all duration-200 hover:scale-105 active:scale-95"
+              onClick={() => setShowImportModal(true)}
             >
-              <FaDownload /> &nbsp;Thêm nhiều người dùng
+              <FaDownload className="w-3.5 h-3.5" />
+              <span>Thêm nhiều người dùng</span>
             </button>
           </div>
         </div>
@@ -1327,20 +1335,20 @@ export default function AccountManage() {
             )}
           </div>
 
-          {/* Pagination (Mới) */}
-          <div className="am-list-pagination">
+          {/* Pagination (Mới) - Compact */}
+          <div className="flex items-center justify-between px-4 py-2 border-t border-gray-100 bg-gray-50/50">
             <button
-              className="btn outline"
+              className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               disabled={page === 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
               ← Trước
             </button>
-            <div className="muted">
+            <div className="text-xs text-gray-600 font-medium">
               Trang {page}/{pages}
             </div>
             <button
-              className="btn outline"
+              className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               disabled={page === pages}
               onClick={() => setPage((p) => Math.min(pages, p + 1))}
             >
@@ -1537,27 +1545,48 @@ export default function AccountManage() {
               </div>
               {/* --- END Grid --- */}
 
-              {/* Nút bấm (dưới grid) */}
-              <div className="am-detail-actions">
+              {/* Nút bấm (dưới grid) - Compact */}
+              <div className="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-gray-100">
                 {!isEditing ? (
                   <>
-                    <button className="btn primary" onClick={handleStartEdit}>
-                      <FaEdit /> &nbsp;Chỉnh sửa
+                    <button
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
+                      style={{
+                        backgroundColor: "oklch(0.52 0.2 23.22)",
+                        color: "white",
+                      }}
+                      onClick={handleStartEdit}
+                    >
+                      <FaEdit className="w-3.5 h-3.5" />
+                      <span>Chỉnh sửa</span>
                     </button>
                     <button
-                      className="btn danger"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 bg-red-600 text-white hover:bg-red-700"
                       onClick={() => handleDelete(selectedUser.id)}
                     >
-                      <FaTrash /> &nbsp;Xoá
+                      <FaTrash className="w-3.5 h-3.5" />
+                      <span>Xoá</span>
                     </button>
                   </>
                 ) : (
                   <>
-                    <button className="btn outline" onClick={handleCancelEdit}>
-                      <FaTimes /> &nbsp;Huỷ
+                    <button
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-all duration-200 hover:scale-105 active:scale-95"
+                      onClick={handleCancelEdit}
+                    >
+                      <FaTimes className="w-3.5 h-3.5" />
+                      <span>Huỷ</span>
                     </button>
-                    <button className="btn primary" onClick={handleSaveEdit}>
-                      <FaSave /> &nbsp;Lưu
+                    <button
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
+                      style={{
+                        backgroundColor: "oklch(0.52 0.2 23.22)",
+                        color: "white",
+                      }}
+                      onClick={handleSaveEdit}
+                    >
+                      <FaSave className="w-3.5 h-3.5" />
+                      <span>Lưu</span>
                     </button>
                   </>
                 )}
@@ -1580,11 +1609,17 @@ export default function AccountManage() {
                 <strong>{deleteTarget.name}</strong>?
               </p>
             </div>
-            <div className="am-modal__footer">
-              <button className="btn outline" onClick={closeDeleteConfirm}>
+            <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-200">
+              <button
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-all duration-200"
+                onClick={closeDeleteConfirm}
+              >
                 Huỷ
               </button>
-              <button className="btn danger" onClick={confirmDelete}>
+              <button
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all duration-200"
+                onClick={confirmDelete}
+              >
                 Xoá
               </button>
             </div>
@@ -1690,14 +1725,21 @@ export default function AccountManage() {
                 </div>
               </div>
             </div>
-            <div className="am-modal__footer">
+            <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-200">
               <button
-                className="btn outline"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-all duration-200"
                 onClick={() => setShowCreateModal(false)}
               >
                 Huỷ
               </button>
-              <button className="btn primary" onClick={handleCreateUser}>
+              <button
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200"
+                style={{
+                  backgroundColor: "oklch(0.52 0.2 23.22)",
+                  color: "white",
+                }}
+                onClick={handleCreateUser}
+              >
                 Tạo
               </button>
             </div>
@@ -1734,10 +1776,10 @@ export default function AccountManage() {
                 <a
                   href="/files/Template-add-user.xlsx"
                   download="Mau_Nhap_Lieu_Nguoi_Dung.xlsx"
-                  className="btn outline"
-                  style={{ width: "100%", justifyContent: "center" }}
+                  className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-all duration-200 w-full"
                 >
-                  <FaDownload /> &nbsp;Tải file mẫu (.xlsx)
+                  <FaDownload className="w-3.5 h-3.5" />
+                  <span>Tải file mẫu (.xlsx)</span>
                 </a>
               </div>
 
@@ -1751,10 +1793,13 @@ export default function AccountManage() {
                   className="am-form-input" // (Tái sử dụng style input)
                 />
                 <button
-                  className="btn primary"
+                  className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 w-full mt-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    backgroundColor: "oklch(0.52 0.2 23.22)",
+                    color: "white",
+                  }}
                   onClick={handleUpload}
                   disabled={!selectedFile || loading}
-                  style={{ width: "100%", marginTop: "10px" }}
                 >
                   {loading ? "Đang xử lý..." : "Upload và Tạo Users"}
                 </button>
@@ -1773,9 +1818,9 @@ export default function AccountManage() {
               )}
             </div>
 
-            <div className="am-modal__footer">
+            <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-200">
               <button
-                className="btn outline"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-all duration-200"
                 onClick={() => setShowImportModal(false)}
               >
                 Đóng
