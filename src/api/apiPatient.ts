@@ -7,23 +7,52 @@ import { apiClient } from "./apiClient";
  */
 interface ApiResponse<T> {
   success: boolean;
-  message: string;
+  message?: string | null; // Optional, có thể null
   data: T;
-  timestamp?: string;
-  error?: string;
+  timestamp?: string | null;
+  error?: string | null;
 }
 
 /**
- * Patient data for creating/updating (Request)
+ * Patient data for creating (Request)
+ * Maps to CreatePatientRequest
+ */
+export interface CreatePatientRequest {
+  accountId: number; // Required
+  fullName: string; // Required
+  email?: string; // Optional, but must be valid email if provided
+  phoneNumber?: string;
+  address?: string;
+  gender?: boolean; // boolean: true = Nam, false = Nữ
+  dob?: string | Date; // Format: "YYYY-MM-DD"
+}
+
+/**
+ * Patient data for updating (Request)
+ * Maps to UpdatePatientRequest
+ */
+export interface UpdatePatientRequest {
+  fullName?: string;
+  email?: string; // Optional, but must be valid email if provided
+  phoneNumber?: string;
+  address?: string;
+  gender?: boolean; // boolean: true = Nam, false = Nữ
+  dob?: string | Date; // Format: "YYYY-MM-DD"
+  isActive?: boolean;
+}
+
+/**
+ * @deprecated Use CreatePatientRequest or UpdatePatientRequest instead
+ * Kept for backward compatibility
  */
 export interface Patient {
-  accountId?: number; 
+  accountId?: number;
   fullName: string;
   email: string;
-  phoneNumber?: string; 
+  phoneNumber?: string;
   address?: string;
-  gender?: string; 
-  dob?: string | Date; 
+  gender?: string;
+  dob?: string | Date;
   isActive?: boolean;
 }
 
@@ -36,7 +65,7 @@ export interface PatientDto {
   email: string;
   phoneNumber?: string; // API sử dụng phoneNumber
   address?: string;
-  gender?: string; // API sử dụng string ("Nam", "Nữ")
+  gender?: boolean; // API có thể trả về boolean (true = Nam, false = Nữ)
   dob?: string; // Format: "YYYY-MM-DD"
   latestTestDate?: string; // Format: "YYYY-MM-DD"
   isActive: boolean;
@@ -75,15 +104,15 @@ export const getAllPatients = async (): Promise<PatientDto[]> => {
  * POST /api/patients
  */
 export const createPatient = async (
-  patient: Patient
+  request: CreatePatientRequest
 ): Promise<PatientDto> => {
   // Convert dob to string format if it's a Date object
   const patientData = {
-    ...patient,
+    ...request,
     dob:
-      patient.dob instanceof Date
-        ? patient.dob.toISOString().split("T")[0]
-        : patient.dob,
+      request.dob instanceof Date
+        ? request.dob.toISOString().split("T")[0]
+        : request.dob,
   };
 
   const response = await apiClient.post<ApiResponse<PatientDto>>(
@@ -99,15 +128,15 @@ export const createPatient = async (
  */
 export const updatePatient = async (
   accountId: number,
-  patient: Partial<Patient>
+  request: UpdatePatientRequest
 ): Promise<PatientDto> => {
   // Convert dob to string format if it's a Date object
   const patientData = {
-    ...patient,
+    ...request,
     dob:
-      patient.dob instanceof Date
-        ? patient.dob.toISOString().split("T")[0]
-        : patient.dob,
+      request.dob instanceof Date
+        ? request.dob.toISOString().split("T")[0]
+        : request.dob,
   };
 
   const response = await apiClient.put<ApiResponse<PatientDto>>(
@@ -124,5 +153,17 @@ export const updatePatient = async (
 export const deletePatient = async (accountId: number): Promise<void> => {
   await apiClient.delete(`/api/patients/${accountId}`);
   // DELETE returns 204 No Content, no response body
+};
+
+/**
+ * Get patients from IAM service (sync)
+ * GET /api/patients/sync-from-iam
+ * This endpoint fetches accounts from iam-service with role="Patient" and merges with patient records
+ */
+export const getPatientsFromIam = async (): Promise<PatientDto[]> => {
+  const response = await apiClient.get<ApiResponse<PatientDto[]>>(
+    "/api/patients/sync-from-iam"
+  );
+  return response.data.data;
 };
 

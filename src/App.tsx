@@ -8,6 +8,8 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import PrivateRoute from "./components/common/PrivateRoute.tsx";
+import RoleBasedRoute from "./components/common/RoleBasedRoute.tsx";
+import RoleRedirect from "./components/common/RoleRedirect.tsx";
 import ErrorBoundary from "./components/common/ErrorBoundary.tsx";
 
 // Layouts
@@ -31,6 +33,8 @@ import AccountManage from "./pages/admin/AccountManage.tsx";
 import PatientManage from "./pages/admin/PatientManage.tsx";
 import RolesPage from "./pages/role/RolesPage.tsx";
 import TestOrder from "./pages/admin/TestOrder.tsx";
+import WorkSlotManage from "./pages/admin/WorkSlotManage.tsx";
+import PatientRequestManage from "./pages/admin/PatientRequestManage.tsx";
 
 // Components - User
 import UserProfile from "./components/user/UserProfile.tsx";
@@ -50,7 +54,12 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Home />,
+        element: (
+          <>
+            <RoleRedirect />
+            <Home />
+          </>
+        ),
       },
       {
         path: "booking",
@@ -95,23 +104,44 @@ const router = createBrowserRouter([
       },
       {
         path: "/admin",
-        element: <WorkingLayout />,
+        element: <RoleBasedRoute allowedRoles={["Admin", "Administrator"]} />,
         children: [
           {
-            path: "admin-dashboard",
-            element: <AdminDashboardPage />,
+            element: <WorkingLayout />,
+            children: [
+              {
+                index: true,
+                element: <Navigate to="/admin/admin-dashboard" replace />,
+              },
+              {
+                path: "admin-dashboard",
+                element: <AdminDashboardPage />,
+              },
+              {
+                path: "roles",
+                element: <RolesPage />,
+              },
+              {
+                path: "account",
+                element: <AccountManage />,
+              },
+              {
+                path: "patients",
+                element: <PatientManage />,
+              },
+              {
+                path: "test-order",
+                element: <TestOrder />,
+              },
+              {
+                path: "work-slots",
+                element: <WorkSlotManage />,
+              },
+            ],
           },
           {
-            path: "roles",
-            element: <RolesPage />,
-          },
-          {
-            path: "account",
-            element: <AccountManage />,
-          },
-          {
-            path: "test-order",
-            element: <TestOrder />,
+            path: "patient-requests",
+            element: <PatientRequestManage />,
           },
         ],
       },
