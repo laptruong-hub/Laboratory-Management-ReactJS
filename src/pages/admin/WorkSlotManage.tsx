@@ -685,13 +685,6 @@ const WorkSlotManage: React.FC = () => {
 
   return (
     <PageContainer>
-      <PageHeader>
-        <Breadcrumb>
-          <span>Trang chủ</span> / <strong>Quản lý lịch làm việc</strong>
-        </Breadcrumb>
-        <PageTitle>Quản lý lịch làm việc bác sĩ</PageTitle>
-      </PageHeader>
-
       <Toolbar>
         <SearchBox>
           <FaSearch />

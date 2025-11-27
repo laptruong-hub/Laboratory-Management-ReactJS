@@ -635,7 +635,6 @@ const TestOrder = () => {
 
       <header className="header">
         <div className="header-content">
-          <h1>Quản lý Xét nghiệm</h1>
           <div className="search-test">
             <div className="search-body">
               <div className="search-box">

@@ -254,16 +254,7 @@ const AdminDashboardPage: React.FC = () => {
 
   const header = (
     <PageHeader>
-      <Breadcrumb>
-        <span>Trang chủ</span>
-        <BreadcrumbSeparator>/</BreadcrumbSeparator>
-        <strong>Dashboard</strong>
-      </Breadcrumb>
       <HeadingRow>
-        <TitleGroup>
-          <PageTitle>Dashboard tổng quan</PageTitle>
-          <PageDescription>Hệ thống quản lý phòng xét nghiệm máu (Hematology Lab)</PageDescription>
-        </TitleGroup>
         <ActionsWrap>
           <TopBarActions onRefresh={handleRefresh} />
         </ActionsWrap>

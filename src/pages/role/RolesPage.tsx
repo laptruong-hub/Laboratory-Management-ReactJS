@@ -1673,13 +1673,6 @@ const RolesPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <PageHeader>
-        <PageTitle>Danh sách vai trò</PageTitle>
-        <Breadcrumb>
-          Dashboard <span>/</span> Vai trò
-        </Breadcrumb>
-      </PageHeader>
-
       <ControlBar>
         <SearchBox>
           <FaSearch />
