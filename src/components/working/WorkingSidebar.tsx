@@ -5,6 +5,10 @@ import {
   FaUserShield,
   FaCog,
   FaChartBar,
+  FaSignOutAlt,
+  FaCalendarAlt,
+  FaEnvelope,
+  FaFlask,
 } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 
@@ -149,6 +153,117 @@ const WorkingSidebar: React.FC = () => {
         >
           <FaUsers className="text-xl flex-shrink-0" />
           <span>Danh sách bệnh nhân</span>
+        </NavLink>
+
+        <NavLink
+          to="/admin/patient-requests"
+          className={cn(
+            "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
+            isActive("/admin/patient-requests")
+              ? "font-semibold"
+              : "text-gray-700 hover:bg-gray-100"
+          )}
+          style={
+            isActive("/admin/patient-requests")
+              ? ({
+                  backgroundColor: primaryColorLight,
+                  color: primaryColor,
+                } as React.CSSProperties)
+              : undefined
+          }
+          onMouseEnter={(e) => {
+            if (!isActive("/admin/patient-requests")) {
+              e.currentTarget.style.color = primaryColor;
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isActive("/admin/patient-requests")) {
+              e.currentTarget.style.color = "";
+            }
+          }}
+        >
+          <FaEnvelope className="text-xl flex-shrink-0" />
+          <span>Danh sách yêu cầu</span>
+        </NavLink>
+      </nav>
+
+      {/* Divider */}
+      <div className="h-px bg-gray-200 my-3" />
+
+      {/* Quản lý xét nghiệm */}
+      <h4 className="px-6 py-2 m-0 text-xs uppercase text-gray-400 font-semibold tracking-wider">
+        Quản lý xét nghiệm
+      </h4>
+      <nav className="flex flex-col gap-1 p-2">
+        <NavLink
+          to="/admin/test-order"
+          className={cn(
+            "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
+            isActive("/admin/test-order")
+              ? "font-semibold"
+              : "text-gray-700 hover:bg-gray-100"
+          )}
+          style={
+            isActive("/admin/test-order")
+              ? ({
+                  backgroundColor: primaryColorLight,
+                  color: primaryColor,
+                } as React.CSSProperties)
+              : undefined
+          }
+          onMouseEnter={(e) => {
+            if (!isActive("/admin/test-order")) {
+              e.currentTarget.style.color = primaryColor;
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isActive("/admin/test-order")) {
+              e.currentTarget.style.color = "";
+            }
+          }}
+        >
+          <FaFlask className="text-xl flex-shrink-0" />
+          <span>Danh sách xét nghiệm</span>
+        </NavLink>
+      </nav>
+
+      {/* Divider */}
+      <div className="h-px bg-gray-200 my-3" />
+
+      {/* Quản lý lịch làm việc */}
+      <h4 className="px-6 py-2 m-0 text-xs uppercase text-gray-400 font-semibold tracking-wider">
+        Quản lý lịch làm việc
+      </h4>
+      <nav className="flex flex-col gap-1 p-2">
+        <NavLink
+          to="/admin/work-slots"
+          className={cn(
+            "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
+            isActive("/admin/work-slots")
+              ? "font-semibold"
+              : "text-gray-700 hover:bg-gray-100"
+          )}
+          style={
+            isActive("/admin/work-slots")
+              ? ({
+                  backgroundColor: primaryColorLight,
+                  color: primaryColor,
+                } as React.CSSProperties)
+              : undefined
+          }
+          onMouseEnter={(e) => {
+            if (!isActive("/admin/work-slots")) {
+              e.currentTarget.style.color = primaryColor;
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isActive("/admin/work-slots")) {
+              e.currentTarget.style.color = "";
+            }
+          }}
+        >
+          <FaCalendarAlt className="text-xl flex-shrink-0" />
+          <span>Lịch làm việc bác sĩ</span>
         </NavLink>
       </nav>
 

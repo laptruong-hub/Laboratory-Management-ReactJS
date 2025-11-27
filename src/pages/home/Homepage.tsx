@@ -20,6 +20,7 @@ import {
 } from "react-icons/fa";
 
 import { apiClient } from "../../api/apiClient";
+import { createPatientRequest } from "../../api/apiPatientRequest";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { validateEmail, validatePhone, validateForm } from "../../utils/validation";
 import type { ValidationRule } from "../../utils/validation";
@@ -898,13 +899,19 @@ const ContactSection: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Gọi API tạo PatientRequest
+      await createPatientRequest({
+        fullName: formData.name,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        notes: formData.message,
+      });
 
-      toast.success("Gửi tin nhắn thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất có thể.");
+      toast.success("Gửi yêu cầu thành công! Chúng tôi sẽ xem xét và liên hệ với bạn sớm nhất có thể.");
       setFormData({ name: "", email: "", phone: "", message: "" });
-    } catch {
-      toast.error("Có lỗi xảy ra. Vui lòng thử lại sau.");
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || "Có lỗi xảy ra. Vui lòng thử lại sau.";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

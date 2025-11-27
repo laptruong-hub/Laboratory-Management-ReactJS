@@ -34,6 +34,7 @@ import PatientManage from "./pages/admin/PatientManage.tsx";
 import RolesPage from "./pages/role/RolesPage.tsx";
 import TestOrder from "./pages/admin/TestOrder.tsx";
 import WorkSlotManage from "./pages/admin/WorkSlotManage.tsx";
+import PatientRequestManage from "./pages/admin/PatientRequestManage.tsx";
 
 // Components - User
 import UserProfile from "./components/user/UserProfile.tsx";
@@ -137,6 +138,10 @@ const router = createBrowserRouter([
                 element: <WorkSlotManage />,
               },
             ],
+          },
+          {
+            path: "patient-requests",
+            element: <PatientRequestManage />,
           },
         ],
       },
