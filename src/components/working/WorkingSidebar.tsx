@@ -9,6 +9,7 @@ import {
   FaChartBar,
   FaSignOutAlt,
   FaCalendarAlt,
+  FaEnvelope,
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 
@@ -129,6 +130,11 @@ const WorkingSidebar: React.FC = () => {
         <NavItem to="/admin/patients">
           <FaUsers />
           <span>Danh sách bệnh nhân</span>
+        </NavItem>
+
+        <NavItem to="/admin/patient-requests">
+          <FaEnvelope />
+          <span>Danh sách yêu cầu</span>
         </NavItem>
       </NavList>
       <Divider />
