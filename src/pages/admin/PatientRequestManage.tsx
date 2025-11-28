@@ -21,6 +21,8 @@ import LoadingSpinner from "../../components/common/LoadingSpinner";
 /* ---------- Styled Components ---------- */
 const PageContainer = styled.div`
   width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
@@ -97,57 +99,82 @@ const FilterButton = styled.button<{ $active?: boolean }>`
   }
 `;
 
-const TableContainer = styled.div`
-  background: white;
-  border-radius: 0.5rem;
-  border: 1px solid #e5e7eb;
-  overflow: hidden;
+const ContentSection = styled.div`
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
+  gap: 1rem;
 `;
 
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  flex: 1;
-`;
-
-const TableHeader = styled.thead`
-  background: #f9fafb;
-  border-bottom: 2px solid #e5e7eb;
-`;
-
-const TableHeaderCell = styled.th`
-  padding: 1rem;
-  text-align: left;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #374151;
-  text-transform: uppercase;
-`;
-
-const TableBody = styled.tbody`
+const RequestList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
   overflow-y: auto;
+  padding-bottom: 0.5rem;
 `;
 
-const TableRow = styled.tr<{ $selected?: boolean }>`
-  border-bottom: 1px solid #e5e7eb;
-  cursor: pointer;
-  transition: background-color 0.2s;
+const RequestCard = styled.div`
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+`;
 
-  &:hover {
-    background: #f9fafb;
+const CardHeader = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+`;
+
+const CardTitle = styled.div`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+`;
+
+const CardSubTitle = styled.div`
+  font-size: 0.9rem;
+  color: #6b7280;
+`;
+
+const CardInfoGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+`;
+
+const InfoItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+
+  label {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
-  ${(p) => p.$selected && "background: #fef2f2;"}
+  span {
+    color: #374151;
+    font-weight: 500;
+  }
 `;
 
-const TableCell = styled.td`
-  padding: 1rem;
-  font-size: 0.875rem;
+const CreatedAtBadge = styled.span`
+  background: #f3f4f6;
   color: #374151;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
 `;
 
 const StatusBadge = styled.span<{ $status: string }>`
@@ -566,76 +593,83 @@ export default function PatientRequestManage() {
         </FilterButtons>
       </Toolbar>
 
-      <TableContainer>
+      <ContentSection>
         {filteredRequests.length === 0 ? (
           <EmptyState>
             <p>Không có yêu cầu nào</p>
           </EmptyState>
         ) : (
-          <Table>
-            <TableHeader>
-              <tr>
-                <TableHeaderCell>Họ và tên</TableHeaderCell>
-                <TableHeaderCell>Email</TableHeaderCell>
-                <TableHeaderCell>Số điện thoại</TableHeaderCell>
-                <TableHeaderCell>Trạng thái</TableHeaderCell>
-                <TableHeaderCell>Ngày tạo</TableHeaderCell>
-                <TableHeaderCell>Thao tác</TableHeaderCell>
-              </tr>
-            </TableHeader>
-            <TableBody>
-              {filteredRequests.map((request) => (
-                <TableRow
-                  key={request.patientRequestId}
-                  onClick={() => {
-                    setSelectedRequest(request);
-                    setShowModal(true);
-                  }}
-                >
-                  <TableCell>{request.fullName}</TableCell>
-                  <TableCell>{request.email}</TableCell>
-                  <TableCell>{request.phoneNumber || "—"}</TableCell>
-                  <TableCell>
+          <RequestList>
+            {filteredRequests.map((request) => (
+              <RequestCard
+                key={request.patientRequestId}
+                onClick={() => {
+                  setSelectedRequest(request);
+                  setShowModal(true);
+                }}
+              >
+                <CardHeader>
+                  <div>
+                    <CardTitle>{request.fullName}</CardTitle>
+                    <CardSubTitle>{request.email}</CardSubTitle>
+                  </div>
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                     <StatusBadge $status={request.status}>
                       {getStatusText(request.status)}
                     </StatusBadge>
-                  </TableCell>
-                  <TableCell>{formatDate(request.createdAt)}</TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <ActionButtons>
-                      {request.status === "PENDING" && (
-                        <>
-                          <ActionButton
-                            $variant="approve"
-                            onClick={() => handleApprove(request.patientRequestId)}
-                            disabled={processingId === request.patientRequestId}
-                          >
-                            <FaCheck /> Duyệt
-                          </ActionButton>
-                          <ActionButton
-                            $variant="reject"
-                            onClick={() => handleReject(request.patientRequestId)}
-                            disabled={processingId === request.patientRequestId}
-                          >
-                            <FaTimes /> Từ chối
-                          </ActionButton>
-                        </>
-                      )}
+                    <CreatedAtBadge>{formatDate(request.createdAt)}</CreatedAtBadge>
+                  </div>
+                </CardHeader>
+
+                <CardInfoGrid>
+                  <InfoItem>
+                    <label>Số điện thoại</label>
+                    <span>{request.phoneNumber || "—"}</span>
+                  </InfoItem>
+                  <InfoItem>
+                    <label>Ghi chú</label>
+                    <span>{request.notes || "—"}</span>
+                  </InfoItem>
+                  {request.updatedAt && (
+                    <InfoItem>
+                      <label>Ngày cập nhật</label>
+                      <span>{formatDate(request.updatedAt)}</span>
+                    </InfoItem>
+                  )}
+                </CardInfoGrid>
+
+                <ActionButtons onClick={(e) => e.stopPropagation()}>
+                  {request.status === "PENDING" && (
+                    <>
                       <ActionButton
-                        $variant="delete"
-                        onClick={() => handleDelete(request.patientRequestId)}
+                        $variant="approve"
+                        onClick={() => handleApprove(request.patientRequestId)}
                         disabled={processingId === request.patientRequestId}
                       >
-                        <FaTrash />
+                        <FaCheck /> Duyệt
                       </ActionButton>
-                    </ActionButtons>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                      <ActionButton
+                        $variant="reject"
+                        onClick={() => handleReject(request.patientRequestId)}
+                        disabled={processingId === request.patientRequestId}
+                      >
+                        <FaTimes /> Từ chối
+                      </ActionButton>
+                    </>
+                  )}
+                  <ActionButton
+                    $variant="delete"
+                    onClick={() => handleDelete(request.patientRequestId)}
+                    disabled={processingId === request.patientRequestId}
+                  >
+                    <FaTrash />
+                  </ActionButton>
+                </ActionButtons>
+              </RequestCard>
+            ))}
+          </RequestList>
         )}
-      </TableContainer>
+      </ContentSection>
 
       {showModal && selectedRequest && (
         <ModalOverlay onClick={() => setShowModal(false)}>

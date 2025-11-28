@@ -137,11 +137,11 @@ const router = createBrowserRouter([
                 path: "work-slots",
                 element: <WorkSlotManage />,
               },
+              {
+                path: "patient-requests",
+                element: <PatientRequestManage />,
+              },
             ],
-          },
-          {
-            path: "patient-requests",
-            element: <PatientRequestManage />,
           },
         ],
       },

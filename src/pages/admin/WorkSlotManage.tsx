@@ -1,32 +1,20 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
-import {
-  FaSearch,
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaClock,
-  FaTimes,
-  FaCheck,
-} from "react-icons/fa";
+import { FaCalendarDay, FaCheck, FaSyncAlt } from "react-icons/fa";
 import { toast } from "react-toastify";
 import {
-  getAllWorkSlots,
-  getAvailableDoctors,
   createWorkSlot,
-  updateWorkSlot,
-  cancelWorkSlot,
   deleteWorkSlot,
-  type WorkSlotResponse,
+  getAvailableDoctors,
+  getWorkSessions,
+  getWorkSlotsByLabUserAndDate,
   type CreateWorkSlotRequest,
-  type UpdateWorkSlotRequest,
   type DoctorResponse,
-  type WorkSlotStatus,
-  WorkSlotStatusValues,
+  type WorkSessionResponse,
+  type WorkSlotResponse,
 } from "../../api/apiWorkSlot";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 
-/* ---------- Styled Components ---------- */
 const PageContainer = styled.div`
   width: 100%;
   padding: 1.5rem;
@@ -52,851 +40,451 @@ const PageTitle = styled.h1`
 const Breadcrumb = styled.div`
   font-size: 0.875rem;
   color: #6b7280;
-  span {
-    margin: 0 0.5rem;
-  }
 `;
 
 const Toolbar = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  flex-shrink: 0;
 `;
 
-const SearchBox = styled.div`
+const ControlsRow = styled.div`
   display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
   align-items: center;
-  background: white;
+`;
+
+const Select = styled.select`
+  padding: 0.75rem 1rem;
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  background: white;
+  color: #1f2937;
   flex: 1;
-  max-width: 25rem;
-  min-width: 0;
-
-  input {
-    border: none;
-    outline: none;
-    flex: 1;
-    font-size: 0.9rem;
-    margin-left: 0.5rem;
-    background: #ffffff;
-    color: #1f2937;
-    min-width: 0;
-
-    &::placeholder {
-      color: #94a3b8;
-    }
-  }
-  svg {
-    color: #9ca3af;
-    flex-shrink: 0;
-  }
+  min-width: 220px;
 `;
 
-const Button = styled.button<{ $variant?: "primary" | "secondary" | "danger" }>`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.65rem 1.25rem;
+const DateInput = styled.input`
+  padding: 0.75rem 1rem;
+  border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  flex-shrink: 0;
+  font-size: 0.95rem;
+  color: #1f2937;
+  background: white;
+  flex: 1;
+  min-width: 200px;
+`;
 
-  ${(props) => {
-    if (props.$variant === "primary") {
-      return `background-color:#dc2626;color:white; &:hover{background-color:#b91c1c}`;
-    } else if (props.$variant === "danger") {
-      return `background-color:#ef4444;color:white; &:hover{background-color:#dc2626}`;
-    } else {
-      return `background:white;color:#4b5563;border:1px solid #e5e7eb; &:hover{background:#f9fafb}`;
-    }
-  }}
+const Button = styled.button<{ $variant?: "primary" | "secondary" }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  border: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  white-space: nowrap;
+  ${(props) =>
+    props.$variant === "primary"
+      ? `background:#dc2626;color:white; &:hover{background:#b91c1c}`
+      : `background:white;color:#374151;border:1px solid #e5e7eb;&:hover{background:#f9fafb;}`}
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
   }
 `;
 
-const FilterSelect = styled.select`
-  padding: 0.65rem 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  font-size: 0.9rem;
-  background: white;
-  color: #1f2937;
-  cursor: pointer;
-  min-width: 150px;
+const Legend = styled.div`
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: #6b7280;
 `;
 
-const TableContainer = styled.div`
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-  flex: 1;
-  min-height: 0;
+const LegendItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+`;
+
+const LegendColor = styled.span<{ $active?: boolean }>`
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: ${(p) => (p.$active ? "#dc2626" : "#e5e7eb")};
+  border: 1px solid ${(p) => (p.$active ? "#b91c1c" : "#d1d5db")};
+`;
+
+const ScheduleGrid = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 1rem;
 `;
 
-const TableWrapper = styled.div`
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  box-sizing: border-box;
-
-  scrollbar-width: thin;
-  -ms-overflow-style: none;
-
-  &::-webkit-scrollbar {
-    width: 0.5rem;
-    height: 0.5rem;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 0.25rem;
-  }
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-const TableHeader = styled.thead`
-  background: #f9fafb;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-`;
-
-const TableHeaderRow = styled.tr`
-  border-bottom: 1px solid #e5e7eb;
-`;
-
-const TableHeaderCell = styled.th`
-  padding: 1rem;
-  text-align: left;
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: #374151;
-  white-space: nowrap;
-
-  &:first-child {
-    width: 4rem;
-    text-align: center;
-  }
-
-  &:last-child {
-    width: 10rem;
-    text-align: center;
-  }
-`;
-
-const TableBody = styled.tbody``;
-
-const TableRow = styled.tr`
-  border-bottom: 1px solid #f3f4f6;
-  transition: background-color 0.15s ease;
-
-  &:hover {
-    background-color: #f9fafb;
-  }
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const TableCell = styled.td`
-  padding: 1rem;
-  font-size: 0.875rem;
-  color: #1f2937;
-  vertical-align: middle;
-
-  &:first-child {
-    text-align: center;
-    color: #6b7280;
-    font-weight: 500;
-  }
-
-  &:last-child {
-    text-align: center;
-  }
-`;
-
-const StatusBadge = styled.span<{ $status: WorkSlotStatus }>`
-  display: inline-flex;
-  align-items: center;
-  padding: 0.35rem 0.75rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-
-  ${(props) => {
-    switch (props.$status) {
-      case "AVAILABLE":
-        return `background-color:#dcfce7;color:#166534;`;
-      case "BOOKED":
-        return `background-color:#dbeafe;color:#1e40af;`;
-      case "CANCELLED":
-        return `background-color:#f3f4f6;color:#4b5563;`;
-      case "COMPLETED":
-        return `background-color:#fef3c7;color:#92400e;`;
-      default:
-        return `background-color:#f3f4f6;color:#6b7280;`;
-    }
-  }}
-`;
-
-const ActionButton = styled.button<{ $variant?: "edit" | "cancel" | "delete" }>`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.4rem 0.75rem;
-  border: none;
-  border-radius: 0.375rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  gap: 0.35rem;
-  margin: 0 0.25rem;
-
-  ${(props) => {
-    if (props.$variant === "edit") {
-      return `background-color:#fef3c7;color:#92400e; &:hover{background-color:#fde68a}`;
-    } else if (props.$variant === "cancel") {
-      return `background-color:#fee2e2;color:#991b1b; &:hover{background-color:#fecaca}`;
-    } else if (props.$variant === "delete") {
-      return `background-color:#fee2e2;color:#991b1b; &:hover{background-color:#fecaca}`;
-    }
-    return `background-color:#f3f4f6;color:#6b7280; &:hover{background-color:#e5e7eb}`;
-  }}
-`;
-
-const ModalOverlay = styled.div<{ $isOpen: boolean }>`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: ${(props) => (props.$isOpen ? "flex" : "none")};
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-`;
-
-const ModalContent = styled.div`
+const DayCard = styled.div`
   background: white;
+  border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
-  padding: 2rem;
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
 `;
 
-const ModalHeader = styled.div`
+const DayHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-`;
-
-const ModalTitle = styled.h2`
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #6b7280;
-  cursor: pointer;
-  padding: 0;
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.375rem;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: #f3f4f6;
-    color: #1f2937;
-  }
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 1.25rem;
-`;
-
-const Label = styled.label`
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 0.5rem;
-
-  span {
-    color: #dc2626;
-  }
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  font-size: 0.9rem;
-  color: #1f2937;
-  box-sizing: border-box;
-
-  &:focus {
-    outline: none;
-    border-color: #dc2626;
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
-  }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  font-size: 0.9rem;
-  color: #1f2937;
-  background: white;
-  cursor: pointer;
-  box-sizing: border-box;
-
-  &:focus {
-    outline: none;
-    border-color: #dc2626;
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
-  }
-`;
-
-const TextArea = styled.textarea`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  font-size: 0.9rem;
-  color: #1f2937;
-  resize: vertical;
-  min-height: 80px;
-  box-sizing: border-box;
-  font-family: inherit;
-
-  &:focus {
-    outline: none;
-    border-color: #dc2626;
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
-  }
-`;
-
-const ModalFooter = styled.div`
-  display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 0.75rem;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+`;
+
+const DayTitle = styled.div`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+`;
+
+const SessionButtons = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+`;
+
+const SessionButton = styled.button<{ $active?: boolean }>`
+  padding: 0.65rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid ${(p) => (p.$active ? "#dc2626" : "#d1d5db")};
+  background: ${(p) => (p.$active ? "#fee2e2" : "white")};
+  color: ${(p) => (p.$active ? "#b91c1c" : "#374151")};
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &:hover:not(:disabled) {
+    background: ${(p) => (p.$active ? "#fecaca" : "#f3f4f6")};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
 
 const EmptyState = styled.div`
   text-align: center;
   padding: 4rem 2rem;
   color: #6b7280;
+  border: 1px dashed #e5e7eb;
+  border-radius: 0.75rem;
+  background: white;
 `;
 
 const EmptyIcon = styled.div`
-  font-size: 3rem;
+  font-size: 2.5rem;
   margin-bottom: 1rem;
-  opacity: 0.5;
 `;
 
-const EmptyText = styled.p`
-  font-size: 1rem;
-  margin: 0;
-`;
-
-const DoctorInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-`;
-
-const DoctorName = styled.div`
-  font-weight: 600;
-  color: #1f2937;
-`;
-
-const DoctorContact = styled.div`
-  font-size: 0.8rem;
+const InlineSpinner = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
   color: #6b7280;
 `;
 
-const DateTimeDisplay = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-`;
-
-const DateText = styled.div`
-  font-weight: 500;
-  color: #1f2937;
-`;
-
-const TimeText = styled.div`
-  font-size: 0.8rem;
-  color: #6b7280;
-`;
-
-/* ---------- Component ---------- */
 const WorkSlotManage: React.FC = () => {
-  const [workSlots, setWorkSlots] = useState<WorkSlotResponse[]>([]);
-  const [doctors, setDoctors] = useState<DoctorResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("ALL");
-  const [doctorFilter, setDoctorFilter] = useState<string>("ALL");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingSlot, setEditingSlot] = useState<WorkSlotResponse | null>(null);
-  const [formData, setFormData] = useState<CreateWorkSlotRequest>({
-    doctorId: 0,
-    startTime: "",
-    endTime: "",
-    notes: "",
-  });
+  const today = new Date().toISOString().split("T")[0];
+  const weekAhead = new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-  // Fetch work slots and doctors
+  const [doctors, setDoctors] = useState<DoctorResponse[]>([]);
+  const [sessions, setSessions] = useState<WorkSessionResponse[]>([]);
+  const [selectedDoctor, setSelectedDoctor] = useState<string>("");
+  const [startDate, setStartDate] = useState<string>(today);
+  const [endDate, setEndDate] = useState<string>(weekAhead);
+  const [schedule, setSchedule] = useState<Record<string, Record<number, WorkSlotResponse>>>({});
+  const [loadingMeta, setLoadingMeta] = useState(true);
+  const [loadingSchedule, setLoadingSchedule] = useState(false);
+  const [processingKey, setProcessingKey] = useState<string | null>(null);
+
+  const dateRange = useMemo(() => getDateRangeArray(startDate, endDate), [startDate, endDate]);
+
   useEffect(() => {
-    fetchData();
+    const loadMeta = async () => {
+      try {
+        setLoadingMeta(true);
+        const [doctorData, sessionData] = await Promise.all([
+          getAvailableDoctors(true),
+          getWorkSessions(),
+        ]);
+        setDoctors(doctorData);
+        setSessions(sessionData);
+        if (doctorData.length > 0) {
+          setSelectedDoctor(String(doctorData[0].userId));
+        }
+      } catch (error: any) {
+        console.error("Failed to load work slot metadata", error);
+        toast.error("Không thể tải danh sách bác sĩ/ca làm việc.");
+      } finally {
+        setLoadingMeta(false);
+      }
+    };
+
+    loadMeta();
   }, []);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [workSlotsData, doctorsData] = await Promise.all([
-        getAllWorkSlots(),
-        getAvailableDoctors(true),
-      ]);
-      setWorkSlots(workSlotsData);
-      setDoctors(doctorsData);
-    } catch (error: any) {
-      console.error("Error fetching data:", error);
-      toast.error("Không thể tải dữ liệu. Vui lòng thử lại.");
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (!selectedDoctor || dateRange.length === 0) {
+      setSchedule({});
+      return;
     }
-  };
 
-  // Filter work slots
-  const filteredWorkSlots = useMemo(() => {
-    return workSlots.filter((slot) => {
-      // Search filter
-      const doctor = doctors.find((d) => d.userId === slot.doctorId);
-      const matchesSearch =
-        !searchQuery ||
-        doctor?.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doctor?.email.toLowerCase().includes(searchQuery.toLowerCase());
-
-      // Status filter
-      const matchesStatus = statusFilter === "ALL" || slot.status === statusFilter;
-
-      // Doctor filter
-      const matchesDoctor = doctorFilter === "ALL" || slot.doctorId.toString() === doctorFilter;
-
-      return matchesSearch && matchesStatus && matchesDoctor;
-    });
-  }, [workSlots, doctors, searchQuery, statusFilter, doctorFilter]);
-
-  // Get doctor name by ID
-  const getDoctorName = (doctorId: number) => {
-    const doctor = doctors.find((d) => d.userId === doctorId);
-    return doctor ? doctor.fullName : `Doctor #${doctorId}`;
-  };
-
-  const getDoctorEmail = (doctorId: number) => {
-    const doctor = doctors.find((d) => d.userId === doctorId);
-    return doctor?.email || "";
-  };
-
-  // Format date time
-  const formatDateTime = (dateTimeString: string) => {
-    const date = new Date(dateTimeString);
-    return {
-      date: date.toLocaleDateString("vi-VN", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }),
-      time: date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
-    };
-  };
-
-  // Open modal for create
-  const handleCreate = () => {
-    setEditingSlot(null);
-    setFormData({
-      doctorId: doctors.length > 0 ? doctors[0].userId : 0,
-      startTime: "",
-      endTime: "",
-      notes: "",
-    });
-    setIsModalOpen(true);
-  };
-
-  // Open modal for edit
-  const handleEdit = (slot: WorkSlotResponse) => {
-    setEditingSlot(slot);
-    setFormData({
-      doctorId: slot.doctorId,
-      startTime: slot.startTime.substring(0, 16), // Format for datetime-local input
-      endTime: slot.endTime.substring(0, 16),
-      notes: slot.notes || "",
-    });
-    setIsModalOpen(true);
-  };
-
-  // Handle form submit
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      if (editingSlot) {
-        // Update
-        const updateRequest: UpdateWorkSlotRequest = {
-          startTime: formData.startTime ? new Date(formData.startTime).toISOString() : undefined,
-          endTime: formData.endTime ? new Date(formData.endTime).toISOString() : undefined,
-          notes: formData.notes,
-        };
-        await updateWorkSlot(editingSlot.workSlotId, updateRequest);
-        toast.success("Cập nhật lịch làm việc thành công!");
-      } else {
-        // Create
-        const createRequest: CreateWorkSlotRequest = {
-          doctorId: formData.doctorId,
-          startTime: new Date(formData.startTime).toISOString(),
-          endTime: new Date(formData.endTime).toISOString(),
-          notes: formData.notes,
-        };
-        await createWorkSlot(createRequest);
-        toast.success("Tạo lịch làm việc thành công!");
+    const fetchSchedule = async () => {
+      try {
+        setLoadingSchedule(true);
+        const requests = dateRange.map((date) =>
+          getWorkSlotsByLabUserAndDate(Number(selectedDoctor), date)
+        );
+        const responses = await Promise.all(requests);
+        const mapped: Record<string, Record<number, WorkSlotResponse>> = {};
+        dateRange.forEach((date, index) => {
+          mapped[date] = responses[index].reduce<Record<number, WorkSlotResponse>>((acc, slot) => {
+            acc[slot.workSessionId] = slot;
+            return acc;
+          }, {});
+        });
+        setSchedule(mapped);
+      } catch (error: any) {
+        console.error("Failed to load work slots", error);
+        toast.error("Không thể tải lịch làm việc.");
+      } finally {
+        setLoadingSchedule(false);
       }
+    };
 
-      setIsModalOpen(false);
-      await fetchData();
-    } catch (error: any) {
-      console.error("Error saving work slot:", error);
-      const errorMessage =
-        error.response?.data?.message || error.response?.data?.error || "Có lỗi xảy ra. Vui lòng thử lại.";
-      toast.error(errorMessage);
+    fetchSchedule();
+  }, [selectedDoctor, dateRange]);
+
+  const handleDateChange = (type: "start" | "end", value: string) => {
+    if (!value) return;
+    if (type === "start") {
+      setStartDate(value);
+      if (new Date(value) > new Date(endDate)) {
+        setEndDate(value);
+      }
+    } else {
+      if (new Date(value) < new Date(startDate)) {
+        toast.warn("Ngày kết thúc phải sau ngày bắt đầu.");
+        return;
+      }
+      setEndDate(value);
     }
   };
 
-  // Handle cancel
-  const handleCancel = async (slotId: number) => {
-    if (!window.confirm("Bạn có chắc chắn muốn hủy lịch làm việc này?")) {
+  const handleToggleSession = async (date: string, sessionId: number, enable: boolean) => {
+    if (!selectedDoctor) {
+      toast.warn("Vui lòng chọn bác sĩ trước.");
       return;
     }
 
+    const key = `${date}-${sessionId}`;
+    setProcessingKey(key);
     try {
-      await cancelWorkSlot(slotId);
-      toast.success("Hủy lịch làm việc thành công!");
-      await fetchData();
+      if (enable) {
+        const payload: CreateWorkSlotRequest = {
+          labUserId: Number(selectedDoctor),
+          workSessionId: sessionId,
+          date,
+          quantity: 0,
+        };
+        await createWorkSlot(payload);
+        const sessionName = sessions.find((s) => s.workSessionId === sessionId)?.workSession || "ca";
+        toast.success(`Đã tạo ${sessionName.toLowerCase()} cho ${date}`);
+      } else {
+        const slot = schedule[date]?.[sessionId];
+        if (slot) {
+          await deleteWorkSlot(slot.workSlotId);
+          toast.success("Đã hủy ca làm việc.");
+        }
+      }
+      const refreshed = await getWorkSlotsByLabUserAndDate(Number(selectedDoctor), date);
+      setSchedule((prev) => ({
+        ...prev,
+        [date]: refreshed.reduce<Record<number, WorkSlotResponse>>((acc, slot) => {
+          acc[slot.workSessionId] = slot;
+          return acc;
+        }, {}),
+      }));
     } catch (error: any) {
-      console.error("Error cancelling work slot:", error);
-      const errorMessage =
-        error.response?.data?.message || error.response?.data?.error || "Có lỗi xảy ra. Vui lòng thử lại.";
-      toast.error(errorMessage);
+      console.error("Failed to update work slot", error);
+      const message = error.response?.data?.message || "Không thể cập nhật ca làm việc.";
+      toast.error(message);
+    } finally {
+      setProcessingKey(null);
     }
   };
 
-  // Handle delete
-  const handleDelete = async (slotId: number) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa lịch làm việc này?")) {
-      return;
+  const renderContent = () => {
+    if (!selectedDoctor) {
+      return (
+        <EmptyState>
+          <EmptyIcon>🩺</EmptyIcon>
+          Vui lòng chọn bác sĩ để xem và thiết lập lịch làm việc.
+        </EmptyState>
+      );
     }
 
-    try {
-      await deleteWorkSlot(slotId);
-      toast.success("Xóa lịch làm việc thành công!");
-      await fetchData();
-    } catch (error: any) {
-      console.error("Error deleting work slot:", error);
-      const errorMessage =
-        error.response?.data?.message || error.response?.data?.error || "Có lỗi xảy ra. Vui lòng thử lại.";
-      toast.error(errorMessage);
+    if (loadingSchedule) {
+      return (
+        <EmptyState>
+          <InlineSpinner>
+            <FaSyncAlt className="spin" /> Đang tải lịch làm việc...
+          </InlineSpinner>
+        </EmptyState>
+      );
     }
+
+    if (dateRange.length === 0) {
+      return (
+        <EmptyState>
+          <EmptyIcon>📅</EmptyIcon>
+          Khoảng ngày không hợp lệ. Vui lòng chọn lại.
+        </EmptyState>
+      );
+    }
+
+    return (
+      <ScheduleGrid>
+        {dateRange.map((date) => {
+          const slotsForDay = schedule[date] || {};
+          const formatted = formatDisplayDate(date);
+          return (
+            <DayCard key={date}>
+              <DayHeader>
+                <DayTitle>{formatted}</DayTitle>
+                <span style={{ color: "#6b7280", fontSize: "0.9rem" }}>Ngày {date}</span>
+              </DayHeader>
+              <SessionButtons>
+                {sessions.map((session) => {
+                  const isActive = Boolean(slotsForDay[session.workSessionId]);
+                  const isProcessing = processingKey === `${date}-${session.workSessionId}`;
+                  return (
+                    <SessionButton
+                      key={session.workSessionId}
+                      $active={isActive}
+                      onClick={() => handleToggleSession(date, session.workSessionId, !isActive)}
+                      disabled={isProcessing}
+                    >
+                      {isActive && <FaCheck size={12} />}
+                      {session.workSession}
+                    </SessionButton>
+                  );
+                })}
+              </SessionButtons>
+            </DayCard>
+          );
+        })}
+      </ScheduleGrid>
+    );
   };
 
-  // Get status label
-  const getStatusLabel = (status: WorkSlotStatus) => {
-    switch (status) {
-      case "AVAILABLE":
-        return "Có sẵn";
-      case "BOOKED":
-        return "Đã đặt";
-      case "CANCELLED":
-        return "Đã hủy";
-      case "COMPLETED":
-        return "Hoàn thành";
-      default:
-        return status;
-    }
-  };
-
-  if (loading) {
+  if (loadingMeta) {
     return (
       <PageContainer>
-        <LoadingSpinner fullScreen text="Đang tải dữ liệu..." />
+        <LoadingSpinner fullScreen text="Đang tải cấu hình lịch làm việc..." />
       </PageContainer>
     );
   }
 
   return (
     <PageContainer>
+      <PageHeader>
+        <PageTitle>Lịch làm việc bác sĩ</PageTitle>
+        <Breadcrumb>Quản lý lịch làm việc ▸ Phân ca theo ngày</Breadcrumb>
+      </PageHeader>
+
       <Toolbar>
-        <SearchBox>
-          <FaSearch />
-          <input
-            type="text"
-            placeholder="Tìm kiếm theo tên bác sĩ hoặc email..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+        <ControlsRow>
+          <Select value={selectedDoctor} onChange={(e) => setSelectedDoctor(e.target.value)}>
+            {doctors.length === 0 && <option value="">Chưa có bác sĩ nào</option>}
+            {doctors.map((doctor) => (
+              <option key={doctor.userId} value={doctor.userId}>
+                {doctor.fullName} ({doctor.email})
+              </option>
+            ))}
+          </Select>
+
+          <DateInput
+            type="date"
+            value={startDate}
+            onChange={(e) => handleDateChange("start", e.target.value)}
           />
-        </SearchBox>
+          <DateInput
+            type="date"
+            value={endDate}
+            onChange={(e) => handleDateChange("end", e.target.value)}
+          />
 
-        <FilterSelect
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="ALL">Tất cả trạng thái</option>
-          <option value={WorkSlotStatusValues.AVAILABLE}>Có sẵn</option>
-          <option value={WorkSlotStatusValues.BOOKED}>Đã đặt</option>
-          <option value={WorkSlotStatusValues.CANCELLED}>Đã hủy</option>
-          <option value={WorkSlotStatusValues.COMPLETED}>Hoàn thành</option>
-        </FilterSelect>
+          <Button
+            $variant="secondary"
+            onClick={() => {
+              setStartDate(today);
+              setEndDate(weekAhead);
+            }}
+          >
+            <FaCalendarDay /> Đặt về tuần này
+          </Button>
+        </ControlsRow>
 
-        <FilterSelect
-          value={doctorFilter}
-          onChange={(e) => setDoctorFilter(e.target.value)}
-        >
-          <option value="ALL">Tất cả bác sĩ</option>
-          {doctors.map((doctor) => (
-            <option key={doctor.userId} value={doctor.userId.toString()}>
-              {doctor.fullName}
-            </option>
-          ))}
-        </FilterSelect>
-
-        <Button $variant="primary" onClick={handleCreate}>
-          <FaPlus />
-          Tạo lịch làm việc
-        </Button>
+        <Legend>
+          <LegendItem>
+            <LegendColor $active /> Đã phân ca
+          </LegendItem>
+          <LegendItem>
+            <LegendColor /> Chưa phân ca
+          </LegendItem>
+        </Legend>
       </Toolbar>
 
-      <TableContainer>
-        <TableWrapper>
-          {filteredWorkSlots.length === 0 ? (
-            <EmptyState>
-              <EmptyIcon>📅</EmptyIcon>
-              <EmptyText>Không tìm thấy lịch làm việc nào</EmptyText>
-            </EmptyState>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableHeaderRow>
-                  <TableHeaderCell>ID</TableHeaderCell>
-                  <TableHeaderCell>Bác sĩ</TableHeaderCell>
-                  <TableHeaderCell>Thời gian bắt đầu</TableHeaderCell>
-                  <TableHeaderCell>Thời gian kết thúc</TableHeaderCell>
-                  <TableHeaderCell>Trạng thái</TableHeaderCell>
-                  <TableHeaderCell>Ghi chú</TableHeaderCell>
-                  <TableHeaderCell>Thao tác</TableHeaderCell>
-                </TableHeaderRow>
-              </TableHeader>
-              <TableBody>
-                {filteredWorkSlots.map((slot) => {
-                  const startDateTime = formatDateTime(slot.startTime);
-                  const endDateTime = formatDateTime(slot.endTime);
-                  return (
-                    <TableRow key={slot.workSlotId}>
-                      <TableCell>#{slot.workSlotId}</TableCell>
-                      <TableCell>
-                        <DoctorInfo>
-                          <DoctorName>{getDoctorName(slot.doctorId)}</DoctorName>
-                          <DoctorContact>{getDoctorEmail(slot.doctorId)}</DoctorContact>
-                        </DoctorInfo>
-                      </TableCell>
-                      <TableCell>
-                        <DateTimeDisplay>
-                          <DateText>{startDateTime.date}</DateText>
-                          <TimeText>
-                            <FaClock size={12} style={{ marginRight: "4px" }} />
-                            {startDateTime.time}
-                          </TimeText>
-                        </DateTimeDisplay>
-                      </TableCell>
-                      <TableCell>
-                        <DateTimeDisplay>
-                          <DateText>{endDateTime.date}</DateText>
-                          <TimeText>
-                            <FaClock size={12} style={{ marginRight: "4px" }} />
-                            {endDateTime.time}
-                          </TimeText>
-                        </DateTimeDisplay>
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge $status={slot.status}>
-                          {getStatusLabel(slot.status)}
-                        </StatusBadge>
-                      </TableCell>
-                      <TableCell>
-                        {slot.notes ? (
-                          <div style={{ maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {slot.notes}
-                          </div>
-                        ) : (
-                          <span style={{ color: "#9ca3af" }}>-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {slot.status !== WorkSlotStatusValues.CANCELLED &&
-                          slot.status !== WorkSlotStatusValues.COMPLETED && (
-                            <>
-                              <ActionButton $variant="edit" onClick={() => handleEdit(slot)} title="Chỉnh sửa">
-                                <FaEdit />
-                              </ActionButton>
-                              <ActionButton $variant="cancel" onClick={() => handleCancel(slot.workSlotId)} title="Hủy">
-                                <FaTimes />
-                              </ActionButton>
-                            </>
-                          )}
-                        <ActionButton
-                          $variant="delete"
-                          onClick={() => handleDelete(slot.workSlotId)}
-                          title="Xóa"
-                        >
-                          <FaTrash />
-                        </ActionButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </TableWrapper>
-      </TableContainer>
-
-      {/* Create/Edit Modal */}
-      <ModalOverlay $isOpen={isModalOpen} onClick={() => setIsModalOpen(false)}>
-        <ModalContent onClick={(e) => e.stopPropagation()}>
-          <ModalHeader>
-            <ModalTitle>{editingSlot ? "Chỉnh sửa lịch làm việc" : "Tạo lịch làm việc mới"}</ModalTitle>
-            <CloseButton onClick={() => setIsModalOpen(false)}>
-              <FaTimes />
-            </CloseButton>
-          </ModalHeader>
-
-          <form onSubmit={handleSubmit}>
-            <FormGroup>
-              <Label>
-                Bác sĩ <span>*</span>
-              </Label>
-              <Select
-                value={formData.doctorId}
-                onChange={(e) => setFormData({ ...formData, doctorId: parseInt(e.target.value) })}
-                required
-                disabled={!!editingSlot}
-              >
-                <option value={0}>Chọn bác sĩ</option>
-                {doctors.map((doctor) => (
-                  <option key={doctor.userId} value={doctor.userId}>
-                    {doctor.fullName} - {doctor.email}
-                  </option>
-                ))}
-              </Select>
-            </FormGroup>
-
-            <FormGroup>
-              <Label>
-                Thời gian bắt đầu <span>*</span>
-              </Label>
-              <Input
-                type="datetime-local"
-                value={formData.startTime}
-                onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                required
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <Label>
-                Thời gian kết thúc <span>*</span>
-              </Label>
-              <Input
-                type="datetime-local"
-                value={formData.endTime}
-                onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                required
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <Label>Ghi chú</Label>
-              <TextArea
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Nhập ghi chú (nếu có)..."
-              />
-            </FormGroup>
-
-            <ModalFooter>
-              <Button type="button" onClick={() => setIsModalOpen(false)}>
-                Hủy
-              </Button>
-              <Button type="submit" $variant="primary">
-                <FaCheck />
-                {editingSlot ? "Cập nhật" : "Tạo mới"}
-              </Button>
-            </ModalFooter>
-          </form>
-        </ModalContent>
-      </ModalOverlay>
+      {renderContent()}
     </PageContainer>
   );
 };
 
-export default WorkSlotManage;
+const getDateRangeArray = (start: string, end: string): string[] => {
+  if (!start || !end) return [];
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  if (startDate > endDate) return [];
+  const dates: string[] = [];
+  const cursor = new Date(startDate);
+  while (cursor <= endDate) {
+    dates.push(cursor.toISOString().split("T")[0]);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return dates;
+};
 
+const formatDisplayDate = (date: string) => {
+  const d = new Date(date);
+  return d.toLocaleDateString("vi-VN", {
+    weekday: "long",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+export default WorkSlotManage;
