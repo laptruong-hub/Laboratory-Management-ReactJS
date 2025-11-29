@@ -36,6 +36,12 @@ import TestOrder from "./pages/admin/TestOrder.tsx";
 import WorkSlotManage from "./pages/admin/WorkSlotManage.tsx";
 import PatientRequestManage from "./pages/admin/PatientRequestManage.tsx";
 
+// Pages - Receptionist
+import PatientRequestList from "./pages/receptionist/PatientRequestList.tsx";
+
+// Pages - Lab User
+import LabUserDashboard from "./pages/lab-user/LabUserDashboard.tsx";
+
 // Components - User
 import UserProfile from "./components/user/UserProfile.tsx";
 import MedicalRecord from "./components/user/MedicalRecord.tsx";
@@ -140,6 +146,44 @@ const router = createBrowserRouter([
               {
                 path: "patient-requests",
                 element: <PatientRequestManage />,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: "/receptionist",
+        element: <RoleBasedRoute allowedRoles={["Receptionist", "RECEPTIONIST", "Admin", "Administrator"]} />,
+        children: [
+          {
+            element: <WorkingLayout />,
+            children: [
+              {
+                index: true,
+                element: <Navigate to="/receptionist/patient-requests" replace />,
+              },
+              {
+                path: "patient-requests",
+                element: <PatientRequestList />,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: "/lab-user",
+        element: <RoleBasedRoute allowedRoles={["Lab User", "LAB USER", "Technician", "TECHNICIAN", "Admin", "Administrator"]} />,
+        children: [
+          {
+            element: <WorkingLayout />,
+            children: [
+              {
+                index: true,
+                element: <Navigate to="/lab-user/dashboard" replace />,
+              },
+              {
+                path: "dashboard",
+                element: <LabUserDashboard />,
               },
             ],
           },

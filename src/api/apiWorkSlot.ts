@@ -67,6 +67,20 @@ export const getWorkSessions = async (): Promise<WorkSessionResponse[]> => {
   return response.data.data;
 };
 
+export const getAllWorkSlots = async (): Promise<WorkSlotResponse[]> => {
+  const response = await apiClient.get<ApiResponse<WorkSlotResponse[]>>("/api/work-slots");
+  return response.data.data;
+};
+
+export const getWorkSlotsByLabUserId = async (
+  labUserId: number
+): Promise<WorkSlotResponse[]> => {
+  const response = await apiClient.get<ApiResponse<WorkSlotResponse[]>>(
+    `/api/work-slots/lab-user/${labUserId}`
+  );
+  return response.data.data;
+};
+
 export const getWorkSlotsByLabUserAndDate = async (
   labUserId: number,
   date: string

@@ -32,8 +32,9 @@ const RoleRedirect = () => {
       // Có thể thêm redirect cho Service sau
       // navigate("/service/dashboard", { replace: true });
     } else if (normalizedRole === "LAB USER" || normalizedRole === "TECHNICIAN") {
-      // Có thể thêm redirect cho Lab User sau
-      // navigate("/lab-user/dashboard", { replace: true });
+      navigate("/lab-user/dashboard", { replace: true });
+    } else if (normalizedRole === "RECEPTIONIST") {
+      navigate("/receptionist/patient-requests", { replace: true });
     }
     // Nếu không match role nào, giữ nguyên trang hiện tại
   }, [user, loading, isAuthenticated, navigate]);

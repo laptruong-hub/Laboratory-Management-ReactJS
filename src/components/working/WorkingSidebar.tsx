@@ -9,6 +9,8 @@ import {
   FaCalendarAlt,
   FaEnvelope,
   FaFlask,
+  FaCalendarCheck,
+  FaVial,
 } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +21,7 @@ const WorkingSidebar: React.FC = () => {
   const location = useLocation();
 
   const isActive = (path: string) => {
-    return location.pathname === path;
+    return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
   return (
@@ -185,6 +187,37 @@ const WorkingSidebar: React.FC = () => {
           <FaEnvelope className="text-xl flex-shrink-0" />
           <span>Danh sách yêu cầu</span>
         </NavLink>
+
+        <NavLink
+          to="/receptionist/patient-requests"
+          className={cn(
+            "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
+            isActive("/receptionist/patient-requests")
+              ? "font-semibold"
+              : "text-gray-700 hover:bg-gray-100"
+          )}
+          style={
+            isActive("/receptionist/patient-requests")
+              ? ({
+                  backgroundColor: primaryColorLight,
+                  color: primaryColor,
+                } as React.CSSProperties)
+              : undefined
+          }
+          onMouseEnter={(e) => {
+            if (!isActive("/receptionist/patient-requests")) {
+              e.currentTarget.style.color = primaryColor;
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isActive("/receptionist/patient-requests")) {
+              e.currentTarget.style.color = "";
+            }
+          }}
+        >
+          <FaCalendarCheck className="text-xl flex-shrink-0" />
+          <span>Đặt lịch khám</span>
+        </NavLink>
       </nav>
 
       {/* Divider */}
@@ -224,6 +257,37 @@ const WorkingSidebar: React.FC = () => {
         >
           <FaFlask className="text-xl flex-shrink-0" />
           <span>Danh sách xét nghiệm</span>
+        </NavLink>
+
+        <NavLink
+          to="/lab-user/dashboard"
+          className={cn(
+            "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
+            isActive("/lab-user/dashboard")
+              ? "font-semibold"
+              : "text-gray-700 hover:bg-gray-100"
+          )}
+          style={
+            isActive("/lab-user/dashboard")
+              ? ({
+                  backgroundColor: primaryColorLight,
+                  color: primaryColor,
+                } as React.CSSProperties)
+              : undefined
+          }
+          onMouseEnter={(e) => {
+            if (!isActive("/lab-user/dashboard")) {
+              e.currentTarget.style.color = primaryColor;
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isActive("/lab-user/dashboard")) {
+              e.currentTarget.style.color = "";
+            }
+          }}
+        >
+          <FaVial className="text-xl flex-shrink-0" />
+          <span>Tạo kết quả xét nghiệm</span>
         </NavLink>
       </nav>
 
