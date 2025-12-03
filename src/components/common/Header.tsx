@@ -71,6 +71,8 @@ const Header: React.FC = () => {
 
   const handleLogout = async () => {
     await logout();
+    // Clear redirect flag để user mới login lại có thể redirect
+    sessionStorage.removeItem("hasRedirectedByRole");
     navigate("/", { replace: true });
   };
 

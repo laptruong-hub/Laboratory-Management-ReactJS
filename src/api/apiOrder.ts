@@ -13,10 +13,16 @@ interface ApiResponse<T> {
 export interface CreateOrderRequest {
   patientId: number;
   purposeId: number;
-  userId?: number;
+  labUserId?: number;
   note?: string;
   dateBook?: string; // yyyy-MM-dd
   workSlotId?: number;
+  orderDetails: OrderDetailItem[]; // Danh sách loại xét nghiệm
+}
+
+export interface OrderDetailItem {
+  typeTestId: number;
+  totalPrice: number;
 }
 
 export interface OrderResponse {
@@ -25,7 +31,7 @@ export interface OrderResponse {
   patientName: string;
   purposeId: number;
   purposeName: string;
-  userId?: number;
+  labUserId?: number;
   createdDate: string;
   status: "DRAFT" | "PENDING" | "PAID" | "CHECKIN" | "CANCEL" | "COMPLETE";
   note?: string;
@@ -91,12 +97,61 @@ export const getOrdersByWorkSlotId = async (
 };
 
 /**
+ * Get orders by lab user ID
+ * GET /api/orders/lab-user/{labUserId}
+ */
+export const getOrdersByLabUserId = async (
+  labUserId: number
+): Promise<OrderResponse[]> => {
+  const response = await apiClient.get<ApiResponse<OrderResponse[]>>(
+    `/api/orders/lab-user/${labUserId}`
+  );
+  return response.data.data;
+};
+
+/**
+ * Get orders by patient ID
+ */
+export const getOrdersByPatientId = async (
+  patientId: number
+): Promise<OrderResponse[]> => {
+  const response = await apiClient.get<ApiResponse<OrderResponse[]>>(
+    `/api/orders/patient/${patientId}`
+  );
+  return response.data.data;
+};
+
+/**
  * Get all purposes
  * GET /api/purposes
  */
 export const getAllPurposes = async (): Promise<PurposeResponse[]> => {
   const response = await apiClient.get<ApiResponse<PurposeResponse[]>>(
     "/api/purposes"
+  );
+  return response.data.data;
+};
+
+/**
+ * Get orders by status
+ * GET /api/orders/status/{status}
+ */
+export const getOrdersByStatus = async (
+  status: string
+): Promise<OrderResponse[]> => {
+  const response = await apiClient.get<ApiResponse<OrderResponse[]>>(
+    `/api/orders/status/${status}`
+  );
+  return response.data.data;
+};
+
+/**
+ * Approve order (DRAFT → PENDING)
+ * POST /api/orders/{id}/approve
+ */
+export const approveOrder = async (id: number): Promise<OrderResponse> => {
+  const response = await apiClient.post<ApiResponse<OrderResponse>>(
+    `/api/orders/${id}/approve`
   );
   return response.data.data;
 };

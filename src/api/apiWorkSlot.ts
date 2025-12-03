@@ -51,6 +51,8 @@ export interface WorkSlotResponse {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  startTime?: string; // e.g. "08:00"
+  endTime?: string;   // e.g. "12:00"
 }
 
 /* ---------- API helpers ---------- */

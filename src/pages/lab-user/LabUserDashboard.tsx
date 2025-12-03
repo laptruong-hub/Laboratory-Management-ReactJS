@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import CreateTestResultForm from "../../components/lab-user/CreateTestResultForm";
+import BulkTestResultForm from "../../components/lab-user/BulkTestResultForm";
 
 /* ---------- Styled Components ---------- */
 
@@ -71,8 +71,8 @@ export default function LabUserDashboard() {
 
       <ContentSection>
         <SectionCard>
-          <SectionTitle>Tạo kết quả xét nghiệm</SectionTitle>
-          <CreateTestResultForm />
+          <SectionTitle>Tạo kết quả xét nghiệm (Batch Mode)</SectionTitle>
+          <BulkTestResultForm />
         </SectionCard>
       </ContentSection>
     </PageContainer>
