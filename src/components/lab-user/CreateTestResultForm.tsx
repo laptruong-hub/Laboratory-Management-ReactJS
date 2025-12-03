@@ -9,6 +9,7 @@ import { getOrderDetailsByOrderId, type OrderDetailResponse } from "../../api/ap
 import { getAllTypeTestDetails, type TypeTestDetailResponse } from "../../api/apiTypeTestDetail";
 import { createTestResult, type CreateTestResultRequest } from "../../api/apiTestResult";
 import LoadingSpinner from "../common/LoadingSpinner";
+import OrderCommentSection from "./OrderCommentSection";
 
 /* ---------- Types ---------- */
 
@@ -440,6 +441,9 @@ export default function CreateTestResultForm() {
               <Button type="submit" disabled={loading}>
                 {loading ? "Đang xử lý..." : "Tạo kết quả xét nghiệm"}
               </Button>
+
+              {/* Order Comments Section */}
+              <OrderCommentSection orderDetailId={selectedOrderDetailId} />
             </>
           )}
         </>

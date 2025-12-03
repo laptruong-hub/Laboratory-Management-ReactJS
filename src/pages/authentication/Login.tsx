@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import loginImg from "../../assets/img/login.jpg";
+// import loginImg from "../../assets/img/login.jpg"; // Image file not found - using placeholder
 import { Eye,EyeOff} from 'lucide-react';
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -75,11 +75,23 @@ const Login: React.FC = () => {
       <div style={styles.loginCard}>
         {/* LEFT SIDE */}
         <div style={styles.side}>
-          <img
-            src={loginImg}
-            alt="Picture"
-            style={{ width: "100%", borderRadius: "10px", marginBottom: "20px" }}
-          />
+          <div
+            style={{
+              width: "100%",
+              height: "200px",
+              borderRadius: "10px",
+              marginBottom: "20px",
+              background: "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontSize: "18px",
+              fontWeight: "600",
+            }}
+          >
+            Laboratory Image
+          </div>
 
           <div>
             <h2 style={styles.sideTitleH2}>Phòng Lab Xét Nghiệm Máu</h2>
