@@ -16,6 +16,10 @@ export interface TypeTestDetailResponse {
   typeTestName: string;
   bloodIndicatorId: number;
   bloodIndicatorCode: string;
+  bloodIndicatorName: string;
+  unit: string;
+  referenceRange: string;
+  gender?: boolean; // true = male, false = female, null/undefined = both
 }
 
 /* ---------- API Functions ---------- */

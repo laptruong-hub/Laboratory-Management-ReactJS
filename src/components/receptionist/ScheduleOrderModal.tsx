@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useForm } from "react-hook-form";
 import { FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { PatientRequestDto } from "../../api/apiPatientRequest";
+import type { PatientRequestDto } from "../../api/apiPatientRequest";
 import {
   createOrder,
   getAllPurposes,
@@ -11,7 +11,11 @@ import {
   type CreateOrderRequest,
 } from "../../api/apiOrder";
 import { getAllWorkSlots, type WorkSlotResponse } from "../../api/apiWorkSlot";
-import { apiClient } from "../../api/apiClient";
+import {
+  getAllActiveTypeTests,
+  type TypeTestResponse,
+} from "../../api/apiTypeTest";
+import { getAllActiveLabUsers } from "../../api/apiLabUser";
 import LoadingSpinner from "../common/LoadingSpinner";
 
 /* ---------- Types ---------- */
@@ -31,7 +35,7 @@ interface ScheduleOrderModalProps {
 
 interface OrderFormData {
   purposeId: string;
-  userId: string;
+  labUserId: string; // Changed from userId - this is lab_user_id from TestOrder service
   note: string;
   dateBook: string;
   workSlotId: string;
@@ -242,6 +246,78 @@ const ErrorMessage = styled.span`
   margin-top: 0.25rem;
 `;
 
+const TestsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+`;
+
+const TestCard = styled.label<{ $selected?: boolean }>`
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 2px solid ${(p) => (p.$selected ? "#dc2626" : "#e5e7eb")};
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: ${(p) => (p.$selected ? "#fef2f2" : "white")};
+
+  &:hover {
+    border-color: #dc2626;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const TestCheckbox = styled.input`
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #dc2626;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+`;
+
+const TestInfo = styled.div`
+  flex: 1;
+`;
+
+const TestName = styled.div`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.25rem;
+`;
+
+const TestDescription = styled.div`
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+`;
+
+const TestPrice = styled.div`
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #dc2626;
+`;
+
+const TotalPrice = styled.div`
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+
+  strong {
+    font-size: 1rem;
+    color: #dc2626;
+  }
+`;
+
 const ConfirmationModal = styled.div`
   position: fixed;
   inset: 0;
@@ -291,6 +367,10 @@ export default function ScheduleOrderModal({
   const [purposes, setPurposes] = useState<PurposeResponse[]>([]);
   const [users, setUsers] = useState<UserOption[]>([]);
   const [workSlots, setWorkSlots] = useState<WorkSlotResponse[]>([]);
+  const [typeTests, setTypeTests] = useState<TypeTestResponse[]>([]);
+  const [selectedTests, setSelectedTests] = useState<
+    { typeTestId: number; totalPrice: number }[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -324,18 +404,21 @@ export default function ScheduleOrderModal({
   const fetchData = async () => {
     try {
       setLoadingData(true);
-      const [purposesData, usersResponse] = await Promise.all([
+      const [purposesData, labUsersData, typeTestsData] = await Promise.all([
         getAllPurposes(),
-        apiClient.get("/api/users"),
+        getAllActiveLabUsers(), // Fetch lab_users from TestOrder service
+        getAllActiveTypeTests(),
       ]);
 
       setPurposes(purposesData);
-      const usersData: UserOption[] = usersResponse.data.map((user: any) => ({
-        id: user.id,
-        fullName: user.fullName,
-        email: user.email,
+      // Map lab_user_id to UserOption.id (not user_id from IAM)
+      const usersData: UserOption[] = labUsersData.map((labUser) => ({
+        id: labUser.labUserId, // Use lab_user_id, NOT user_id!
+        fullName: labUser.fullName,
+        email: labUser.email || "",
       }));
       setUsers(usersData);
+      setTypeTests(typeTestsData);
     } catch (error: any) {
       console.error("Error fetching data:", error);
       toast.error("Không thể tải dữ liệu. Vui lòng thử lại.");
@@ -359,8 +442,25 @@ export default function ScheduleOrderModal({
   };
 
   const onSubmit = (data: OrderFormData) => {
+    // Validate at least one test is selected
+    if (selectedTests.length === 0) {
+      toast.error("Vui lòng chọn ít nhất một loại xét nghiệm");
+      return;
+    }
     setFormData(data);
     setShowConfirmation(true);
+  };
+
+  const handleTestToggle = (test: TypeTestResponse) => {
+    const isSelected = selectedTests.some((t) => t.typeTestId === test.typeTestId);
+    if (isSelected) {
+      setSelectedTests(selectedTests.filter((t) => t.typeTestId !== test.typeTestId));
+    } else {
+      setSelectedTests([
+        ...selectedTests,
+        { typeTestId: test.typeTestId, totalPrice: test.price },
+      ]);
+    }
   };
 
   const handleConfirm = async () => {
@@ -379,10 +479,11 @@ export default function ScheduleOrderModal({
       const orderData: CreateOrderRequest = {
         patientId: patientRequest.patientId,
         purposeId: parseInt(formData.purposeId),
-        userId: formData.userId ? parseInt(formData.userId) : undefined,
+        labUserId: formData.labUserId ? parseInt(formData.labUserId) : undefined, // Use lab_user_id from TestOrder service
         note: formData.note || undefined,
         dateBook: formData.dateBook || undefined,
         workSlotId: formData.workSlotId ? parseInt(formData.workSlotId) : undefined,
+        orderDetails: selectedTests,
       };
 
       await createOrder(orderData);
@@ -460,8 +561,8 @@ export default function ScheduleOrderModal({
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="userId">Người phụ trách</Label>
-                <Select id="userId" {...register("userId")}>
+                <Label htmlFor="labUserId">Người phụ trách</Label>
+                <Select id="labUserId" {...register("labUserId")}>
                   <option value="">-- Chọn người phụ trách --</option>
                   {users.map((user) => (
                     <option key={user.id} value={user.id}>
@@ -498,6 +599,56 @@ export default function ScheduleOrderModal({
                   </Select>
                 </FormGroup>
               )}
+
+              <FormGroup>
+                <Label>
+                  Chọn loại xét nghiệm <span style={{ color: "#ef4444" }}>*</span>
+                </Label>
+                <TestsGrid>
+                  {typeTests.map((test) => {
+                    const isSelected = selectedTests.some(
+                      (t) => t.typeTestId === test.typeTestId
+                    );
+                    return (
+                      <TestCard
+                        key={test.typeTestId}
+                        $selected={isSelected}
+                        htmlFor={`test-${test.typeTestId}`}
+                      >
+                        <TestCheckbox
+                          type="checkbox"
+                          id={`test-${test.typeTestId}`}
+                          checked={isSelected}
+                          onChange={() => handleTestToggle(test)}
+                        />
+                        <TestInfo>
+                          <TestName>{test.typeName}</TestName>
+                          <TestDescription>
+                            {test.description || "Không có mô tả"}
+                          </TestDescription>
+                          <TestPrice>
+                            {test.price.toLocaleString("vi-VN")} VNĐ
+                          </TestPrice>
+                        </TestInfo>
+                      </TestCard>
+                    );
+                  })}
+                </TestsGrid>
+                {selectedTests.length > 0 && (
+                  <TotalPrice>
+                    <span>
+                      Đã chọn: <strong>{selectedTests.length}</strong> loại xét nghiệm
+                    </span>
+                    <strong>
+                      Tổng:{" "}
+                      {selectedTests
+                        .reduce((sum, test) => sum + test.totalPrice, 0)
+                        .toLocaleString("vi-VN")}{" "}
+                      VNĐ
+                    </strong>
+                  </TotalPrice>
+                )}
+              </FormGroup>
 
               <FormGroup>
                 <Label htmlFor="note">Ghi chú</Label>

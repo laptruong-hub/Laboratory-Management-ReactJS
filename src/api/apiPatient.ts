@@ -60,6 +60,7 @@ export interface Patient {
  * Patient data from API (Response)
  */
 export interface PatientDto {
+  patientId: number; // Primary key - needed for orders relationship
   accountId: number; // ID của account/user trong bảng users
   fullName: string;
   email: string;
