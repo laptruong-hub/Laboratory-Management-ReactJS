@@ -9,6 +9,9 @@ import {
 import { toast } from "react-toastify";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ScheduleOrderModal from "../../components/receptionist/ScheduleOrderModal";
+import ApproveOrdersTab from "../../components/receptionist/ApproveOrdersTab";
+
+type TabType = "patient-requests" | "approve-orders";
 
 /* ---------- Styled Components ---------- */
 const PageContainer = styled.div`
@@ -206,8 +209,36 @@ const EmptyState = styled.div`
   color: #6b7280;
 `;
 
+/* ---------- Tab Components ---------- */
+const TabContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  flex-shrink: 0;
+`;
+
+const Tab = styled.button<{ $active: boolean }>`
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: ${(p) => (p.$active ? "#dc2626" : "#6b7280")};
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid ${(p) => (p.$active ? "#dc2626" : "transparent")};
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+
+  &:hover {
+    color: #dc2626;
+    background: #fef2f2;
+  }
+`;
+
 /* ---------- Component ---------- */
 export default function PatientRequestList() {
+  const [activeTab, setActiveTab] = useState<TabType>("patient-requests");
   const [requests, setRequests] = useState<PatientRequestDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -285,10 +316,27 @@ export default function PatientRequestList() {
   return (
     <PageContainer>
       <PageHeader>
-        <PageTitle>Danh sách yêu cầu</PageTitle>
+        <PageTitle>Quản Lý Đặt Lịch</PageTitle>
       </PageHeader>
 
-      <Toolbar>
+      <TabContainer>
+        <Tab
+          $active={activeTab === "patient-requests"}
+          onClick={() => setActiveTab("patient-requests")}
+        >
+          📋 Yêu cầu tạo tài khoản
+        </Tab>
+        <Tab
+          $active={activeTab === "approve-orders"}
+          onClick={() => setActiveTab("approve-orders")}
+        >
+          ✅ Duyệt lịch khám
+        </Tab>
+      </TabContainer>
+
+      {activeTab === "patient-requests" ? (
+        <>
+          <Toolbar>
         <SearchBox>
           <FaSearch />
           <input
@@ -349,16 +397,20 @@ export default function PatientRequestList() {
         )}
       </ContentSection>
 
-      {showScheduleModal && selectedRequest && (
-        <ScheduleOrderModal
-          open={showScheduleModal}
-          onClose={() => {
-            setShowScheduleModal(false);
-            setSelectedRequest(null);
-          }}
-          patientRequest={selectedRequest}
-          onSuccess={handleScheduleSuccess}
-        />
+          {showScheduleModal && selectedRequest && (
+            <ScheduleOrderModal
+              open={showScheduleModal}
+              onClose={() => {
+                setShowScheduleModal(false);
+                setSelectedRequest(null);
+              }}
+              patientRequest={selectedRequest}
+              onSuccess={handleScheduleSuccess}
+            />
+          )}
+        </>
+      ) : (
+        <ApproveOrdersTab />
       )}
     </PageContainer>
   );

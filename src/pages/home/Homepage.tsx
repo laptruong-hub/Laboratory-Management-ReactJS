@@ -24,6 +24,7 @@ import { createPatientRequest } from "../../api/apiPatientRequest";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { validateEmail, validatePhone, validateForm } from "../../utils/validation";
 import type { ValidationRule } from "../../utils/validation";
+import { useAuth } from "../../context/AuthContext";
 
 // --- STYLED COMPONENTS ---
 
@@ -635,6 +636,7 @@ const WhyUsImage = styled.img`
 
 const HeroSection: React.FC = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
 
   const handleLearnMore = () => {
     const servicesSection = document.getElementById("services-section");
@@ -642,6 +644,28 @@ const HeroSection: React.FC = () => {
       servicesSection.scrollIntoView({ behavior: "smooth" });
     }
   };
+
+  const handleScrollToContact = () => {
+    const contactSection = document.getElementById("contact-section");
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const handlePrimaryAction = () => {
+    if (isAuthenticated && user?.roleName?.trim().toUpperCase() === "PATIENT") {
+      // Nếu đã đăng nhập với role PATIENT → Navigate đến user profile (booking tab)
+      navigate("/user/profile?tab=booking");
+    } else {
+      // Nếu chưa đăng nhập → Scroll xuống form liên hệ
+      handleScrollToContact();
+    }
+  };
+
+  // Determine button text and action
+  const primaryButtonText = isAuthenticated && user?.roleName?.trim().toUpperCase() === "PATIENT" 
+    ? "Đặt Lịch Xét Nghiệm" 
+    : "Để Lại Thông Tin";
 
   return (
     <HeroWrapper>
@@ -659,7 +683,7 @@ const HeroSection: React.FC = () => {
           </HeroSubtitle>
 
           <HeroCTA>
-            <Button onClick={() => navigate("/booking")}>Đặt Lịch Xét Nghiệm</Button>
+            <Button onClick={handlePrimaryAction}>{primaryButtonText}</Button>
 
             <Button $outline onClick={handleLearnMore}>
               Tìm Hiểu Thêm
@@ -918,7 +942,7 @@ const ContactSection: React.FC = () => {
   };
 
   return (
-    <Section>
+    <Section id="contact-section">
       <Container>
         <SectionHeader>
           <SectionTitle>Liên Hệ Với Chúng Tôi</SectionTitle>
