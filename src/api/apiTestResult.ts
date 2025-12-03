@@ -19,6 +19,19 @@ export interface CreateTestResultRequest {
   unit?: string;
 }
 
+export interface BulkCreateTestResultRequest {
+  orderDetailId: number;
+  labUserId: number;
+  testResults: TestResultItem[];
+}
+
+export interface TestResultItem {
+  typeTestDetailId: number;
+  testResultName: string;
+  value: number;
+  unit?: string;
+}
+
 export interface TestResultResponse {
   testResultId: number;
   orderDetailId: number;
@@ -85,3 +98,16 @@ export const getTestResultsByOrderDetailId = async (
   return response.data.data;
 };
 
+/**
+ * Bulk create test results for an order detail
+ * POST /api/test-results/bulk
+ */
+export const bulkCreateTestResults = async (
+  request: BulkCreateTestResultRequest
+): Promise<TestResultResponse[]> => {
+  const response = await apiClient.post<ApiResponse<TestResultResponse[]>>(
+    "/api/test-results/bulk",
+    request
+  );
+  return response.data.data;
+};
