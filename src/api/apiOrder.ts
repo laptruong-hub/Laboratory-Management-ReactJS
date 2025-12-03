@@ -131,3 +131,27 @@ export const getAllPurposes = async (): Promise<PurposeResponse[]> => {
   );
   return response.data.data;
 };
+
+/**
+ * Get orders by status
+ * GET /api/orders/status/{status}
+ */
+export const getOrdersByStatus = async (
+  status: string
+): Promise<OrderResponse[]> => {
+  const response = await apiClient.get<ApiResponse<OrderResponse[]>>(
+    `/api/orders/status/${status}`
+  );
+  return response.data.data;
+};
+
+/**
+ * Approve order (DRAFT → PENDING)
+ * POST /api/orders/{id}/approve
+ */
+export const approveOrder = async (id: number): Promise<OrderResponse> => {
+  const response = await apiClient.post<ApiResponse<OrderResponse>>(
+    `/api/orders/${id}/approve`
+  );
+  return response.data.data;
+};

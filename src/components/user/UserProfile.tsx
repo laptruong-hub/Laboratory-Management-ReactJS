@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaUser, FaHistory, FaClipboardList, FaFlask } from "react-icons/fa";
+import { FaUser, FaHistory, FaClipboardList, FaFlask, FaCalendarAlt } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
+import { useSearchParams } from "react-router-dom";
 import AccountEdit from "./AccountEdit";
 import SettingsSidebar from "./SettingsSidebar";
 import MedicalRecord from "./MedicalRecord";
 import PatientTestResults from "../patient/PatientTestResults";
+import PatientBooking from "./PatientBooking";
 
 // Main UserProfile component
-type ProfileTab = "account-edit" | "medical-record" | "test-results";
+type ProfileTab = "account-edit" | "medical-record" | "booking" | "test-results";
 
 const UserProfile: React.FC = () => {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<ProfileTab>("account-edit");
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -25,19 +28,32 @@ const UserProfile: React.FC = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Read query param to set initial tab
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam && availableTabs.includes(tabParam as ProfileTab)) {
+      setActiveTab(tabParam as ProfileTab);
+      // Remove query param after setting tab
+      searchParams.delete("tab");
+      setSearchParams(searchParams);
+    }
+  }, []);
+
   const tabIcons = {
     "account-edit": <FaUser className="mr-2" />,
     "medical-record": <FaClipboardList className="mr-2" />,
+    "booking": <FaCalendarAlt className="mr-2" />,
     "test-results": <FaFlask className="mr-2" />,
   };
 
   const tabLabels: Record<ProfileTab, string> = {
     "account-edit": "Tài khoản",
     "medical-record": "Hồ sơ bệnh án",
+    "booking": "Đặt lịch",
     "test-results": "Kết quả xét nghiệm",
   };
 
-  const availableTabs: ProfileTab[] = ["account-edit", "medical-record", "test-results"];
+  const availableTabs: ProfileTab[] = ["account-edit", "medical-record", "booking", "test-results"];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -154,6 +170,8 @@ const UserProfile: React.FC = () => {
                   <AccountEdit />
                 ) : activeTab === "medical-record" ? (
                   <MedicalRecord />
+                ) : activeTab === "booking" ? (
+                  <PatientBooking />
                 ) : (
                   <PatientTestResults />
                 )}

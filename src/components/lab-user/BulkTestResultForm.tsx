@@ -352,9 +352,12 @@ export default function BulkTestResultForm() {
       
       // Step 2: Fetch orders using lab_user_id
       const ordersData = await getOrdersByLabUserId(labUserData.labUserId);
-      setOrders(ordersData);
       
-      console.log(`✅ Loaded orders for lab_user_id: ${labUserData.labUserId} (user_id: ${user.id})`);
+      // ✅ Filter PENDING orders only (approved orders ready for test results)
+      const pendingOrders = ordersData.filter(order => order.status === "PENDING");
+      setOrders(pendingOrders);
+      
+      console.log(`✅ Loaded ${pendingOrders.length} PENDING orders for lab_user_id: ${labUserData.labUserId}`);
     } catch (error: any) {
       console.error("Error fetching lab user or orders:", error);
       if (error.response?.status === 404) {
