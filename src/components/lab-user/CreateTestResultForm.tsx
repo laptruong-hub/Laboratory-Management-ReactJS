@@ -3,26 +3,11 @@ import styled from "styled-components";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
-import {
-  getWorkSlotsByLabUserId,
-  type WorkSlotResponse,
-} from "../../api/apiWorkSlot";
-import {
-  getOrdersByWorkSlotId,
-  type OrderResponse,
-} from "../../api/apiOrder";
-import {
-  getOrderDetailsByOrderId,
-  type OrderDetailResponse,
-} from "../../api/apiOrderDetail";
-import {
-  getAllTypeTestDetails,
-  type TypeTestDetailResponse,
-} from "../../api/apiTypeTestDetail";
-import {
-  createTestResult,
-  type CreateTestResultRequest,
-} from "../../api/apiTestResult";
+import { getWorkSlotsByLabUserId, type WorkSlotResponse } from "../../api/apiWorkSlot";
+import { getOrdersByWorkSlotId, type OrderResponse } from "../../api/apiOrder";
+import { getOrderDetailsByOrderId, type OrderDetailResponse } from "../../api/apiOrderDetail";
+import { getAllTypeTestDetails, type TypeTestDetailResponse } from "../../api/apiTypeTestDetail";
+import { createTestResult, type CreateTestResultRequest } from "../../api/apiTestResult";
 import LoadingSpinner from "../common/LoadingSpinner";
 
 /* ---------- Types ---------- */
@@ -228,9 +213,7 @@ export default function CreateTestResultForm() {
       const selectedDetail = orderDetails.find((od) => od.orderDetailId === orderDetailId);
       if (selectedDetail) {
         // Filter type test details by the order detail's type test
-        const filtered = typeTestDetails.filter(
-          (ttd) => ttd.typeTestId === selectedDetail.typeTestId
-        );
+        const filtered = typeTestDetails.filter((ttd) => ttd.typeTestId === selectedDetail.typeTestId);
         setFilteredTypeTestDetails(filtered);
       }
     } else {
@@ -250,13 +233,11 @@ export default function CreateTestResultForm() {
       // Get orders for each work slot
       const ordersPromises = slots.map((slot) => getOrdersByWorkSlotId(slot.workSlotId));
       const ordersArrays = await Promise.all(ordersPromises);
-      
+
       // Flatten and deduplicate orders
       const allOrders = ordersArrays.flat();
-      const uniqueOrders = Array.from(
-        new Map(allOrders.map((order) => [order.orderId, order])).values()
-      );
-      
+      const uniqueOrders = Array.from(new Map(allOrders.map((order) => [order.orderId, order])).values());
+
       setOrders(uniqueOrders);
     } catch (error: any) {
       console.error("Error fetching orders:", error);
@@ -317,8 +298,7 @@ export default function CreateTestResultForm() {
       setFilteredTypeTestDetails([]);
     } catch (error: any) {
       console.error("Error creating test result:", error);
-      const errorMessage =
-        error.response?.data?.message || "Không thể tạo kết quả xét nghiệm";
+      const errorMessage = error.response?.data?.message || "Không thể tạo kết quả xét nghiệm";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -380,9 +360,7 @@ export default function CreateTestResultForm() {
                   }}
                 >
                   <OrderDetailTitle>{detail.typeTestName}</OrderDetailTitle>
-                  <OrderDetailInfo>
-                    Giá: {detail.totalPrice.toLocaleString("vi-VN")} VNĐ
-                  </OrderDetailInfo>
+                  <OrderDetailInfo>Giá: {detail.totalPrice.toLocaleString("vi-VN")} VNĐ</OrderDetailInfo>
                 </OrderDetailCard>
               ))}
             </OrderDetailsList>
@@ -393,9 +371,7 @@ export default function CreateTestResultForm() {
               })}
               value={selectedOrderDetailId || ""}
             />
-            {errors.orderDetailId && (
-              <ErrorMessage>{errors.orderDetailId.message}</ErrorMessage>
-            )}
+            {errors.orderDetailId && <ErrorMessage>{errors.orderDetailId.message}</ErrorMessage>}
           </FormGroup>
 
           {selectedOrderDetailId && (
@@ -415,18 +391,13 @@ export default function CreateTestResultForm() {
                     <option disabled>Không có chỉ số xét nghiệm phù hợp</option>
                   ) : (
                     filteredTypeTestDetails.map((detail) => (
-                      <option
-                        key={detail.typeTestDetailId}
-                        value={detail.typeTestDetailId}
-                      >
+                      <option key={detail.typeTestDetailId} value={detail.typeTestDetailId}>
                         {detail.bloodIndicatorCode} - {detail.typeTestName}
                       </option>
                     ))
                   )}
                 </Select>
-                {errors.typeTestDetailId && (
-                  <ErrorMessage>{errors.typeTestDetailId.message}</ErrorMessage>
-                )}
+                {errors.typeTestDetailId && <ErrorMessage>{errors.typeTestDetailId.message}</ErrorMessage>}
               </FormGroup>
 
               <FormGroup>
@@ -441,9 +412,7 @@ export default function CreateTestResultForm() {
                   })}
                   placeholder="Nhập tên kết quả xét nghiệm"
                 />
-                {errors.testResultName && (
-                  <ErrorMessage>{errors.testResultName.message}</ErrorMessage>
-                )}
+                {errors.testResultName && <ErrorMessage>{errors.testResultName.message}</ErrorMessage>}
               </FormGroup>
 
               <FormGroup>
@@ -460,19 +429,12 @@ export default function CreateTestResultForm() {
                   })}
                   placeholder="Nhập giá trị kết quả"
                 />
-                {errors.value && (
-                  <ErrorMessage>{errors.value.message}</ErrorMessage>
-                )}
+                {errors.value && <ErrorMessage>{errors.value.message}</ErrorMessage>}
               </FormGroup>
 
               <FormGroup>
                 <Label htmlFor="unit">Đơn vị</Label>
-                <Input
-                  id="unit"
-                  type="text"
-                  {...register("unit")}
-                  placeholder="Nhập đơn vị (ví dụ: g/L, mmol/L)"
-                />
+                <Input id="unit" type="text" {...register("unit")} placeholder="Nhập đơn vị (ví dụ: g/L, mmol/L)" />
               </FormGroup>
 
               <Button type="submit" disabled={loading}>
@@ -485,4 +447,3 @@ export default function CreateTestResultForm() {
     </Form>
   );
 }
-

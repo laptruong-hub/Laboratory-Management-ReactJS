@@ -13,363 +13,196 @@ import {
   FaVial,
 } from "react-icons/fa";
 import { cn } from "@/lib/utils";
+import { useAuth } from "../../context/AuthContext";
 
 const primaryColor = "oklch(0.52 0.2 23.22)";
 const primaryColorLight = "oklch(0.95 0.05 23.22)";
 
 const WorkingSidebar: React.FC = () => {
   const location = useLocation();
+  const { user } = useAuth();
+
+  const normalizedRole = user?.roleName?.trim().toUpperCase() || "";
+  const isAdmin = normalizedRole === "ADMIN" || normalizedRole === "ADMINISTRATOR";
+  const isReceptionist = normalizedRole === "RECEPTIONIST";
+  const isLabUser = normalizedRole === "LAB USER" || normalizedRole === "TECHNICIAN";
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
+  const createNavLink = (
+    to: string,
+    icon: React.ReactNode,
+    label: string,
+    show: boolean = true
+  ) => {
+    if (!show) return null;
+
+    return (
+      <NavLink
+        key={to}
+        to={to}
+        className={cn(
+          "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
+          isActive(to)
+            ? "font-semibold"
+            : "text-gray-700 hover:bg-gray-100"
+        )}
+        style={
+          isActive(to)
+            ? ({
+                backgroundColor: primaryColorLight,
+                color: primaryColor,
+              } as React.CSSProperties)
+            : undefined
+        }
+        onMouseEnter={(e) => {
+          if (!isActive(to)) {
+            e.currentTarget.style.color = primaryColor;
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isActive(to)) {
+            e.currentTarget.style.color = "";
+          }
+        }}
+      >
+        <span className="text-xl flex-shrink-0">{icon}</span>
+        <span>{label}</span>
+      </NavLink>
+    );
+  };
+
   return (
     <div className="flex-1 overflow-y-auto py-4 bg-white">
-      {/* Quản lý hệ thống */}
-      <h4 className="px-6 py-2 m-0 text-xs uppercase text-gray-400 font-semibold tracking-wider">
-        Quản lý hệ thống
-      </h4>
-      <nav className="flex flex-col gap-1 p-2">
-        <NavLink
-          to="/admin/admin-dashboard"
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
-            isActive("/admin/admin-dashboard")
-              ? "font-semibold"
-              : "text-gray-700 hover:bg-gray-100"
-          )}
-          style={
-            isActive("/admin/admin-dashboard")
-              ? ({
-                  backgroundColor: primaryColorLight,
-                  color: primaryColor,
-                } as React.CSSProperties)
-              : ({
-                  "--hover-color": primaryColor,
-                } as React.CSSProperties)
-          }
-          onMouseEnter={(e) => {
-            if (!isActive("/admin/admin-dashboard")) {
-              e.currentTarget.style.color = primaryColor;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isActive("/admin/admin-dashboard")) {
-              e.currentTarget.style.color = "";
-            }
-          }}
-        >
-          <FaChartBar className="text-xl flex-shrink-0" />
-          <span>Dashboard</span>
-        </NavLink>
+      {/* Receptionist Menu */}
+      {isReceptionist && (
+        <>
+          <nav className="flex flex-col gap-1 p-2">
+            {createNavLink(
+              "/receptionist/dashboard",
+              <FaChartBar />,
+              "Bảng điều khiển"
+            )}
+            {createNavLink(
+              "/receptionist/patient-requests",
+              <FaEnvelope />,
+              "Danh sách yêu cầu"
+            )}
+            {createNavLink(
+              "/receptionist/schedule-appointment",
+              <FaCalendarCheck />,
+              "Đặt lịch khám"
+            )}
+            {createNavLink(
+              "/receptionist/patients",
+              <FaUsers />,
+              "Danh sách bệnh nhân"
+            )}
+          </nav>
+        </>
+      )}
 
-        <NavLink
-          to="/admin/account"
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
-            isActive("/admin/account")
-              ? "font-semibold"
-              : "text-gray-700 hover:bg-gray-100"
-          )}
-          style={
-            isActive("/admin/account")
-              ? ({
-                  backgroundColor: primaryColorLight,
-                  color: primaryColor,
-                } as React.CSSProperties)
-              : undefined
-          }
-          onMouseEnter={(e) => {
-            if (!isActive("/admin/account")) {
-              e.currentTarget.style.color = primaryColor;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isActive("/admin/account")) {
-              e.currentTarget.style.color = "";
-            }
-          }}
-        >
-          <FaUsers className="text-xl flex-shrink-0" />
-          <span>Danh sách tài khoản</span>
-        </NavLink>
+      {/* Lab User Menu */}
+      {isLabUser && (
+        <>
+          <nav className="flex flex-col gap-1 p-2">
+            {createNavLink(
+              "/lab-user/dashboard",
+              <FaVial />,
+              "Tạo kết quả xét nghiệm"
+            )}
+            {createNavLink(
+              "/lab-user/work-schedule",
+              <FaCalendarAlt />,
+              "Lịch làm việc bác sĩ"
+            )}
+          </nav>
+        </>
+      )}
 
-        <NavLink
-          to="/admin/roles"
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
-            isActive("/admin/roles")
-              ? "font-semibold"
-              : "text-gray-700 hover:bg-gray-100"
-          )}
-          style={
-            isActive("/admin/roles")
-              ? ({
-                  backgroundColor: primaryColorLight,
-                  color: primaryColor,
-                } as React.CSSProperties)
-              : undefined
-          }
-          onMouseEnter={(e) => {
-            if (!isActive("/admin/roles")) {
-              e.currentTarget.style.color = primaryColor;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isActive("/admin/roles")) {
-              e.currentTarget.style.color = "";
-            }
-          }}
-        >
-          <FaUserShield className="text-xl flex-shrink-0" />
-          <span>Quản lý vai trò</span>
-        </NavLink>
+      {/* Admin Menu */}
+      {isAdmin && (
+        <>
+          {/* Quản lý hệ thống */}
+          <h4 className="px-6 py-2 m-0 text-xs uppercase text-gray-400 font-semibold tracking-wider">
+            Quản lý hệ thống
+          </h4>
+          <nav className="flex flex-col gap-1 p-2">
+            {createNavLink(
+              "/admin/admin-dashboard",
+              <FaChartBar />,
+              "Dashboard"
+            )}
+            {createNavLink(
+              "/admin/account",
+              <FaUsers />,
+              "Danh sách tài khoản"
+            )}
+            {createNavLink(
+              "/admin/roles",
+              <FaUserShield />,
+              "Quản lý vai trò"
+            )}
+            {createNavLink(
+              "/admin/patients",
+              <FaUsers />,
+              "Danh sách bệnh nhân"
+            )}
+            {createNavLink(
+              "/admin/patient-requests",
+              <FaEnvelope />,
+              "Danh sách yêu cầu"
+            )}
+          </nav>
 
-        <NavLink
-          to="/admin/patients"
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
-            isActive("/admin/patients")
-              ? "font-semibold"
-              : "text-gray-700 hover:bg-gray-100"
-          )}
-          style={
-            isActive("/admin/patients")
-              ? ({
-                  backgroundColor: primaryColorLight,
-                  color: primaryColor,
-                } as React.CSSProperties)
-              : undefined
-          }
-          onMouseEnter={(e) => {
-            if (!isActive("/admin/patients")) {
-              e.currentTarget.style.color = primaryColor;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isActive("/admin/patients")) {
-              e.currentTarget.style.color = "";
-            }
-          }}
-        >
-          <FaUsers className="text-xl flex-shrink-0" />
-          <span>Danh sách bệnh nhân</span>
-        </NavLink>
+          {/* Divider */}
+          <div className="h-px bg-gray-200 my-3" />
 
-        <NavLink
-          to="/admin/patient-requests"
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
-            isActive("/admin/patient-requests")
-              ? "font-semibold"
-              : "text-gray-700 hover:bg-gray-100"
-          )}
-          style={
-            isActive("/admin/patient-requests")
-              ? ({
-                  backgroundColor: primaryColorLight,
-                  color: primaryColor,
-                } as React.CSSProperties)
-              : undefined
-          }
-          onMouseEnter={(e) => {
-            if (!isActive("/admin/patient-requests")) {
-              e.currentTarget.style.color = primaryColor;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isActive("/admin/patient-requests")) {
-              e.currentTarget.style.color = "";
-            }
-          }}
-        >
-          <FaEnvelope className="text-xl flex-shrink-0" />
-          <span>Danh sách yêu cầu</span>
-        </NavLink>
+          {/* Quản lý xét nghiệm */}
+          <h4 className="px-6 py-2 m-0 text-xs uppercase text-gray-400 font-semibold tracking-wider">
+            Quản lý xét nghiệm
+          </h4>
+          <nav className="flex flex-col gap-1 p-2">
+            {createNavLink(
+              "/admin/test-order",
+              <FaFlask />,
+              "Danh sách xét nghiệm"
+            )}
+          </nav>
 
-        <NavLink
-          to="/receptionist/patient-requests"
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
-            isActive("/receptionist/patient-requests")
-              ? "font-semibold"
-              : "text-gray-700 hover:bg-gray-100"
-          )}
-          style={
-            isActive("/receptionist/patient-requests")
-              ? ({
-                  backgroundColor: primaryColorLight,
-                  color: primaryColor,
-                } as React.CSSProperties)
-              : undefined
-          }
-          onMouseEnter={(e) => {
-            if (!isActive("/receptionist/patient-requests")) {
-              e.currentTarget.style.color = primaryColor;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isActive("/receptionist/patient-requests")) {
-              e.currentTarget.style.color = "";
-            }
-          }}
-        >
-          <FaCalendarCheck className="text-xl flex-shrink-0" />
-          <span>Đặt lịch khám</span>
-        </NavLink>
-      </nav>
+          {/* Divider */}
+          <div className="h-px bg-gray-200 my-3" />
 
-      {/* Divider */}
-      <div className="h-px bg-gray-200 my-3" />
+          {/* Quản lý lịch làm việc */}
+          <h4 className="px-6 py-2 m-0 text-xs uppercase text-gray-400 font-semibold tracking-wider">
+            Quản lý lịch làm việc
+          </h4>
+          <nav className="flex flex-col gap-1 p-2">
+            {createNavLink(
+              "/admin/work-slots",
+              <FaCalendarAlt />,
+              "Lịch làm việc bác sĩ"
+            )}
+          </nav>
 
-      {/* Quản lý xét nghiệm */}
-      <h4 className="px-6 py-2 m-0 text-xs uppercase text-gray-400 font-semibold tracking-wider">
-        Quản lý xét nghiệm
-      </h4>
-      <nav className="flex flex-col gap-1 p-2">
-        <NavLink
-          to="/admin/test-order"
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
-            isActive("/admin/test-order")
-              ? "font-semibold"
-              : "text-gray-700 hover:bg-gray-100"
-          )}
-          style={
-            isActive("/admin/test-order")
-              ? ({
-                  backgroundColor: primaryColorLight,
-                  color: primaryColor,
-                } as React.CSSProperties)
-              : undefined
-          }
-          onMouseEnter={(e) => {
-            if (!isActive("/admin/test-order")) {
-              e.currentTarget.style.color = primaryColor;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isActive("/admin/test-order")) {
-              e.currentTarget.style.color = "";
-            }
-          }}
-        >
-          <FaFlask className="text-xl flex-shrink-0" />
-          <span>Danh sách xét nghiệm</span>
-        </NavLink>
+          {/* Divider */}
+          <div className="h-px bg-gray-200 my-3" />
 
-        <NavLink
-          to="/lab-user/dashboard"
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
-            isActive("/lab-user/dashboard")
-              ? "font-semibold"
-              : "text-gray-700 hover:bg-gray-100"
-          )}
-          style={
-            isActive("/lab-user/dashboard")
-              ? ({
-                  backgroundColor: primaryColorLight,
-                  color: primaryColor,
-                } as React.CSSProperties)
-              : undefined
-          }
-          onMouseEnter={(e) => {
-            if (!isActive("/lab-user/dashboard")) {
-              e.currentTarget.style.color = primaryColor;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isActive("/lab-user/dashboard")) {
-              e.currentTarget.style.color = "";
-            }
-          }}
-        >
-          <FaVial className="text-xl flex-shrink-0" />
-          <span>Tạo kết quả xét nghiệm</span>
-        </NavLink>
-      </nav>
-
-      {/* Divider */}
-      <div className="h-px bg-gray-200 my-3" />
-
-      {/* Quản lý lịch làm việc */}
-      <h4 className="px-6 py-2 m-0 text-xs uppercase text-gray-400 font-semibold tracking-wider">
-        Quản lý lịch làm việc
-      </h4>
-      <nav className="flex flex-col gap-1 p-2">
-        <NavLink
-          to="/admin/work-slots"
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
-            isActive("/admin/work-slots")
-              ? "font-semibold"
-              : "text-gray-700 hover:bg-gray-100"
-          )}
-          style={
-            isActive("/admin/work-slots")
-              ? ({
-                  backgroundColor: primaryColorLight,
-                  color: primaryColor,
-                } as React.CSSProperties)
-              : undefined
-          }
-          onMouseEnter={(e) => {
-            if (!isActive("/admin/work-slots")) {
-              e.currentTarget.style.color = primaryColor;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isActive("/admin/work-slots")) {
-              e.currentTarget.style.color = "";
-            }
-          }}
-        >
-          <FaCalendarAlt className="text-xl flex-shrink-0" />
-          <span>Lịch làm việc bác sĩ</span>
-        </NavLink>
-      </nav>
-
-      {/* Divider */}
-      <div className="h-px bg-gray-200 my-3" />
-
-      {/* Cài đặt */}
-      <h4 className="px-6 py-2 m-0 text-xs uppercase text-gray-400 font-semibold tracking-wider">
-        Cài đặt
-      </h4>
-      <nav className="flex flex-col gap-1 p-2">
-        <NavLink
-          to="/admin/settings"
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
-            isActive("/admin/settings")
-              ? "font-semibold"
-              : "text-gray-700 hover:bg-gray-100"
-          )}
-          style={
-            isActive("/admin/settings")
-              ? ({
-                  backgroundColor: primaryColorLight,
-                  color: primaryColor,
-                } as React.CSSProperties)
-              : undefined
-          }
-          onMouseEnter={(e) => {
-            if (!isActive("/admin/settings")) {
-              e.currentTarget.style.color = primaryColor;
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isActive("/admin/settings")) {
-              e.currentTarget.style.color = "";
-            }
-          }}
-        >
-          <FaCog className="text-xl flex-shrink-0" />
-          <span>Cài đặt</span>
-        </NavLink>
-      </nav>
+          {/* Cài đặt */}
+          <h4 className="px-6 py-2 m-0 text-xs uppercase text-gray-400 font-semibold tracking-wider">
+            Cài đặt
+          </h4>
+          <nav className="flex flex-col gap-1 p-2">
+            {createNavLink(
+              "/admin/settings",
+              <FaCog />,
+              "Cài đặt"
+            )}
+          </nav>
+        </>
+      )}
     </div>
   );
 };

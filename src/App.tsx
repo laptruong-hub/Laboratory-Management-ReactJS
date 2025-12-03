@@ -37,10 +37,14 @@ import WorkSlotManage from "./pages/admin/WorkSlotManage.tsx";
 import PatientRequestManage from "./pages/admin/PatientRequestManage.tsx";
 
 // Pages - Receptionist
+import ReceptionistDashboard from "./pages/receptionist/ReceptionistDashboard.tsx";
 import PatientRequestList from "./pages/receptionist/PatientRequestList.tsx";
+import ReceptionistScheduleAppointment from "./pages/receptionist/ReceptionistScheduleAppointment.tsx";
+import ReceptionistPatientList from "./pages/receptionist/ReceptionistPatientList.tsx";
 
 // Pages - Lab User
 import LabUserDashboard from "./pages/lab-user/LabUserDashboard.tsx";
+import LabUserWorkSchedule from "./pages/lab-user/LabUserWorkSchedule.tsx";
 
 // Components - User
 import UserProfile from "./components/user/UserProfile.tsx";
@@ -160,11 +164,23 @@ const router = createBrowserRouter([
             children: [
               {
                 index: true,
-                element: <Navigate to="/receptionist/patient-requests" replace />,
+                element: <Navigate to="/receptionist/dashboard" replace />,
+              },
+              {
+                path: "dashboard",
+                element: <ReceptionistDashboard />,
               },
               {
                 path: "patient-requests",
                 element: <PatientRequestList />,
+              },
+              {
+                path: "schedule-appointment",
+                element: <ReceptionistScheduleAppointment />,
+              },
+              {
+                path: "patients",
+                element: <ReceptionistPatientList />,
               },
             ],
           },
@@ -184,6 +200,10 @@ const router = createBrowserRouter([
               {
                 path: "dashboard",
                 element: <LabUserDashboard />,
+              },
+              {
+                path: "work-schedule",
+                element: <LabUserWorkSchedule />,
               },
             ],
           },
