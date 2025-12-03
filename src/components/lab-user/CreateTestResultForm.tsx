@@ -322,9 +322,7 @@ export default function CreateTestResultForm() {
       const selectedDetail = orderDetails.find((od) => od.orderDetailId === orderDetailId);
       if (selectedDetail) {
         // Filter type test details by the order detail's type test
-        const filtered = typeTestDetails.filter(
-          (ttd) => ttd.typeTestId === selectedDetail.typeTestId
-        );
+        const filtered = typeTestDetails.filter((ttd) => ttd.typeTestId === selectedDetail.typeTestId);
         setFilteredTypeTestDetails(filtered);
       }
     } else {
@@ -399,8 +397,7 @@ export default function CreateTestResultForm() {
       setFilteredTypeTestDetails([]);
     } catch (error: any) {
       console.error("Error creating test result:", error);
-      const errorMessage =
-        error.response?.data?.message || "Không thể tạo kết quả xét nghiệm";
+      const errorMessage = error.response?.data?.message || "Không thể tạo kết quả xét nghiệm";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -619,18 +616,13 @@ export default function CreateTestResultForm() {
                     <option disabled>Không có chỉ số xét nghiệm phù hợp</option>
                   ) : (
                     filteredTypeTestDetails.map((detail) => (
-                      <option
-                        key={detail.typeTestDetailId}
-                        value={detail.typeTestDetailId}
-                      >
+                      <option key={detail.typeTestDetailId} value={detail.typeTestDetailId}>
                         {detail.bloodIndicatorCode} - {detail.typeTestName}
                       </option>
                     ))
                   )}
                 </Select>
-                {errors.typeTestDetailId && (
-                  <ErrorMessage>{errors.typeTestDetailId.message}</ErrorMessage>
-                )}
+                {errors.typeTestDetailId && <ErrorMessage>{errors.typeTestDetailId.message}</ErrorMessage>}
               </FormGroup>
 
               <FormGroup>
@@ -648,9 +640,7 @@ export default function CreateTestResultForm() {
                   })}
                   placeholder="Ví dụ: Số lượng bạch cầu"
                 />
-                {errors.testResultName && (
-                  <ErrorMessage>{errors.testResultName.message}</ErrorMessage>
-                )}
+                {errors.testResultName && <ErrorMessage>{errors.testResultName.message}</ErrorMessage>}
               </FormGroup>
 
               <FormGroup>
@@ -670,9 +660,7 @@ export default function CreateTestResultForm() {
                   })}
                   placeholder="Ví dụ: 7.5"
                 />
-                {errors.value && (
-                  <ErrorMessage>{errors.value.message}</ErrorMessage>
-                )}
+                {errors.value && <ErrorMessage>{errors.value.message}</ErrorMessage>}
               </FormGroup>
 
               <FormGroup>
@@ -700,4 +688,3 @@ export default function CreateTestResultForm() {
     </Form>
   );
 }
-
