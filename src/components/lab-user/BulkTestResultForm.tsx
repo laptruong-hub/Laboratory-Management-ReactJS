@@ -22,7 +22,9 @@ import {
   type TestResultResponse,
 } from "../../api/apiTestResult";
 import { getLabUserByUserId } from "../../api/apiLabUser";
+import { getOrderCommentsByOrderDetailId } from "../../api/apiOrderComment"; // ✅ NEW
 import LoadingSpinner from "../common/LoadingSpinner";
+import OrderCommentSection from "./OrderCommentSection";
 
 /* ---------- Types ---------- */
 
@@ -325,6 +327,7 @@ export default function BulkTestResultForm() {
   const [selectedOrderDetailId, setSelectedOrderDetailId] = useState<number | null>(null);
   const [typeTestDetails, setTypeTestDetails] = useState<TypeTestDetailResponse[]>([]);
   const [existingResults, setExistingResults] = useState<TestResultResponse[]>([]);
+  const [hasComment, setHasComment] = useState(false); // ✅ Track if comment exists
 
   const {
     register,
@@ -374,6 +377,7 @@ export default function BulkTestResultForm() {
     setSelectedOrderId(orderId);
     setSelectedOrderDetailId(null);
     setTypeTestDetails([]);
+    setHasComment(false); // ✅ Reset comment status
     reset();
 
     try {
@@ -391,19 +395,27 @@ export default function BulkTestResultForm() {
     reset();
 
     try {
-      // Fetch both type test details and existing results
-      const [details, results] = await Promise.all([
+      // ✅ Fetch type test details, existing results, AND comments
+      const [details, results, comments] = await Promise.all([
         getTypeTestDetailsByTypeTestId(typeTestId),
-        getTestResultsByOrderDetailId(orderDetailId)
+        getTestResultsByOrderDetailId(orderDetailId),
+        getOrderCommentsByOrderDetailId(orderDetailId).catch(() => []) // ✅ Don't fail on 404
       ]);
       
       setTypeTestDetails(details);
       setExistingResults(results);
+      setHasComment(comments.length > 0); // ✅ Update comment status
       
       if (results.length > 0) {
         console.log(`✅ Found ${results.length} existing test results for order detail ${orderDetailId}`);
       } else {
         console.log(`ℹ️ No existing test results for order detail ${orderDetailId}`);
+      }
+      
+      if (comments.length > 0) {
+        console.log(`✅ Found ${comments.length} existing comments for order detail ${orderDetailId}`);
+      } else {
+        console.log(`ℹ️ No existing comments for order detail ${orderDetailId}`);
       }
     } catch (error: any) {
       console.error("Error fetching test details or results:", error);
@@ -747,9 +759,32 @@ export default function BulkTestResultForm() {
 
             <Divider />
 
-            <Button type="submit" disabled={loading}>
+            {/* ✅ Comment Section - Show BEFORE submit button */}
+            {labUserId && (
+              <OrderCommentSection 
+                orderDetailId={selectedOrderDetailId}
+                labUserId={labUserId} // ✅ Pass lab_user_id from TestOrder service
+                onCommentAdded={() => setHasComment(true)} // ✅ Enable submit button
+              />
+            )}
+
+            <Divider />
+
+            {/* ✅ Submit button - Disabled until comment is added */}
+            <Button type="submit" disabled={loading || !hasComment}>
               {loading ? "Đang xử lý..." : `✓ Lưu ${typeTestDetails.length} kết quả xét nghiệm`}
             </Button>
+            
+            {!hasComment && (
+              <div style={{
+                fontSize: '0.875rem',
+                color: '#dc2626',
+                marginTop: '0.5rem',
+                textAlign: 'center'
+              }}>
+                ⚠️ Vui lòng thêm bình luận trước khi lưu kết quả
+              </div>
+            )}
               </>
             )}
           </>

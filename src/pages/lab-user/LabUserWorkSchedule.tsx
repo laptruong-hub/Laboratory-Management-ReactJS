@@ -19,9 +19,10 @@ const PageContainer = styled.div`
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 100vh;
   min-height: 0;
   box-sizing: border-box;
+  overflow: hidden; /* ✅ Không scroll toàn trang, chỉ scroll trong các khối con */
 `;
 
 const PageHeader = styled.div`
@@ -119,54 +120,163 @@ const LegendColor = styled.span<{ $active?: boolean }>`
   border: 1px solid ${(p) => (p.$active ? "#b91c1c" : "#d1d5db")};
 `;
 
-const ScheduleGrid = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+const Layout = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: flex-start;
+  min-height: 0;
+  flex: 1; /* ✅ Chiếm toàn bộ chiều cao còn lại dưới header */
 `;
 
-const DayCard = styled.div`
+const CalendarCard = styled.div`
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
   padding: 1.25rem;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+  min-height: 0;
+  height: 100%; /* ✅ Co giãn theo chiều cao layout */
 `;
 
-const DayHeader = styled.div`
+const DetailsCard = styled(CalendarCard)`
+  background: #f9fafb;
+`;
+
+const CardTitle = styled.h2`
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.75rem 0;
+`;
+
+const CalendarHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  margin-bottom: 0.75rem;
 `;
 
-const DayTitle = styled.div`
-  font-size: 1.1rem;
+const MonthLabel = styled.div`
+  font-size: 1.05rem;
   font-weight: 600;
   color: #111827;
 `;
 
-const SessionButtons = styled.div`
+const CalendarGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  user-select: none;
+`;
+
+const CalendarBody = styled.div`
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto; /* ✅ Nếu lịch cao hơn viewport, chỉ phần lịch tự scroll */
+  padding-right: 0.25rem;
+`;
+
+const WeekdayCell = styled.div`
+  text-align: center;
+  font-weight: 600;
+  color: #6b7280;
+  padding-bottom: 0.25rem;
+`;
+
+const DayCell = styled.button<{
+  $isToday?: boolean;
+  $isSelected?: boolean;
+  $hasSlots?: boolean;
+}>`
+  position: relative;
+  height: 70px;
+  border-radius: 0.6rem;
+  border: 1px solid
+    ${(p) =>
+      p.$isSelected ? "#dc2626" : p.$hasSlots ? "#bbf7d0" : "#e5e7eb"};
+  background: ${(p) =>
+    p.$isSelected
+      ? "#fee2e2"
+      : p.$hasSlots
+      ? "linear-gradient(135deg, #ecfdf3 0%, #dcfce7 100%)"
+      : "white"};
+  color: #111827;
+  cursor: ${(p) => (p.disabled ? "default" : "pointer")};
+  padding: 0.35rem 0.4rem;
+  text-align: left;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.15s ease;
+
+  &:hover {
+    ${(p) =>
+      !p.disabled &&
+      `box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+       transform: translateY(-1px);`}
+  }
+`;
+
+const DayNumber = styled.div`
+  font-size: 0.9rem;
+  font-weight: 600;
+`;
+
+const DayMeta = styled.div`
+  font-size: 0.7rem;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+`;
+
+const Dot = styled.span`
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #16a34a;
+`;
+
+const DetailsBody = styled.div`
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+`;
+
+const DetailHeader = styled.div`
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  color: #4b5563;
+`;
+
+const SessionList = styled.div`
+  display: flex;
+  flex-direction: column;
   gap: 0.75rem;
 `;
 
-const SessionBadge = styled.div<{ $active?: boolean }>`
-  padding: 0.65rem 1.1rem;
-  border-radius: 999px;
-  border: 1px solid ${(p) => (p.$active ? "#dc2626" : "#d1d5db")};
-  background: ${(p) => (p.$active ? "#fee2e2" : "white")};
-  color: ${(p) => (p.$active ? "#b91c1c" : "#374151")};
-  font-weight: 600;
+const SessionCard = styled.div`
+  background: white;
+  border-radius: 0.6rem;
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem 0.9rem;
+`;
+
+const SessionTitle = styled.div`
   font-size: 0.9rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.25rem;
+`;
+
+const SessionMeta = styled.div`
+  font-size: 0.8rem;
+  color: #6b7280;
 `;
 
 const EmptyState = styled.div`
@@ -194,19 +304,23 @@ const InlineSpinner = styled.div`
 /* ---------- Component ---------- */
 
 const LabUserWorkSchedule: React.FC = () => {
-  const today = new Date().toISOString().split("T")[0];
-  const weekAhead = new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  const today = new Date();
+  const currentMonthStr = today.toISOString().slice(0, 7); // yyyy-MM
 
   const [doctors, setDoctors] = useState<DoctorResponse[]>([]);
   const [sessions, setSessions] = useState<WorkSessionResponse[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<string>("");
-  const [startDate, setStartDate] = useState<string>(today);
-  const [endDate, setEndDate] = useState<string>(weekAhead);
-  const [schedule, setSchedule] = useState<Record<string, Record<number, WorkSlotResponse>>>({});
+  const [selectedMonth, setSelectedMonth] = useState<string>(currentMonthStr);
+  const [workSlotsByDate, setWorkSlotsByDate] = useState<
+    Record<string, WorkSlotResponse[]>
+  >({});
+  const [selectedDate, setSelectedDate] = useState<string | null>(
+    today.toISOString().split("T")[0]
+  );
   const [loadingMeta, setLoadingMeta] = useState(true);
   const [loadingSchedule, setLoadingSchedule] = useState(false);
 
-  const dateRange = useMemo(() => getDateRangeArray(startDate, endDate), [startDate, endDate]);
+  const monthInfo = useMemo(() => getMonthInfo(selectedMonth), [selectedMonth]);
 
   useEffect(() => {
     const loadMeta = async () => {
@@ -233,26 +347,32 @@ const LabUserWorkSchedule: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!selectedDoctor || dateRange.length === 0) {
-      setSchedule({});
+    if (!selectedDoctor || monthInfo.days.length === 0) {
+      setWorkSlotsByDate({});
       return;
     }
 
     const fetchSchedule = async () => {
       try {
         setLoadingSchedule(true);
-        const requests = dateRange.map((date) =>
+        const requests = monthInfo.days.map((date) =>
           getWorkSlotsByLabUserAndDate(Number(selectedDoctor), date)
         );
         const responses = await Promise.all(requests);
-        const mapped: Record<string, Record<number, WorkSlotResponse>> = {};
-        dateRange.forEach((date, index) => {
-          mapped[date] = responses[index].reduce<Record<number, WorkSlotResponse>>((acc, slot) => {
-            acc[slot.workSessionId] = slot;
-            return acc;
-          }, {});
+
+        const map: Record<string, WorkSlotResponse[]> = {};
+        monthInfo.days.forEach((date, index) => {
+          map[date] = responses[index];
         });
-        setSchedule(mapped);
+        setWorkSlotsByDate(map);
+
+        // Nếu selectedDate nằm ngoài tháng hiện tại, hoặc null → chọn ngày đầu tiên có ca
+        if (!selectedDate || !monthInfo.days.includes(selectedDate)) {
+          const firstWithSlots = monthInfo.days.find(
+            (d) => map[d] && map[d].length > 0
+          );
+          setSelectedDate(firstWithSlots ?? monthInfo.days[0]);
+        }
       } catch (error: any) {
         console.error("Failed to load work slots", error);
         toast.error("Không thể tải lịch làm việc.");
@@ -261,24 +381,9 @@ const LabUserWorkSchedule: React.FC = () => {
       }
     };
 
-    fetchSchedule();
-  }, [selectedDoctor, dateRange]);
-
-  const handleDateChange = (type: "start" | "end", value: string) => {
-    if (!value) return;
-    if (type === "start") {
-      setStartDate(value);
-      if (new Date(value) > new Date(endDate)) {
-        setEndDate(value);
-      }
-    } else {
-      if (new Date(value) < new Date(startDate)) {
-        toast.warn("Ngày kết thúc phải sau ngày bắt đầu.");
-        return;
-      }
-      setEndDate(value);
-    }
-  };
+    void fetchSchedule();
+    // ✅ Chỉ reload khi đổi bác sĩ hoặc tháng, KHÔNG reload khi click ngày
+  }, [selectedDoctor, monthInfo]);
 
   const renderContent = () => {
     if (!selectedDoctor) {
@@ -290,50 +395,136 @@ const LabUserWorkSchedule: React.FC = () => {
       );
     }
 
-    if (loadingSchedule) {
-      return (
-        <EmptyState>
-          <InlineSpinner>
-            <FaSyncAlt className="spin" /> Đang tải lịch làm việc...
-          </InlineSpinner>
-        </EmptyState>
-      );
-    }
-
-    if (dateRange.length === 0) {
-      return (
-        <EmptyState>
-          <EmptyIcon>📅</EmptyIcon>
-          Khoảng ngày không hợp lệ. Vui lòng chọn lại.
-        </EmptyState>
-      );
-    }
+    const slotsForSelectedDay =
+      (selectedDate && workSlotsByDate[selectedDate]) || [];
 
     return (
-      <ScheduleGrid>
-        {dateRange.map((date) => {
-          const slotsForDay = schedule[date] || {};
-          const formatted = formatDisplayDate(date);
-          return (
-            <DayCard key={date}>
-              <DayHeader>
-                <DayTitle>{formatted}</DayTitle>
-                <span style={{ color: "#6b7280", fontSize: "0.9rem" }}>Ngày {date}</span>
-              </DayHeader>
-              <SessionButtons>
-                {sessions.map((session) => {
-                  const isActive = Boolean(slotsForDay[session.workSessionId]);
+      <Layout>
+        <CalendarCard>
+          <CardTitle>Lịch làm việc theo tháng</CardTitle>
+          <CalendarHeader>
+            <MonthLabel>{monthInfo.label}</MonthLabel>
+            <span style={{ fontSize: "0.8rem", color: "#6b7280" }}>
+              Nhấn vào ngày được tô màu để xem chi tiết ca làm việc
+            </span>
+          </CalendarHeader>
+
+          {loadingSchedule ? (
+            <EmptyState>
+              <InlineSpinner>
+                <FaSyncAlt className="spin" /> Đang tải lịch làm việc...
+              </InlineSpinner>
+            </EmptyState>
+          ) : (
+            <CalendarBody>
+              <CalendarGrid>
+                {/* Weekday header */}
+                {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map((d) => (
+                  <WeekdayCell key={d}>{d}</WeekdayCell>
+                ))}
+
+                {/* Calendar cells */}
+                {monthInfo.cells.map((cell, idx) => {
+                  if (!cell) {
+                    return <div key={idx} />;
+                  }
+                  const hasSlots =
+                    workSlotsByDate[cell] && workSlotsByDate[cell].length > 0;
+                  const isSelected = selectedDate === cell;
+                  const isToday = cell === today.toISOString().split("T")[0];
+                  const dayNumber = parseInt(cell.slice(-2), 10);
+
                   return (
-                    <SessionBadge key={session.workSessionId} $active={isActive}>
-                      {session.workSession}
-                    </SessionBadge>
+                    <DayCell
+                      key={cell}
+                      type="button"
+                      $isToday={isToday}
+                      $isSelected={isSelected}
+                      $hasSlots={hasSlots}
+                      disabled={!hasSlots}
+                      onClick={() => hasSlots && setSelectedDate(cell)}
+                    >
+                      <DayNumber>
+                        {dayNumber}
+                        {isToday && (
+                          <span
+                            style={{
+                              fontSize: "0.65rem",
+                              color: "#dc2626",
+                              marginLeft: 4,
+                            }}
+                          >
+                            hôm nay
+                          </span>
+                        )}
+                      </DayNumber>
+                      <DayMeta>
+                        {hasSlots ? (
+                          <>
+                            <Dot /> {workSlotsByDate[cell].length} ca
+                          </>
+                        ) : (
+                          <span>Không có ca</span>
+                        )}
+                      </DayMeta>
+                    </DayCell>
                   );
                 })}
-              </SessionButtons>
-            </DayCard>
-          );
-        })}
-      </ScheduleGrid>
+              </CalendarGrid>
+            </CalendarBody>
+          )}
+        </CalendarCard>
+
+        <DetailsCard>
+          <CardTitle>Chi tiết ca làm việc</CardTitle>
+          <DetailsBody>
+            {!selectedDate ? (
+              <EmptyState>
+                <EmptyIcon>📅</EmptyIcon>
+                Chọn một ngày trong lịch để xem chi tiết ca làm việc.
+              </EmptyState>
+            ) : slotsForSelectedDay.length === 0 ? (
+              <EmptyState>
+                <EmptyIcon>📅</EmptyIcon>
+                Không có ca làm việc trong ngày {selectedDate}.
+              </EmptyState>
+            ) : (
+              <>
+                <DetailHeader>
+                  Ngày{" "}
+                  {new Date(selectedDate).toLocaleDateString("vi-VN", {
+                    weekday: "long",
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}
+                  <br />
+                  Tổng {slotsForSelectedDay.length} ca làm việc.
+                </DetailHeader>
+                <SessionList>
+                  {slotsForSelectedDay.map((slot) => (
+                    <SessionCard key={slot.workSlotId}>
+                      <SessionTitle>{slot.workSessionName}</SessionTitle>
+                      <SessionMeta>
+                        {slot.startTime && slot.endTime && (
+                          <div>
+                            Thời gian: {slot.startTime} - {slot.endTime}
+                          </div>
+                        )}
+                        <div>Số lượng tối đa: {slot.quantity}</div>
+                        <div>
+                          Trạng thái:{" "}
+                          {slot.isActive ? "Đang mở nhận lịch" : "Đã khóa"}
+                        </div>
+                      </SessionMeta>
+                    </SessionCard>
+                  ))}
+                </SessionList>
+              </>
+            )}
+          </DetailsBody>
+        </DetailsCard>
+      </Layout>
     );
   };
 
@@ -350,7 +541,7 @@ const LabUserWorkSchedule: React.FC = () => {
       <PageHeader>
         <PageTitle>Lịch làm việc bác sĩ</PageTitle>
         <PageDescription>
-          Xem lịch làm việc của các bác sĩ trong hệ thống
+          Xem lịch làm việc theo tháng và chi tiết ca khám của từng ngày
         </PageDescription>
       </PageHeader>
 
@@ -366,23 +557,20 @@ const LabUserWorkSchedule: React.FC = () => {
           </Select>
 
           <DateInput
-            type="date"
-            value={startDate}
-            onChange={(e) => handleDateChange("start", e.target.value)}
-          />
-          <DateInput
-            type="date"
-            value={endDate}
-            onChange={(e) => handleDateChange("end", e.target.value)}
+            type="month"
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
           />
 
           <Button
             onClick={() => {
-              setStartDate(today);
-              setEndDate(weekAhead);
+              const now = new Date();
+              const monthStr = now.toISOString().slice(0, 7);
+              setSelectedMonth(monthStr);
+              setSelectedDate(now.toISOString().split("T")[0]);
             }}
           >
-            <FaCalendarDay /> Đặt về tuần này
+            <FaCalendarDay /> Tháng hiện tại
           </Button>
         </ControlsRow>
 
@@ -415,14 +603,39 @@ const getDateRangeArray = (start: string, end: string): string[] => {
   return dates;
 };
 
-const formatDisplayDate = (date: string) => {
-  const d = new Date(date);
-  return d.toLocaleDateString("vi-VN", {
-    weekday: "long",
-    day: "2-digit",
-    month: "2-digit",
+const getMonthInfo = (monthStr: string) => {
+  // monthStr: "yyyy-MM"
+  const [yearStr, monthIndexStr] = monthStr.split("-");
+  const year = parseInt(yearStr, 10);
+  const monthIndex = parseInt(monthIndexStr, 10) - 1; // 0-based
+
+  const firstDay = new Date(year, monthIndex, 1);
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+
+  // Monday-based index (0 = Mon, 6 = Sun)
+  const startWeekday = (firstDay.getDay() + 6) % 7;
+
+  const days: string[] = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, monthIndex, d);
+    days.push(date.toISOString().split("T")[0]);
+  }
+
+  const cells: (string | null)[] = [];
+  for (let i = 0; i < startWeekday; i++) {
+    cells.push(null);
+  }
+  days.forEach((d) => cells.push(d));
+  while (cells.length % 7 !== 0) {
+    cells.push(null);
+  }
+
+  const label = firstDay.toLocaleDateString("vi-VN", {
+    month: "long",
     year: "numeric",
   });
+
+  return { days, cells, label };
 };
 
 export default LabUserWorkSchedule;

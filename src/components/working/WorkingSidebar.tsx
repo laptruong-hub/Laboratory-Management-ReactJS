@@ -10,6 +10,7 @@ import {
   FaFlask,
   FaCalendarCheck,
   FaVial,
+  FaHistory,
 } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../../context/AuthContext";
@@ -23,17 +24,11 @@ const WorkingSidebar: React.FC = () => {
 
   const normalizedRole = user?.roleName?.trim().toUpperCase() || "";
   const isAdmin = normalizedRole === "ADMIN" || normalizedRole === "ADMINISTRATOR";
-  // Enhanced receptionist detection - handles variations
-  const isReceptionist =
-    normalizedRole === "RECEPTIONIST" ||
-    normalizedRole === "RECEPTION" ||
-    normalizedRole.includes("RECEPTIONIST") ||
-    normalizedRole.includes("RECEPTION");
+  const isReceptionist = normalizedRole === "RECEPTIONIST";
   const isLabUser =
     normalizedRole === "LAB USER" ||
-    normalizedRole === "LABUSER" ||
     normalizedRole === "TECHNICIAN" ||
-    normalizedRole === "LAB TECHNICIAN";
+    normalizedRole === "LABUSER";
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + "/");
@@ -93,8 +88,21 @@ const WorkingSidebar: React.FC = () => {
       {isLabUser && (
         <>
           <nav className="flex flex-col gap-1 p-2">
-            {createNavLink("/lab-user/dashboard", <FaVial />, "Tạo kết quả xét nghiệm")}
-            {createNavLink("/lab-user/work-schedule", <FaCalendarAlt />, "Lịch làm việc bác sĩ")}
+            {createNavLink(
+              "/lab-user/dashboard",
+              <FaVial />,
+              "Tạo kết quả xét nghiệm"
+            )}
+            {createNavLink(
+              "/lab-user/work-schedule",
+              <FaCalendarAlt />,
+              "Lịch làm việc bác sĩ"
+            )}
+            {createNavLink(
+              "/lab-user/history",
+              <FaHistory />,
+              "Lịch sử đã khám"
+            )}
           </nav>
         </>
       )}

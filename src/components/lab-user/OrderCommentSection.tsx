@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { toast } from "react-toastify";
-import { useAuth } from "../../context/AuthContext";
 import {
   getOrderCommentsByOrderDetailId,
   createOrderComment,
@@ -17,6 +16,8 @@ import LoadingSpinner from "../common/LoadingSpinner";
 
 interface OrderCommentSectionProps {
   orderDetailId: number;
+  labUserId: number; // ✅ lab_user_id from TestOrder service, NOT user.id from IAM
+  onCommentAdded?: () => void; // ✅ Callback when comment is added
 }
 
 /* ---------- Styled Components ---------- */
@@ -34,7 +35,7 @@ const SectionTitle = styled.h3`
   margin: 0 0 1rem 0;
 `;
 
-const CommentForm = styled.form`
+const CommentForm = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -151,7 +152,7 @@ const CommentContent = styled.div`
   word-wrap: break-word;
 `;
 
-const EditForm = styled.form`
+const EditForm = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -163,15 +164,6 @@ const ErrorMessage = styled.span`
   margin-top: -0.5rem;
 `;
 
-const EmptyState = styled.div`
-  padding: 1.5rem;
-  text-align: center;
-  color: #6b7280;
-  font-size: 0.875rem;
-  background: #f9fafb;
-  border-radius: 0.5rem;
-`;
-
 const LoadingContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -180,8 +172,7 @@ const LoadingContainer = styled.div`
 
 /* ---------- Component ---------- */
 
-export default function OrderCommentSection({ orderDetailId }: OrderCommentSectionProps) {
-  const { user } = useAuth();
+export default function OrderCommentSection({ orderDetailId, labUserId, onCommentAdded }: OrderCommentSectionProps) {
   const [comments, setComments] = useState<OrderCommentResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -202,23 +193,26 @@ export default function OrderCommentSection({ orderDetailId }: OrderCommentSecti
       const data = await getOrderCommentsByOrderDetailId(orderDetailId);
       setComments(data);
     } catch (error: any) {
-      console.error("Error fetching comments:", error);
-      toast.error("Không thể tải bình luận");
+      // ✅ FIX: 404 is normal when no comments exist, don't log error
+      if (error.response?.status === 404) {
+        setComments([]);
+      } else {
+        console.error("Error fetching comments:", error);
+        toast.error("Không thể tải bình luận");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmitNewComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmitNewComment = async () => {
     if (!newComment.trim()) {
       setError("Nội dung bình luận không được để trống");
       return;
     }
 
-    if (!user?.id) {
-      toast.error("Bạn cần đăng nhập để thêm bình luận");
+    if (!labUserId) {
+      toast.error("Không tìm thấy thông tin Lab User");
       return;
     }
 
@@ -227,14 +221,19 @@ export default function OrderCommentSection({ orderDetailId }: OrderCommentSecti
       setError("");
       const request: CreateOrderCommentRequest = {
         orderDetailId,
-        labUserId: user.id,
+        labUserId: labUserId, // ✅ Use lab_user_id from TestOrder service, NOT user.id from IAM
         content: newComment.trim(),
       };
 
-      await createOrderComment(request);
+      const createdComment = await createOrderComment(request);
       toast.success("Thêm bình luận thành công!");
       setNewComment("");
-      await fetchComments();
+      setComments([...comments, createdComment]); // ✅ Use the actual response from API
+
+      // ✅ Notify parent component to enable "Save Results" button
+      if (onCommentAdded) {
+        onCommentAdded();
+      }
     } catch (error: any) {
       console.error("Error creating comment:", error);
       const errorMessage = error.response?.data?.message || "Không thể thêm bình luận";
@@ -256,9 +255,7 @@ export default function OrderCommentSection({ orderDetailId }: OrderCommentSecti
     setError("");
   };
 
-  const handleSubmitEdit = async (e: React.FormEvent, commentId: number) => {
-    e.preventDefault();
-
+  const handleSubmitEdit = async (commentId: number) => {
     if (!editContent.trim()) {
       setError("Nội dung bình luận không được để trống");
       return;
@@ -275,7 +272,13 @@ export default function OrderCommentSection({ orderDetailId }: OrderCommentSecti
       toast.success("Cập nhật bình luận thành công!");
       setEditingId(null);
       setEditContent("");
-      await fetchComments();
+
+      // Update comment locally without page refresh
+      setComments(comments.map(c =>
+        c.orderCommentId === commentId
+          ? { ...c, content: editContent.trim(), updatedAt: new Date().toISOString() }
+          : c
+      ));
     } catch (error: any) {
       console.error("Error updating comment:", error);
       const errorMessage = error.response?.data?.message || "Không thể cập nhật bình luận";
@@ -294,7 +297,9 @@ export default function OrderCommentSection({ orderDetailId }: OrderCommentSecti
       setSubmitting(true);
       await deleteOrderComment(commentId);
       toast.success("Xóa bình luận thành công!");
-      await fetchComments();
+
+      // Update locally without page refresh
+      setComments(comments.filter(c => c.orderCommentId !== commentId));
     } catch (error: any) {
       console.error("Error deleting comment:", error);
       const errorMessage = error.response?.data?.message || "Không thể xóa bình luận";
@@ -316,7 +321,7 @@ export default function OrderCommentSection({ orderDetailId }: OrderCommentSecti
   };
 
   const canEditOrDelete = (comment: OrderCommentResponse) => {
-    return user?.id === comment.labUserId;
+    return labUserId === comment.labUserId; // ✅ Compare with lab_user_id, not user.id
   };
 
   if (loading) {
@@ -330,36 +335,67 @@ export default function OrderCommentSection({ orderDetailId }: OrderCommentSecti
     );
   }
 
+  const hasComment = comments.length > 0;
+
   return (
     <CommentSection>
-      <SectionTitle>Bình luận</SectionTitle>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+        <SectionTitle style={{ margin: 0 }}>Bình luận</SectionTitle>
+        <span style={{
+          fontSize: '0.75rem',
+          fontWeight: 600,
+          color: hasComment ? '#16a34a' : '#dc2626',
+          background: hasComment ? '#dcfce7' : '#fee2e2',
+          padding: '0.25rem 0.5rem',
+          borderRadius: '0.25rem'
+        }}>
+          {hasComment ? '✓ ĐÃ CÓ' : '⚠️ BẮT BUỘC'}
+        </span>
+      </div>
 
-      {/* Add New Comment Form */}
-      <CommentForm onSubmit={handleSubmitNewComment}>
-        <TextArea
-          value={newComment}
-          onChange={(e) => {
-            setNewComment(e.target.value);
-            setError("");
-          }}
-          placeholder="Thêm bình luận về chi tiết đơn hàng này..."
-          disabled={submitting}
-        />
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-        <PrimaryButton type="submit" disabled={submitting || !newComment.trim()}>
-          {submitting ? "Đang thêm..." : "Thêm bình luận"}
-        </PrimaryButton>
-      </CommentForm>
+      {/* Only show warning and form if no comment yet */}
+      {!hasComment && (
+        <>
+          <div style={{
+            background: '#fef3c7',
+            border: '1px solid #fbbf24',
+            borderRadius: '0.5rem',
+            padding: '0.75rem',
+            marginBottom: '1rem',
+            fontSize: '0.875rem',
+            color: '#78350f',
+            lineHeight: '1.5'
+          }}>
+            <strong>📝 Lưu ý:</strong> Bạn cần thêm 1 bình luận về kết quả xét nghiệm này.
+            Bình luận có thể về kết quả, tình trạng mẫu, hoặc bất kỳ lưu ý quan trọng nào.
+          </div>
 
-      {/* Comments List */}
-      {comments.length === 0 ? (
-        <EmptyState>Chưa có bình luận nào</EmptyState>
-      ) : (
+          {/* Add New Comment Form */}
+          <CommentForm>
+            <TextArea
+              value={newComment}
+              onChange={(e) => {
+                setNewComment(e.target.value);
+                setError("");
+              }}
+              placeholder="Thêm bình luận về chi tiết đơn hàng này..."
+              disabled={submitting}
+            />
+            {error && <ErrorMessage>{error}</ErrorMessage>}
+            <PrimaryButton type="button" onClick={handleSubmitNewComment} disabled={submitting || !newComment.trim()}>
+              {submitting ? "Đang thêm..." : "Thêm bình luận"}
+            </PrimaryButton>
+          </CommentForm>
+        </>
+      )}
+
+      {/* Comments List - Only show first comment (limit to 1) */}
+      {hasComment && (
         <CommentsList>
-          {comments.map((comment) => (
+          {comments.slice(0, 1).map((comment) => (
             <CommentCard key={comment.orderCommentId}>
               {editingId === comment.orderCommentId ? (
-                <EditForm onSubmit={(e) => handleSubmitEdit(e, comment.orderCommentId)}>
+                <EditForm>
                   <TextArea
                     value={editContent}
                     onChange={(e) => {
@@ -370,7 +406,7 @@ export default function OrderCommentSection({ orderDetailId }: OrderCommentSecti
                   />
                   {error && <ErrorMessage>{error}</ErrorMessage>}
                   <div style={{ display: "flex", gap: "0.5rem" }}>
-                    <PrimaryButton type="submit" disabled={submitting || !editContent.trim()}>
+                    <PrimaryButton type="button" onClick={() => handleSubmitEdit(comment.orderCommentId)} disabled={submitting || !editContent.trim()}>
                       {submitting ? "Đang lưu..." : "Lưu"}
                     </PrimaryButton>
                     <SecondaryButton

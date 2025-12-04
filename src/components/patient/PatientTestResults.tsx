@@ -16,6 +16,7 @@ import {
 } from "../../api/apiTestResult";
 import { getPatientByAccountId } from "../../api/apiPatient";
 import LoadingSpinner from "../common/LoadingSpinner";
+import PatientOrderComment from "./PatientOrderComment";
 
 /* ---------- Styled Components ---------- */
 
@@ -553,6 +554,9 @@ export default function PatientTestResults() {
                         })}
                       </ResultsGrid>
                     )}
+
+                    {/* ✅ Comment Section - Hiển thị comment từ bác sĩ */}
+                    <PatientOrderComment orderDetailId={detail.orderDetailId} />
                   </TestTypeCard>
                 );
               })

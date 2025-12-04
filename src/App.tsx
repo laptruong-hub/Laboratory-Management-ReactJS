@@ -40,6 +40,7 @@ import ReceptionistPatientList from "./pages/receptionist/ReceptionistPatientLis
 // Pages - Lab User
 import LabUserDashboard from "./pages/lab-user/LabUserDashboard.tsx";
 import LabUserWorkSchedule from "./pages/lab-user/LabUserWorkSchedule.tsx";
+import LabUserHistory from "./pages/lab-user/LabUserHistory.tsx";
 
 // Components - User
 import UserProfile from "./components/user/UserProfile.tsx";
@@ -199,6 +200,10 @@ const router = createBrowserRouter([
               {
                 path: "work-schedule",
                 element: <LabUserWorkSchedule />,
+              },
+              {
+                path: "history",
+                element: <LabUserHistory />,
               },
             ],
           },
