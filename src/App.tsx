@@ -148,7 +148,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/receptionist",
-        element: <RoleBasedRoute allowedRoles={["Receptionist", "RECEPTIONIST", "Admin", "Administrator"]} />,
+        element: <RoleBasedRoute allowedRoles={["Receptionist", "RECEPTIONIST", "Reception", "RECEPTION", "Admin", "Administrator", "ADMIN"]} />,
         children: [
           {
             element: <WorkingLayout />,
