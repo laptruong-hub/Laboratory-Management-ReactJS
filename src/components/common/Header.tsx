@@ -7,7 +7,6 @@ import {
   FaUser,
   FaTimes,
   FaBars,
-  FaChartBar,
   FaEnvelope,
   FaCalendarCheck,
   FaUsers,
@@ -153,18 +152,18 @@ const Header: React.FC = () => {
         {/* Navigation Menu - Centered */}
         {!shouldHideNavItems && (
           <nav className="nav-menu hidden md:flex items-center justify-center flex-1">
-            <ul className="flex items-center justify-center gap-2 list-none m-0 p-0">
+            <ul className="flex items-center justify-center gap-4 list-none m-0 p-0">
               <li>
                 <Link
                   to="/"
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
+                    "flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-base transition-all duration-300 cursor-pointer",
                     scrolled ? "drop-shadow-sm" : "",
                     scrolled
-                      ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
+                      ? `w-12 h-12 rounded-full hover:scale-110 flex items-center justify-center ${
                           isActive("/") ? "text-white" : ""
                         }`
-                      : `px-3 py-1.5 rounded-full ${isActive("/") ? "text-white ring-2" : ""}`
+                      : `px-4 py-2.5 rounded-full ${isActive("/") ? "text-white ring-2" : ""}`
                   )}
                   style={{
                     backgroundColor: isActive("/") ? primaryColor : scrolled ? primaryColorLight : "transparent",
@@ -183,8 +182,8 @@ const Header: React.FC = () => {
                     }
                   }}
                 >
-                  <FaHome className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
-                  {!scrolled && <span className="ml-1.5">Trang chủ</span>}
+                  <FaHome className={scrolled ? "w-6 h-6" : "w-5 h-5"} />
+                  {!scrolled && <span className="ml-2">Trang chủ</span>}
                 </Link>
               </li>
 
@@ -194,52 +193,15 @@ const Header: React.FC = () => {
                 <>
                   <li>
                     <Link
-                      to="/receptionist/dashboard"
-                      className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
-                        scrolled ? "drop-shadow-sm" : "",
-                        scrolled
-                          ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
-                              isActive("/receptionist/dashboard") ? "text-white" : ""
-                            }`
-                          : `px-3 py-1.5 rounded-full ${isActive("/receptionist/dashboard") ? "text-white ring-2" : ""}`
-                      )}
-                      style={{
-                        backgroundColor: isActive("/receptionist/dashboard")
-                          ? primaryColor
-                          : scrolled
-                          ? primaryColorLight
-                          : "transparent",
-                        color: isActive("/receptionist/dashboard") ? "white" : primaryColor,
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isActive("/receptionist/dashboard")) {
-                          e.currentTarget.style.backgroundColor = primaryColorHover;
-                          e.currentTarget.style.color = "white";
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isActive("/receptionist/dashboard")) {
-                          e.currentTarget.style.backgroundColor = scrolled ? primaryColorLight : "transparent";
-                          e.currentTarget.style.color = primaryColor;
-                        }
-                      }}
-                    >
-                      <FaChartBar className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
-                      {!scrolled && <span className="ml-1.5">Bảng điều khiển</span>}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
                       to="/receptionist/patient-requests"
                       className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
+                        "flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-base transition-all duration-300 cursor-pointer",
                         scrolled ? "drop-shadow-sm" : "",
                         scrolled
-                          ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
+                          ? `w-12 h-12 rounded-full hover:scale-110 flex items-center justify-center ${
                               isActive("/receptionist/patient-requests") ? "text-white" : ""
                             }`
-                          : `px-3 py-1.5 rounded-full ${
+                          : `px-4 py-2.5 rounded-full ${
                               isActive("/receptionist/patient-requests") ? "text-white ring-2" : ""
                             }`
                       )}
@@ -264,21 +226,21 @@ const Header: React.FC = () => {
                         }
                       }}
                     >
-                      <FaEnvelope className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
-                      {!scrolled && <span className="ml-1.5">Yêu cầu</span>}
+                      <FaEnvelope className={scrolled ? "w-6 h-6" : "w-5 h-5"} />
+                      {!scrolled && <span className="ml-2">Yêu cầu</span>}
                     </Link>
                   </li>
                   <li>
                     <Link
                       to="/receptionist/schedule-appointment"
                       className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
+                        "flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-base transition-all duration-300 cursor-pointer",
                         scrolled ? "drop-shadow-sm" : "",
                         scrolled
-                          ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
+                          ? `w-12 h-12 rounded-full hover:scale-110 flex items-center justify-center ${
                               isActive("/receptionist/schedule-appointment") ? "text-white" : ""
                             }`
-                          : `px-3 py-1.5 rounded-full ${
+                          : `px-4 py-2.5 rounded-full ${
                               isActive("/receptionist/schedule-appointment") ? "text-white ring-2" : ""
                             }`
                       )}
@@ -303,21 +265,21 @@ const Header: React.FC = () => {
                         }
                       }}
                     >
-                      <FaCalendarCheck className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
-                      {!scrolled && <span className="ml-1.5">Đặt lịch</span>}
+                      <FaCalendarCheck className={scrolled ? "w-6 h-6" : "w-5 h-5"} />
+                      {!scrolled && <span className="ml-2">Đặt lịch</span>}
                     </Link>
                   </li>
                   <li>
                     <Link
                       to="/receptionist/patients"
                       className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
+                        "flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-base transition-all duration-300 cursor-pointer",
                         scrolled ? "drop-shadow-sm" : "",
                         scrolled
-                          ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
+                          ? `w-12 h-12 rounded-full hover:scale-110 flex items-center justify-center ${
                               isActive("/receptionist/patients") ? "text-white" : ""
                             }`
-                          : `px-3 py-1.5 rounded-full ${isActive("/receptionist/patients") ? "text-white ring-2" : ""}`
+                          : `px-4 py-2.5 rounded-full ${isActive("/receptionist/patients") ? "text-white ring-2" : ""}`
                       )}
                       style={{
                         backgroundColor: isActive("/receptionist/patients")
@@ -340,8 +302,8 @@ const Header: React.FC = () => {
                         }
                       }}
                     >
-                      <FaUsers className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
-                      {!scrolled && <span className="ml-1.5">Bệnh nhân</span>}
+                      <FaUsers className={scrolled ? "w-6 h-6" : "w-5 h-5"} />
+                      {!scrolled && <span className="ml-2">Bệnh nhân</span>}
                     </Link>
                   </li>
                 </>
@@ -358,13 +320,13 @@ const Header: React.FC = () => {
                     <Link
                       to="/lab-user/dashboard"
                       className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
+                        "flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-base transition-all duration-300 cursor-pointer",
                         scrolled ? "drop-shadow-sm" : "",
                         scrolled
-                          ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
+                          ? `w-12 h-12 rounded-full hover:scale-110 flex items-center justify-center ${
                               isActive("/lab-user/dashboard") ? "text-white" : ""
                             }`
-                          : `px-3 py-1.5 rounded-full ${isActive("/lab-user/dashboard") ? "text-white ring-2" : ""}`
+                          : `px-4 py-2.5 rounded-full ${isActive("/lab-user/dashboard") ? "text-white ring-2" : ""}`
                       )}
                       style={{
                         backgroundColor: isActive("/lab-user/dashboard")
@@ -387,21 +349,21 @@ const Header: React.FC = () => {
                         }
                       }}
                     >
-                      <FaVial className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
-                      {!scrolled && <span className="ml-1.5">Xét nghiệm</span>}
+                      <FaVial className={scrolled ? "w-6 h-6" : "w-5 h-5"} />
+                      {!scrolled && <span className="ml-2">Xét nghiệm</span>}
                     </Link>
                   </li>
                   <li>
                     <Link
                       to="/lab-user/work-schedule"
                       className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
+                        "flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-base transition-all duration-300 cursor-pointer",
                         scrolled ? "drop-shadow-sm" : "",
                         scrolled
-                          ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
+                          ? `w-12 h-12 rounded-full hover:scale-110 flex items-center justify-center ${
                               isActive("/lab-user/work-schedule") ? "text-white" : ""
                             }`
-                          : `px-3 py-1.5 rounded-full ${isActive("/lab-user/work-schedule") ? "text-white ring-2" : ""}`
+                          : `px-4 py-2.5 rounded-full ${isActive("/lab-user/work-schedule") ? "text-white ring-2" : ""}`
                       )}
                       style={{
                         backgroundColor: isActive("/lab-user/work-schedule")
@@ -424,21 +386,21 @@ const Header: React.FC = () => {
                         }
                       }}
                     >
-                      <FaCalendarAlt className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
-                      {!scrolled && <span className="ml-1.5">Lịch làm việc</span>}
+                      <FaCalendarAlt className={scrolled ? "w-6 h-6" : "w-5 h-5"} />
+                      {!scrolled && <span className="ml-2">Lịch làm việc</span>}
                     </Link>
                   </li>
                   <li>
                     <Link
                       to="/lab-user/history"
                       className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
+                        "flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-base transition-all duration-300 cursor-pointer",
                         scrolled ? "drop-shadow-sm" : "",
                         scrolled
-                          ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
+                          ? `w-12 h-12 rounded-full hover:scale-110 flex items-center justify-center ${
                               isActive("/lab-user/history") ? "text-white" : ""
                             }`
-                          : `px-3 py-1.5 rounded-full ${isActive("/lab-user/history") ? "text-white ring-2" : ""}`
+                          : `px-4 py-2.5 rounded-full ${isActive("/lab-user/history") ? "text-white ring-2" : ""}`
                       )}
                       style={{
                         backgroundColor: isActive("/lab-user/history")
@@ -461,8 +423,8 @@ const Header: React.FC = () => {
                         }
                       }}
                     >
-                      <FaHistory className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
-                      {!scrolled && <span className="ml-1.5">Lịch sử</span>}
+                      <FaHistory className={scrolled ? "w-6 h-6" : "w-5 h-5"} />
+                      {!scrolled && <span className="ml-2">Lịch sử</span>}
                     </Link>
                   </li>
                 </>

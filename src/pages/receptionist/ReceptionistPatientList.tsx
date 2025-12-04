@@ -8,12 +8,15 @@ import LoadingSpinner from "../../components/common/LoadingSpinner";
 /* ---------- Types ---------- */
 
 interface Patient {
-  id: string;
   fullName: string;
   email: string;
   phone?: string;
+  address?: string;
   gender?: boolean;
-  dob?: string;
+  dateOfBirth?: string;
+  latestTestDate?: string | null;
+  isActive: boolean;
+  createdAt?: string;
 }
 
 /* ---------- Styled Components ---------- */
@@ -225,12 +228,15 @@ const EmptyState = styled.div`
 
 const adaptPatientFromDto = (dto: PatientDto): Patient => {
   return {
-    id: String(dto.accountId || dto.patientId || ""),
     fullName: dto.fullName || "",
     email: dto.email || "",
-    phone: dto.phoneNumber || dto.phone,
+    phone: dto.phone,
+    address: dto.address,
     gender: dto.gender,
-    dob: dto.dob,
+    dateOfBirth: dto.dateOfBirth,
+    latestTestDate: dto.latestTestDate,
+    isActive: dto.isActive,
+    createdAt: dto.createdAt,
   };
 };
 
@@ -248,7 +254,7 @@ const formatGender = (gender?: boolean): string => {
   return gender ? "Nam" : "Nữ";
 };
 
-const formatDate = (dateString?: string): string => {
+const formatDate = (dateString?: string | null): string => {
   if (!dateString) return "—";
   try {
     return new Date(dateString).toLocaleDateString("vi-VN");
@@ -291,7 +297,8 @@ export default function ReceptionistPatientList() {
         (p) =>
           p.fullName.toLowerCase().includes(q) ||
           p.email.toLowerCase().includes(q) ||
-          p.phone?.toLowerCase().includes(q)
+          p.phone?.toLowerCase().includes(q) ||
+          p.address?.toLowerCase().includes(q)
       );
     }
 
@@ -310,9 +317,7 @@ export default function ReceptionistPatientList() {
     <PageContainer>
       <PageHeader>
         <PageTitle>Danh sách bệnh nhân</PageTitle>
-        <PageDescription>
-          Xem thông tin và quản lý danh sách bệnh nhân trong hệ thống
-        </PageDescription>
+        <PageDescription>Xem thông tin và quản lý danh sách bệnh nhân trong hệ thống</PageDescription>
       </PageHeader>
 
       <Toolbar>
@@ -338,18 +343,19 @@ export default function ReceptionistPatientList() {
                 <TableHeaderCell style={{ width: "120px" }}>Ngày sinh</TableHeaderCell>
                 <TableHeaderCell>Email</TableHeaderCell>
                 <TableHeaderCell>Số điện thoại</TableHeaderCell>
+                <TableHeaderCell>Địa chỉ</TableHeaderCell>
               </TableHeaderRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <tr>
-                  <TableCell colSpan={6}>
+                  <TableCell colSpan={7}>
                     <EmptyState>Không tìm thấy bệnh nhân nào.</EmptyState>
                   </TableCell>
                 </tr>
               ) : (
                 filtered.map((patient, index) => (
-                  <TableRow key={patient.id}>
+                  <TableRow key={`${patient.email}-${index}`}>
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>
                       <PatientInfo>
@@ -363,19 +369,16 @@ export default function ReceptionistPatientList() {
                       <GenderCell>
                         {patient.gender !== undefined && (
                           <GenderIcon $isMale={patient.gender === true}>
-                            {patient.gender === true ? (
-                              <FaMars size={12} />
-                            ) : (
-                              <FaVenus size={12} />
-                            )}
+                            {patient.gender === true ? <FaMars size={12} /> : <FaVenus size={12} />}
                           </GenderIcon>
                         )}
                         <span>{formatGender(patient.gender)}</span>
                       </GenderCell>
                     </TableCell>
-                    <TableCell>{formatDate(patient.dob)}</TableCell>
+                    <TableCell>{formatDate(patient.dateOfBirth)}</TableCell>
                     <TableCell>{patient.email || "—"}</TableCell>
                     <TableCell>{patient.phone || "—"}</TableCell>
+                    <TableCell>{patient.address || "—"}</TableCell>
                   </TableRow>
                 ))
               )}
@@ -386,4 +389,3 @@ export default function ReceptionistPatientList() {
     </PageContainer>
   );
 }
-

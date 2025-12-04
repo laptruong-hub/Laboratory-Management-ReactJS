@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 // import loginImg from "../../assets/img/login.jpg"; // Image file not found - using placeholder
-import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";

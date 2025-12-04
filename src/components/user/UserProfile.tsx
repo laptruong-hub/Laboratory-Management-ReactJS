@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaUser, FaHistory, FaClipboardList, FaFlask, FaCalendarAlt } from "react-icons/fa";
+import { FaUser, FaFlask, FaCalendarAlt } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { useSearchParams } from "react-router-dom";
 import AccountEdit from "./AccountEdit";
 import SettingsSidebar from "./SettingsSidebar";
-import MedicalRecord from "./MedicalRecord";
 import PatientTestResults from "../patient/PatientTestResults";
 import PatientBooking from "./PatientBooking";
 
 // Main UserProfile component
-type ProfileTab = "account-edit" | "medical-record" | "booking" | "test-results";
+type ProfileTab = "account-edit" | "booking" | "test-results";
 
 const UserProfile: React.FC = () => {
   const { user } = useAuth();
@@ -19,17 +18,46 @@ const UserProfile: React.FC = () => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  // Check if user is a patient
+  const normalizedRole = user?.roleName?.trim().toUpperCase() || "";
+  const isPatient = normalizedRole === "PATIENT";
+
+  // Only show all tabs for patients, otherwise just account-edit
+  const availableTabs: ProfileTab[] = isPatient ? ["account-edit", "booking", "test-results"] : ["account-edit"];
+
+  const tabIcons = {
+    "account-edit": <FaUser className="mr-2" />,
+    booking: <FaCalendarAlt className="mr-2" />,
+    "test-results": <FaFlask className="mr-2" />,
+  };
+
+  const tabLabels: Record<ProfileTab, string> = {
+    "account-edit": "Tài khoản",
+    booking: "Đặt lịch",
+    "test-results": "Kết quả xét nghiệm",
+  };
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Read query param to set initial tab
+  // Ensure non-patient users always have account-edit as active tab
   useEffect(() => {
+    if (!isPatient && activeTab !== "account-edit") {
+      setActiveTab("account-edit");
+    }
+  }, [isPatient, activeTab]);
+
+  // Read query param to set initial tab (only for patients)
+  useEffect(() => {
+    if (!isPatient) {
+      return;
+    }
     const tabParam = searchParams.get("tab");
     if (tabParam && availableTabs.includes(tabParam as ProfileTab)) {
       setActiveTab(tabParam as ProfileTab);
@@ -37,23 +65,7 @@ const UserProfile: React.FC = () => {
       searchParams.delete("tab");
       setSearchParams(searchParams);
     }
-  }, []);
-
-  const tabIcons = {
-    "account-edit": <FaUser className="mr-2" />,
-    "medical-record": <FaClipboardList className="mr-2" />,
-    "booking": <FaCalendarAlt className="mr-2" />,
-    "test-results": <FaFlask className="mr-2" />,
-  };
-
-  const tabLabels: Record<ProfileTab, string> = {
-    "account-edit": "Tài khoản",
-    "medical-record": "Hồ sơ bệnh án",
-    "booking": "Đặt lịch",
-    "test-results": "Kết quả xét nghiệm",
-  };
-
-  const availableTabs: ProfileTab[] = ["account-edit", "medical-record", "booking", "test-results"];
+  }, [isPatient, availableTabs, searchParams, setSearchParams]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -62,8 +74,15 @@ const UserProfile: React.FC = () => {
           <button
             onClick={() => setShowMobileSidebar(true)}
             className="p-2 rounded-full hover:bg-gray-100 cursor-pointer"
+            aria-label="Mở menu"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
@@ -94,68 +113,72 @@ const UserProfile: React.FC = () => {
         )}
         {/* Right Side - Content */}
         <div className="w-full md:w-2/3 lg:w-3/4">
-          {/* Navigation Toggle - Responsive version */}
-          <div className="flex justify-center mb-8">
-            {isMobile ? (
-              <div className="w-full bg-white rounded-full shadow-md border border-gray-200 overflow-hidden">
-                <div className="flex">
+          {/* Navigation Toggle - Responsive version - Only show if more than one tab */}
+          {availableTabs.length > 1 && (
+            <div className="flex justify-center mb-8">
+              {isMobile ? (
+                <div className="w-full bg-white rounded-full shadow-md border border-gray-200 overflow-hidden">
+                  <div className="flex">
+                    {availableTabs.map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className={`flex-1 flex items-center justify-center px-4 py-3 text-base font-medium transition-all duration-200 rounded-full relative cursor-pointer ${
+                          activeTab === tab
+                            ? "text-[#C14B53] bg-[#F8F9FA] shadow-inner"
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                        style={{ minHeight: 44 }}
+                      >
+                        {tabIcons[tab]}
+                        {tabLabels[tab]}
+                        {activeTab === tab && (
+                          <motion.div
+                            layoutId="mobileTabIndicator"
+                            className="absolute bottom-0 left-3 right-3 h-1 rounded-full bg-[#C14B53]"
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                          />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <motion.div
+                  className="flex bg-white rounded-full shadow-md border border-gray-200 overflow-hidden"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
                   {availableTabs.map((tab) => (
-                    <button
+                    <motion.button
                       key={tab}
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => setActiveTab(tab)}
-                      className={`flex-1 flex items-center justify-center px-4 py-3 text-base font-medium transition-all duration-200 rounded-full relative cursor-pointer ${
-                        activeTab === tab ? "text-[#C14B53] bg-[#F8F9FA] shadow-inner" : "text-gray-700 hover:bg-gray-50"
+                      className={`flex-1 flex items-center justify-center px-6 py-4 text-base font-medium cursor-pointer transition-all duration-200 rounded-full relative ${
+                        activeTab === tab ? "text-white" : "text-gray-700 hover:bg-gray-50"
                       }`}
-                      style={{ minHeight: 44 }}
+                      style={{ minHeight: 48 }}
                     >
-                      {tabIcons[tab]}
-                      {tabLabels[tab]}
                       {activeTab === tab && (
                         <motion.div
-                          layoutId="mobileTabIndicator"
-                          className="absolute bottom-0 left-3 right-3 h-1 rounded-full bg-[#C14B53]"
+                          layoutId="activeTab"
+                          className="absolute inset-0 bg-[#C14B53] z-0 rounded-full"
+                          initial={false}
                           transition={{ type: "spring", stiffness: 300, damping: 30 }}
                         />
                       )}
-                    </button>
+                      <span className="relative z-10 flex items-center whitespace-nowrap">
+                        {tabIcons[tab]}
+                        {tabLabels[tab]}
+                      </span>
+                    </motion.button>
                   ))}
-                </div>
-              </div>
-            ) : (
-              <motion.div
-                className="flex bg-white rounded-full shadow-md border border-gray-200 overflow-hidden"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {availableTabs.map((tab) => (
-                  <motion.button
-                    key={tab}
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setActiveTab(tab)}
-                    className={`flex-1 flex items-center justify-center px-6 py-4 text-base font-medium cursor-pointer transition-all duration-200 rounded-full relative ${
-                      activeTab === tab ? "text-white" : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                    style={{ minHeight: 48 }}
-                  >
-                    {activeTab === tab && (
-                      <motion.div
-                        layoutId="activeTab"
-                        className="absolute inset-0 bg-[#C14B53] z-0 rounded-full"
-                        initial={false}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      />
-                    )}
-                    <span className="relative z-10 flex items-center whitespace-nowrap">
-                      {tabIcons[tab]}
-                      {tabLabels[tab]}
-                    </span>
-                  </motion.button>
-                ))}
-              </motion.div>
-            )}
-          </div>
+                </motion.div>
+              )}
+            </div>
+          )}
           {/* Conditional Rendering with swipe support */}
           <div className="relative">
             <AnimatePresence mode="wait">
@@ -168,8 +191,6 @@ const UserProfile: React.FC = () => {
               >
                 {activeTab === "account-edit" ? (
                   <AccountEdit />
-                ) : activeTab === "medical-record" ? (
-                  <MedicalRecord />
                 ) : activeTab === "booking" ? (
                   <PatientBooking />
                 ) : (

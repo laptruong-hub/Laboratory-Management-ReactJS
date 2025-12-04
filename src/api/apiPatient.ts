@@ -64,14 +64,14 @@ export interface PatientDto {
   accountId: number; // ID của account/user trong bảng users
   fullName: string;
   email: string;
-  phoneNumber?: string; // API sử dụng phoneNumber
+  phone?: string; // API uses "phone" not "phoneNumber"
   address?: string;
-  gender?: boolean; // API có thể trả về boolean (true = Nam, false = Nữ)
-  dob?: string; // Format: "YYYY-MM-DD"
-  latestTestDate?: string; // Format: "YYYY-MM-DD"
+  gender?: boolean; // boolean: true = Nam, false = Nữ
+  dateOfBirth?: string; // API uses "dateOfBirth" not "dob", Format: "YYYY-MM-DD"
+  latestTestDate?: string | null; // Format: "YYYY-MM-DD" or null
   isActive: boolean;
   createdAt?: string; // ISO 8601 format
-  createdById?: number;
+  createdById?: number | null;
 }
 
 /* ---------- Patient API Functions ---------- */
@@ -80,12 +80,8 @@ export interface PatientDto {
  * Get patient by account ID
  * GET /api/patients/{accountId}
  */
-export const getPatientByAccountId = async (
-  accountId: number
-): Promise<PatientDto> => {
-  const response = await apiClient.get<ApiResponse<PatientDto>>(
-    `/api/patients/${accountId}`
-  );
+export const getPatientByAccountId = async (accountId: number): Promise<PatientDto> => {
+  const response = await apiClient.get<ApiResponse<PatientDto>>(`/api/patients/${accountId}`);
   return response.data.data;
 };
 
@@ -94,9 +90,7 @@ export const getPatientByAccountId = async (
  * GET /api/patients
  */
 export const getAllPatients = async (): Promise<PatientDto[]> => {
-  const response = await apiClient.get<ApiResponse<PatientDto[]>>(
-    "/api/patients"
-  );
+  const response = await apiClient.get<ApiResponse<PatientDto[]>>("/api/patients");
   return response.data.data;
 };
 
@@ -104,22 +98,14 @@ export const getAllPatients = async (): Promise<PatientDto[]> => {
  * Create a new patient
  * POST /api/patients
  */
-export const createPatient = async (
-  request: CreatePatientRequest
-): Promise<PatientDto> => {
+export const createPatient = async (request: CreatePatientRequest): Promise<PatientDto> => {
   // Convert dob to string format if it's a Date object
   const patientData = {
     ...request,
-    dob:
-      request.dob instanceof Date
-        ? request.dob.toISOString().split("T")[0]
-        : request.dob,
+    dob: request.dob instanceof Date ? request.dob.toISOString().split("T")[0] : request.dob,
   };
 
-  const response = await apiClient.post<ApiResponse<PatientDto>>(
-    "/api/patients",
-    patientData
-  );
+  const response = await apiClient.post<ApiResponse<PatientDto>>("/api/patients", patientData);
   return response.data.data;
 };
 
@@ -127,23 +113,14 @@ export const createPatient = async (
  * Update patient
  * PUT /api/patients/{accountId}
  */
-export const updatePatient = async (
-  accountId: number,
-  request: UpdatePatientRequest
-): Promise<PatientDto> => {
+export const updatePatient = async (accountId: number, request: UpdatePatientRequest): Promise<PatientDto> => {
   // Convert dob to string format if it's a Date object
   const patientData = {
     ...request,
-    dob:
-      request.dob instanceof Date
-        ? request.dob.toISOString().split("T")[0]
-        : request.dob,
+    dob: request.dob instanceof Date ? request.dob.toISOString().split("T")[0] : request.dob,
   };
 
-  const response = await apiClient.put<ApiResponse<PatientDto>>(
-    `/api/patients/${accountId}`,
-    patientData
-  );
+  const response = await apiClient.put<ApiResponse<PatientDto>>(`/api/patients/${accountId}`, patientData);
   return response.data.data;
 };
 
@@ -162,9 +139,6 @@ export const deletePatient = async (accountId: number): Promise<void> => {
  * This endpoint fetches accounts from iam-service with role="Patient" and merges with patient records
  */
 export const getPatientsFromIam = async (): Promise<PatientDto[]> => {
-  const response = await apiClient.get<ApiResponse<PatientDto[]>>(
-    "/api/patients/sync-from-iam"
-  );
+  const response = await apiClient.get<ApiResponse<PatientDto[]>>("/api/patients/sync-from-iam");
   return response.data.data;
 };
-
