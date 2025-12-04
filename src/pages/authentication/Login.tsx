@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
+// import loginImg from "../../assets/img/login.jpg"; // Image file not found - using placeholder
+import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -227,4 +228,174 @@ const Login: React.FC = () => {
   );
 };
 
+const styles: { [key: string]: React.CSSProperties } = {
+  authContent: {
+    minHeight: "100vh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "linear-gradient(135deg, #fce4e4 0%, #f8d7da 50%, #fadbd8 100%)",
+    padding: "40px",
+  },
+
+  loginCard: {
+    height: "600px",
+    background: "white",
+    borderRadius: "16px",
+    display: "flex",
+    flexDirection: "row",
+    boxShadow: "0 10px 40px rgba(0, 0, 0, 0.08)",
+    overflow: "hidden",
+  },
+
+  side: {
+    width: "380px",
+    background: "white",
+    padding: "30px",
+    borderRight: "1px solid #eee",
+  },
+
+  sideTitleH2: {
+    fontSize: "20px",
+    fontWeight: "700",
+    color: "#c00",
+    marginBottom: "10px",
+  },
+  sideTitleP: {
+    fontSize: "15px",
+    color: "#444",
+    lineHeight: "1.4",
+  },
+
+  sideAddress: {
+    marginTop: "20px",
+    fontWeight: "500",
+    lineHeight: "1.6",
+  },
+
+  contactItem: {
+    display: "flex",
+    gap: "8px",
+    marginBottom: "8px",
+    alignItems: "center",
+  },
+  icon: {
+    color: "#d32f2f",
+  },
+
+  formContainer: {
+    flex: 1,
+    padding: "40px 50px",
+    background: "white",
+  },
+
+  loginTitle: {
+    textAlign: "center",
+    fontSize: "24px",
+    fontWeight: "700",
+    marginBottom: "10px",
+  },
+  loginSubtitle: {
+    textAlign: "center",
+    fontSize: "16px",
+    fontWeight: "500",
+    marginBottom: "4px",
+  },
+  loginDescription: {
+    textAlign: "center",
+    fontSize: "13px",
+    marginBottom: "30px",
+    color: "#666",
+  },
+
+  loginForm: {
+    width: "100%",
+  },
+
+  errorMessage: {
+    background: "#fee",
+    border: "1px solid #fcc",
+    padding: "12px",
+    borderRadius: "8px",
+    textAlign: "center",
+    color: "#c00",
+    fontSize: "14px",
+    marginBottom: "20px",
+  },
+
+  formGroup: {
+    marginBottom: "20px",
+  },
+  label: {
+    display: "block",
+    fontWeight: "500",
+    marginBottom: "8px",
+  },
+  inputWrapper: {
+    position: "relative",
+  },
+  input: {
+    width: "100%",
+    padding: "12px 44px 12px 14px",
+    border: "1px solid #ddd",
+    borderRadius: "8px",
+    outline: "none",
+    fontSize: "14px",
+  },
+  togglePassword: {
+    position: "absolute",
+    right: "12px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    fontSize: "16px",
+  },
+
+  formOptions: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "20px",
+  },
+
+  checkboxLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  checkbox: {
+    width: "16px",
+    height: "16px",
+  },
+
+  forgotLink: {
+    color: "#c00",
+    textDecoration: "none",
+  },
+
+  loginButton: {
+    width: "100%",
+    padding: "14px",
+    background: "#c00",
+    color: "white",
+    borderRadius: "8px",
+    border: "none",
+    fontSize: "15px",
+    fontWeight: "600",
+    cursor: "pointer",
+    marginBottom: "20px",
+  },
+
+  signupLink: {
+    textAlign: "center",
+    fontSize: "14px",
+  },
+  signupLinkA: {
+    color: "#c00",
+    textDecoration: "none",
+    fontWeight: "600",
+  },
+};
 export default Login;
