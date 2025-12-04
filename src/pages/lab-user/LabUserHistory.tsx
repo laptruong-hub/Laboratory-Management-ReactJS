@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
 import {
   getOrdersByLabUserId,
+  exportOrderToExcel,
   type OrderResponse,
 } from "../../api/apiOrder";
 import {
@@ -144,13 +145,38 @@ const Tag = styled.span`
 const DetailHeader = styled.div`
   margin-bottom: 0.75rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
 `;
 
 const DetailSummary = styled.div`
   font-size: 0.85rem;
   color: #4b5563;
+`;
+
+const ExportButton = styled.button`
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid #dc2626;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: #fee2e2;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
 const OrderDetailsList = styled.div`
@@ -241,6 +267,7 @@ export default function LabUserHistory() {
   const [testResultsMap, setTestResultsMap] = useState<
     Record<number, TestResultResponse[]>
   >({});
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
@@ -314,6 +341,32 @@ export default function LabUserHistory() {
   };
 
   const selectedOrder = orders.find((o) => o.orderId === selectedOrderId);
+
+  const handleExportExcel = async () => {
+    if (!selectedOrder) return;
+
+    try {
+      setExporting(true);
+      const blob = await exportOrderToExcel(selectedOrder.orderId);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const fileName = `ket-qua-don-${selectedOrder.orderId}.xlsx`;
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success(`Đã xuất file Excel cho đơn #${selectedOrder.orderId}`);
+    } catch (error: any) {
+      console.error("Error exporting order to Excel:", error);
+      const message =
+        error.response?.data?.message || "Không thể xuất file Excel cho đơn này";
+      toast.error(message);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -395,14 +448,23 @@ export default function LabUserHistory() {
           ) : (
             <>
               <DetailHeader>
-                <DetailSummary>
-                  Đơn #{selectedOrder.orderId} • {selectedOrder.purposeName}
-                </DetailSummary>
-                {selectedOrder.dateBook && (
+                <div>
                   <DetailSummary>
-                    Ngày hẹn: {selectedOrder.dateBook}
+                    Đơn #{selectedOrder.orderId} • {selectedOrder.purposeName}
                   </DetailSummary>
-                )}
+                  {selectedOrder.dateBook && (
+                    <DetailSummary>
+                      Ngày hẹn: {selectedOrder.dateBook}
+                    </DetailSummary>
+                  )}
+                </div>
+                <ExportButton
+                  type="button"
+                  disabled={exporting || !selectedOrder || selectedOrder.status !== "COMPLETE"}
+                  onClick={handleExportExcel}
+                >
+                  {exporting ? "Đang xuất..." : "⬇ Xuất Excel"}
+                </ExportButton>
               </DetailHeader>
 
               <OrderDetailsList>
