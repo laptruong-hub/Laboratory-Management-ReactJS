@@ -11,6 +11,7 @@ import {
   FaFlask,
   FaCalendarCheck,
   FaVial,
+  FaHistory,
 } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../../context/AuthContext";
@@ -25,7 +26,10 @@ const WorkingSidebar: React.FC = () => {
   const normalizedRole = user?.roleName?.trim().toUpperCase() || "";
   const isAdmin = normalizedRole === "ADMIN" || normalizedRole === "ADMINISTRATOR";
   const isReceptionist = normalizedRole === "RECEPTIONIST";
-  const isLabUser = normalizedRole === "LAB USER" || normalizedRole === "TECHNICIAN";
+  const isLabUser =
+    normalizedRole === "LAB USER" ||
+    normalizedRole === "TECHNICIAN" ||
+    normalizedRole === "LABUSER";
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + "/");
@@ -117,6 +121,11 @@ const WorkingSidebar: React.FC = () => {
               "/lab-user/work-schedule",
               <FaCalendarAlt />,
               "Lịch làm việc bác sĩ"
+            )}
+            {createNavLink(
+              "/lab-user/history",
+              <FaHistory />,
+              "Lịch sử đã khám"
             )}
           </nav>
         </>

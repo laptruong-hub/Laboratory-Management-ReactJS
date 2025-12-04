@@ -45,6 +45,9 @@ const RoleRedirect = () => {
     // Normalize role name để so sánh
     const normalizedRole = user.roleName?.trim().toUpperCase() || "";
 
+    // ✅ DEBUG: Log normalized role
+    console.log("🔍 Normalized Role:", normalizedRole);
+
     // Redirect dựa trên role (chỉ 1 lần)
     if (normalizedRole === "ADMIN" || normalizedRole === "ADMINISTRATOR") {
       console.log("🚀 Redirecting ADMIN to dashboard");
@@ -56,8 +59,8 @@ const RoleRedirect = () => {
     } else if (normalizedRole === "SERVICE" || normalizedRole === "CUSTOMER SERVICE") {
       // Có thể thêm redirect cho Service sau
       // navigate("/service/dashboard", { replace: true });
-    } else if (normalizedRole === "LAB USER" || normalizedRole === "TECHNICIAN") {
-      console.log("Redirecting LAB USER to dashboard");
+    } else if (normalizedRole === "LAB USER" || normalizedRole === "TECHNICIAN" || normalizedRole === "LABUSER") {
+      console.log("🚀 Redirecting LAB USER to dashboard");
       sessionStorage.setItem("hasRedirectedByRole", "true");
       navigate("/lab-user/dashboard", { replace: true });
     } else if (normalizedRole === "RECEPTIONIST") {
