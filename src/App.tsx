@@ -1,8 +1,4 @@
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
-} from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -183,7 +179,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/lab-user",
-        element: <RoleBasedRoute allowedRoles={["Lab User", "LAB USER", "Technician", "TECHNICIAN", "Admin", "Administrator"]} />,
+        element: (
+          <RoleBasedRoute
+            allowedRoles={["Lab User", "LAB USER", "Technician", "TECHNICIAN", "Admin", "Administrator"]}
+          />
+        ),
         children: [
           {
             element: <WorkingLayout />,

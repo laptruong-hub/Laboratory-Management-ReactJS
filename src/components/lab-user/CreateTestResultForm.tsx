@@ -20,6 +20,7 @@ import {
   type CreateTestResultRequest,
 } from "../../api/apiTestResult";
 import LoadingSpinner from "../common/LoadingSpinner";
+import OrderCommentSection from "./OrderCommentSection";
 
 /* ---------- Types ---------- */
 
@@ -683,6 +684,9 @@ export default function CreateTestResultForm() {
               <Button type="submit" disabled={loading}>
                 {loading ? "Đang xử lý..." : "✓ Hoàn thành và lưu kết quả"}
               </Button>
+
+              {/* Order Comments Section */}
+              <OrderCommentSection orderDetailId={selectedOrderDetailId} />
             </>
           )}
     </Form>
