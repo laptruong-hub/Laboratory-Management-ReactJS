@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 // import loginImg from "../../assets/img/login.jpg"; // Image file not found - using placeholder
-import { Eye,EyeOff} from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -214,7 +214,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
 
   loginCard: {
-    height:"600px",
+    height: "600px",
     background: "white",
     borderRadius: "16px",
     display: "flex",
