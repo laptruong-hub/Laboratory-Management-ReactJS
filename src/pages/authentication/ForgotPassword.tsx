@@ -21,7 +21,11 @@ const ForgotPassword: React.FC = () => {
   // Show success notification when arriving at verify step
   useEffect(() => {
     if (step === "verify" && emailSentMessage) {
-      toast.success(emailSentMessage);
+      const timer = setTimeout(() => {
+        toast.success(emailSentMessage);
+        setEmailSentMessage("");
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [step, emailSentMessage]);
 
