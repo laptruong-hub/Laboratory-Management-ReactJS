@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
 import {
-  createOrder,
+  createPatientOrder,
   getAllPurposes,
   type PurposeResponse,
   type CreateOrderRequest,
@@ -404,7 +404,7 @@ const PatientBooking: React.FC = () => {
         orderDetails: selectedTypeTests,
       };
 
-      await createOrder(orderData);
+      await createPatientOrder(orderData);
 
       toast.success("Đặt lịch xét nghiệm thành công!");
       setShowSuccess(true);

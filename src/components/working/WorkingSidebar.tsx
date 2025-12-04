@@ -5,7 +5,6 @@ import {
   FaUserShield,
   FaCog,
   FaChartBar,
-  FaSignOutAlt,
   FaCalendarAlt,
   FaEnvelope,
   FaFlask,
@@ -35,12 +34,7 @@ const WorkingSidebar: React.FC = () => {
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
-  const createNavLink = (
-    to: string,
-    icon: React.ReactNode,
-    label: string,
-    show: boolean = true
-  ) => {
+  const createNavLink = (to: string, icon: React.ReactNode, label: string, show: boolean = true) => {
     if (!show) return null;
 
     return (
@@ -49,9 +43,7 @@ const WorkingSidebar: React.FC = () => {
         to={to}
         className={cn(
           "flex items-center gap-3 px-4 py-3 rounded-lg no-underline text-[0.95rem] font-medium transition-all duration-200 cursor-pointer",
-          isActive(to)
-            ? "font-semibold"
-            : "text-gray-700 hover:bg-gray-100"
+          isActive(to) ? "font-semibold" : "text-gray-700 hover:bg-gray-100"
         )}
         style={
           isActive(to)
@@ -84,26 +76,10 @@ const WorkingSidebar: React.FC = () => {
       {isReceptionist && (
         <>
           <nav className="flex flex-col gap-1 p-2">
-            {createNavLink(
-              "/receptionist/dashboard",
-              <FaChartBar />,
-              "Bảng điều khiển"
-            )}
-            {createNavLink(
-              "/receptionist/patient-requests",
-              <FaEnvelope />,
-              "Danh sách yêu cầu"
-            )}
-            {createNavLink(
-              "/receptionist/schedule-appointment",
-              <FaCalendarCheck />,
-              "Đặt lịch khám"
-            )}
-            {createNavLink(
-              "/receptionist/patients",
-              <FaUsers />,
-              "Danh sách bệnh nhân"
-            )}
+            {createNavLink("/receptionist/dashboard", <FaChartBar />, "Bảng điều khiển")}
+            {createNavLink("/receptionist/patient-requests", <FaEnvelope />, "Danh sách yêu cầu")}
+            {createNavLink("/receptionist/schedule-appointment", <FaCalendarCheck />, "Đặt lịch khám")}
+            {createNavLink("/receptionist/patients", <FaUsers />, "Danh sách bệnh nhân")}
           </nav>
         </>
       )}
@@ -139,31 +115,11 @@ const WorkingSidebar: React.FC = () => {
             Quản lý hệ thống
           </h4>
           <nav className="flex flex-col gap-1 p-2">
-            {createNavLink(
-              "/admin/admin-dashboard",
-              <FaChartBar />,
-              "Dashboard"
-            )}
-            {createNavLink(
-              "/admin/account",
-              <FaUsers />,
-              "Danh sách tài khoản"
-            )}
-            {createNavLink(
-              "/admin/roles",
-              <FaUserShield />,
-              "Quản lý vai trò"
-            )}
-            {createNavLink(
-              "/admin/patients",
-              <FaUsers />,
-              "Danh sách bệnh nhân"
-            )}
-            {createNavLink(
-              "/admin/patient-requests",
-              <FaEnvelope />,
-              "Danh sách yêu cầu"
-            )}
+            {createNavLink("/admin/admin-dashboard", <FaChartBar />, "Dashboard")}
+            {createNavLink("/admin/account", <FaUsers />, "Danh sách tài khoản")}
+            {createNavLink("/admin/roles", <FaUserShield />, "Quản lý vai trò")}
+            {createNavLink("/admin/patients", <FaUsers />, "Danh sách bệnh nhân")}
+            {createNavLink("/admin/patient-requests", <FaEnvelope />, "Danh sách yêu cầu")}
           </nav>
 
           {/* Divider */}
@@ -174,11 +130,7 @@ const WorkingSidebar: React.FC = () => {
             Quản lý xét nghiệm
           </h4>
           <nav className="flex flex-col gap-1 p-2">
-            {createNavLink(
-              "/admin/test-order",
-              <FaFlask />,
-              "Danh sách xét nghiệm"
-            )}
+            {createNavLink("/admin/test-order", <FaFlask />, "Danh sách xét nghiệm")}
           </nav>
 
           {/* Divider */}
@@ -189,27 +141,15 @@ const WorkingSidebar: React.FC = () => {
             Quản lý lịch làm việc
           </h4>
           <nav className="flex flex-col gap-1 p-2">
-            {createNavLink(
-              "/admin/work-slots",
-              <FaCalendarAlt />,
-              "Lịch làm việc bác sĩ"
-            )}
+            {createNavLink("/admin/work-slots", <FaCalendarAlt />, "Lịch làm việc bác sĩ")}
           </nav>
 
           {/* Divider */}
           <div className="h-px bg-gray-200 my-3" />
 
           {/* Cài đặt */}
-          <h4 className="px-6 py-2 m-0 text-xs uppercase text-gray-400 font-semibold tracking-wider">
-            Cài đặt
-          </h4>
-          <nav className="flex flex-col gap-1 p-2">
-            {createNavLink(
-              "/admin/settings",
-              <FaCog />,
-              "Cài đặt"
-            )}
-          </nav>
+          <h4 className="px-6 py-2 m-0 text-xs uppercase text-gray-400 font-semibold tracking-wider">Cài đặt</h4>
+          <nav className="flex flex-col gap-1 p-2">{createNavLink("/admin/settings", <FaCog />, "Cài đặt")}</nav>
         </>
       )}
     </div>

@@ -48,14 +48,28 @@ export interface PurposeResponse {
 /* ---------- API Functions ---------- */
 
 /**
- * Create a new order
- * POST /api/orders
+ * Create a new patient order
+ * POST /api/orders/patient
  */
-export const createOrder = async (
+export const createPatientOrder = async (
   request: CreateOrderRequest
 ): Promise<OrderResponse> => {
   const response = await apiClient.post<ApiResponse<OrderResponse>>(
-    "/api/orders",
+    "/api/orders/patient",
+    request
+  );
+  return response.data.data;
+};
+
+/**
+ * Create a new reception order
+ * POST /api/orders/reception
+ */
+export const createReceptionOrder = async (
+  request: CreateOrderRequest
+): Promise<OrderResponse> => {
+  const response = await apiClient.post<ApiResponse<OrderResponse>>(
+    "/api/orders/reception",
     request
   );
   return response.data.data;

@@ -5,7 +5,7 @@ import { FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
 import type { PatientRequestDto } from "../../api/apiPatientRequest";
 import {
-  createOrder,
+  createReceptionOrder,
   getAllPurposes,
   type PurposeResponse,
   type CreateOrderRequest,
@@ -486,7 +486,7 @@ export default function ScheduleOrderModal({
         orderDetails: selectedTests,
       };
 
-      await createOrder(orderData);
+      await createReceptionOrder(orderData);
       toast.success("Đặt lịch thành công!");
       setShowConfirmation(false);
       onSuccess();

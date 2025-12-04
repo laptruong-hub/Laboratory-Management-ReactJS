@@ -63,11 +63,16 @@ const RoleRedirect = () => {
       console.log("🚀 Redirecting LAB USER to dashboard");
       sessionStorage.setItem("hasRedirectedByRole", "true");
       navigate("/lab-user/dashboard", { replace: true });
-    } else if (normalizedRole === "RECEPTIONIST") {
+    } else if (
+      normalizedRole === "RECEPTIONIST" ||
+      normalizedRole === "RECEPTION" ||
+      normalizedRole.includes("RECEPTIONIST") ||
+      normalizedRole.includes("RECEPTION")
+    ) {
       console.log("Redirecting RECEPTIONIST to patient requests");
       sessionStorage.setItem("hasRedirectedByRole", "true");
-      navigate("/receptionist/patient-requests", { replace: true });
-    } else if (normalizedRole === "PATIENT") {
+      navigate("/receptionist/dashboard", { replace: true });
+    } else if (normalizedRole === "PATIENT" || normalizedRole === "CUSTOMER" || normalizedRole === "CLIENT") {
       console.log("Redirecting PATIENT to profile (first time only)");
       sessionStorage.setItem("hasRedirectedByRole", "true");
       navigate("/user/profile"); // Patient vào trang profile → tab "Kết quả xét nghiệm"
@@ -85,4 +90,3 @@ const RoleRedirect = () => {
 };
 
 export default RoleRedirect;
-

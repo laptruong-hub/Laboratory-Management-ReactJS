@@ -31,12 +31,48 @@ const RoleBasedRoute = ({ allowedRoles, redirectTo = "/forbidden" }: RoleBasedRo
   const normalizedUserRole = user.roleName?.trim().toUpperCase() || "";
   const normalizedAllowedRoles = allowedRoles.map((role) => role.trim().toUpperCase());
 
-  // Check nếu user role có trong allowed roles
-  const hasAccess = normalizedAllowedRoles.some(
-    (allowedRole) => normalizedUserRole === allowedRole || normalizedUserRole.includes(allowedRole)
-  );
+  // Enhanced role matching - handles variations like "RECEPTIONIST", "Receptionist", etc.
+  const hasAccess = normalizedAllowedRoles.some((allowedRole) => {
+    // Exact match
+    if (normalizedUserRole === allowedRole) {
+      return true;
+    }
+    // Contains match (for partial matches)
+    if (normalizedUserRole.includes(allowedRole) || allowedRole.includes(normalizedUserRole)) {
+      return true;
+    }
+    // Special handling for common role variations
+    const roleVariations: Record<string, string[]> = {
+      "RECEPTIONIST": ["RECEPTIONIST", "RECEPTION", "RECEIPTIONIST"],
+      "ADMIN": ["ADMIN", "ADMINISTRATOR", "ADMINISTRATOR"],
+      "LAB USER": ["LAB USER", "LABUSER", "TECHNICIAN", "LAB TECHNICIAN"],
+      "PATIENT": ["PATIENT", "CUSTOMER", "CLIENT"],
+    };
+    
+    const variations = roleVariations[allowedRole] || [allowedRole];
+    return variations.some(variation => normalizedUserRole === variation.toUpperCase());
+  });
+
+  // Debug logging in development
+  if (process.env.NODE_ENV === "development") {
+    console.log("[RoleBasedRoute] Debug:", {
+      userRole: user.roleName,
+      normalizedUserRole,
+      allowedRoles,
+      normalizedAllowedRoles,
+      hasAccess,
+      path: window.location.pathname,
+    });
+  }
 
   if (!hasAccess) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[RoleBasedRoute] Access denied:", {
+        userRole: user.roleName,
+        allowedRoles,
+        redirectingTo: redirectTo,
+      });
+    }
     return <Navigate to={redirectTo} replace />;
   }
 
