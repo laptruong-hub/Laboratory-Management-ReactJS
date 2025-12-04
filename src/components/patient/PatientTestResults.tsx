@@ -49,19 +49,25 @@ const OrdersGrid = styled.div`
   margin-bottom: 2rem;
 `;
 
-const OrderCard = styled.div<{ $selected?: boolean }>`
+const OrderCard = styled.div<{ $selected?: boolean; $clickable?: boolean }>`
   padding: 1.5rem;
   background: white;
   border: 2px solid ${(p) => (p.$selected ? "#dc2626" : "#e5e7eb")};
   border-radius: 0.75rem;
-  cursor: pointer;
+  cursor: ${(p) => (p.$clickable ? "pointer" : "default")};
   transition: all 0.2s;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  opacity: ${(p) => (p.$clickable ? 1 : 0.6)};
 
   &:hover {
-    border-color: #dc2626;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+    ${(p) =>
+      p.$clickable
+        ? `
+      border-color: #dc2626;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    `
+        : ""}
   }
 `;
 
@@ -289,8 +295,9 @@ export default function PatientTestResults() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [_patientId, setPatientId] = useState<number | null>(null); // Stored for future use
-  const [orders, setOrders] = useState<OrderResponse[]>([]); // Chỉ orders COMPLETE
-  const [totalOrders, setTotalOrders] = useState(0); // Tổng số orders (bao gồm pending)
+  const [orders, setOrders] = useState<OrderResponse[]>([]); // Tất cả orders (PENDING + COMPLETE)
+  const [totalOrders, setTotalOrders] = useState(0); // Tổng số orders
+  const [completedCount, setCompletedCount] = useState(0); // Số đơn COMPLETE
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [orderDetails, setOrderDetails] = useState<OrderDetailResponse[]>([]);
   const [testResultsMap, setTestResultsMap] = useState<
@@ -319,14 +326,14 @@ export default function PatientTestResults() {
       console.log("🔍 Fetching orders for patient_id:", patientData.patientId);
       const ordersData = await getOrdersByPatientId(patientData.patientId);
 
-      // ✅ CHỈ HIỂN THỊ ORDERS ĐÃ COMPLETE (tất cả test results đã sẵn sàng)
       const completedOrders = ordersData.filter(order => order.status === "COMPLETE");
       const pendingOrdersCount = ordersData.length - completedOrders.length;
 
       console.log(`✅ Orders data: ${ordersData.length} total, ${completedOrders.length} completed, ${pendingOrdersCount} pending`);
 
       setTotalOrders(ordersData.length);
-      setOrders(completedOrders);
+      setCompletedCount(completedOrders.length);
+      setOrders(ordersData); // ✅ Lưu cả PENDING và COMPLETE
     } catch (error: any) {
       console.error("❌ Error fetching patient or orders:", error);
       if (error.response?.status === 404) {
@@ -427,17 +434,17 @@ export default function PatientTestResults() {
       </PageHeader>
 
       {/* Info Banner: Hiển thị nếu có orders đang xử lý */}
-      {totalOrders > orders.length && (
+      {totalOrders > completedCount && (
         <InfoBanner>
           <InfoIcon>ℹ️</InfoIcon>
           <div>
-            <strong>Thông báo:</strong> Bạn có {totalOrders - orders.length} đơn xét nghiệm đang được xử lý.
+            <strong>Thông báo:</strong> Bạn có {totalOrders - completedCount} đơn xét nghiệm đang được xử lý.
             Kết quả sẽ hiển thị khi tất cả các xét nghiệm trong đơn đã hoàn thành.
           </div>
         </InfoBanner>
       )}
 
-      {orders.length === 0 ? (
+      {completedCount === 0 ? (
         <EmptyState>
           <EmptyIcon>🔬</EmptyIcon>
           <div>Chưa có kết quả xét nghiệm nào hoàn thành</div>
@@ -447,13 +454,17 @@ export default function PatientTestResults() {
         </EmptyState>
       ) : (
         <>
-          <SectionTitle>Danh Sách Đơn Xét Nghiệm Hoàn Thành ({orders.length})</SectionTitle>
+          <SectionTitle>Danh Sách Đơn Xét Nghiệm</SectionTitle>
           <OrdersGrid>
             {orders.map((order) => (
+              (() => {
+                const isCompleted = order.status === "COMPLETE";
+                return (
               <OrderCard
                 key={order.orderId}
                 $selected={selectedOrderId === order.orderId}
-                onClick={() => handleOrderSelect(order.orderId)}
+                $clickable={isCompleted}
+                onClick={isCompleted ? () => handleOrderSelect(order.orderId) : undefined}
               >
                 <OrderHeader>
                   <OrderId>Đơn #{order.orderId}</OrderId>
@@ -479,7 +490,14 @@ export default function PatientTestResults() {
                     </OrderInfoRow>
                   )}
                 </OrderInfo>
+                {!isCompleted && (
+                  <div style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: "#9ca3af" }}>
+                    ⏳ Đơn đang được xử lý - kết quả sẽ hiển thị sau khi hoàn thành.
+                  </div>
+                )}
               </OrderCard>
+                );
+              })()
             ))}
           </OrdersGrid>
         </>
