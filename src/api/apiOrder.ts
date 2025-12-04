@@ -169,3 +169,16 @@ export const approveOrder = async (id: number): Promise<OrderResponse> => {
   );
   return response.data.data;
 };
+
+/**
+ * Export a completed order (including results & comments) to Excel.
+ * GET /api/orders/{id}/export
+ */
+export const exportOrderToExcel = async (id: number): Promise<Blob> => {
+  const response = await apiClient.get<ArrayBuffer>(`/api/orders/${id}/export`, {
+    responseType: "arraybuffer",
+  });
+  return new Blob([response.data], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+};
