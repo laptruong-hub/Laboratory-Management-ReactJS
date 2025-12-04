@@ -59,19 +59,23 @@ const RoleRedirect = () => {
     } else if (normalizedRole === "SERVICE" || normalizedRole === "CUSTOMER SERVICE") {
       // Có thể thêm redirect cho Service sau
       // navigate("/service/dashboard", { replace: true });
-    } else if (normalizedRole === "LAB USER" || normalizedRole === "TECHNICIAN" || normalizedRole === "LABUSER") {
-      console.log("🚀 Redirecting LAB USER to dashboard");
-      sessionStorage.setItem("hasRedirectedByRole", "true");
-      navigate("/lab-user/dashboard", { replace: true });
+    } else if (
+      normalizedRole === "LAB USER" ||
+      normalizedRole === "TECHNICIAN" ||
+      normalizedRole === "LABUSER" ||
+      normalizedRole === "LABORATORY MANAGER" ||
+      normalizedRole === "LAB MANAGER"
+    ) {
+      console.log("LAB USER/MANAGER stays on landing page");
+      // Lab user/manager now defaults to landing page, no redirect needed
     } else if (
       normalizedRole === "RECEPTIONIST" ||
       normalizedRole === "RECEPTION" ||
       normalizedRole.includes("RECEPTIONIST") ||
       normalizedRole.includes("RECEPTION")
     ) {
-      console.log("Redirecting RECEPTIONIST to patient requests");
-      sessionStorage.setItem("hasRedirectedByRole", "true");
-      navigate("/receptionist/dashboard", { replace: true });
+      console.log("RECEPTIONIST stays on landing page");
+      // Receptionist now defaults to landing page, no redirect needed
     } else if (normalizedRole === "PATIENT" || normalizedRole === "CUSTOMER" || normalizedRole === "CLIENT") {
       console.log("Redirecting PATIENT to profile (first time only)");
       sessionStorage.setItem("hasRedirectedByRole", "true");

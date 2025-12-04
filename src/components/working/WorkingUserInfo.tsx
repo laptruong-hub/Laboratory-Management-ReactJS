@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import styled from "styled-components";
 import { FaCamera } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
+import { translateRole } from "../../utils/translations";
 
 const UserInfoContainer = styled.div`
   padding: 1.5rem;
@@ -25,8 +26,7 @@ const Avatar = styled.div<{ $hasImage?: boolean }>`
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background-color: ${(props) =>
-    props.$hasImage ? "transparent" : "rgba(255, 255, 255, 0.2)"};
+  background-color: ${(props) => (props.$hasImage ? "transparent" : "rgba(255, 255, 255, 0.2)")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -71,7 +71,6 @@ const CameraIcon = styled(FaCamera)`
 
 const FileInput = styled.input`
   display: none;
-  
 `;
 
 const UserDetails = styled.div`
@@ -115,9 +114,7 @@ const WorkingUserInfo: React.FC = () => {
     return null;
   };
 
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(
-    getAvatarFromStorage()
-  );
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(getAvatarFromStorage());
   const [isUploading, setIsUploading] = useState(false);
 
   // Update avatar preview when user changes
@@ -128,7 +125,7 @@ const WorkingUserInfo: React.FC = () => {
 
   // Lấy tên từ API response hoặc email nếu không có
   const displayName = user?.fullName || user?.email?.split("@")[0] || "User";
-  const displayRole = user?.roleName || "—";
+  const displayRole = translateRole(user?.roleName || "—");
   const displayEmail = user?.email || "—";
 
   // Lấy chữ cái đầu của tên để hiển thị nếu không có ảnh
@@ -199,22 +196,12 @@ const WorkingUserInfo: React.FC = () => {
     <UserInfoContainer>
       <AvatarContainer onClick={handleAvatarClick}>
         <Avatar $hasImage={!!avatarPreview}>
-          {avatarPreview ? (
-            <img src={avatarPreview} alt="Avatar" />
-          ) : (
-            <span>{getInitials(displayName)}</span>
-          )}
+          {avatarPreview ? <img src={avatarPreview} alt="Avatar" /> : <span>{getInitials(displayName)}</span>}
         </Avatar>
         <AvatarOverlay className="avatar-overlay">
           <CameraIcon />
         </AvatarOverlay>
-        <FileInput
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          disabled={isUploading}
-        />
+        <FileInput ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} disabled={isUploading} />
       </AvatarContainer>
       <UserDetails>
         <UserName>{displayName}</UserName>

@@ -1,9 +1,10 @@
-import React, { useMemo, useState } from 'react';
-import styled from 'styled-components';
-import { Pencil, Eye } from 'lucide-react';
+import React, { useMemo, useState } from "react";
+import styled from "styled-components";
+import { Pencil, Eye } from "lucide-react";
+import { translateRole } from "../../utils/translations";
 
-type Role = 'Administrator' | 'Laboratory Manager' | 'Service' | 'Lab User';
-type UserStatus = 'active' | 'pending' | 'suspended' | 'inactive';
+type Role = "Administrator" | "Laboratory Manager" | "Service" | "Lab User";
+type UserStatus = "active" | "pending" | "suspended" | "inactive";
 
 export interface UserRow {
   id: string;
@@ -22,14 +23,14 @@ interface UsersTableProps {
 
 const Card = styled.div`
   background: #ffffff;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   overflow: hidden;
 `;
 
 const Header = styled.div`
   padding: 16px;
-  border-bottom: 1px solid #E5E7EB;
+  border-bottom: 1px solid #e5e7eb;
   background: #ffffff;
   display: flex;
   flex-direction: column;
@@ -59,7 +60,7 @@ const Controls = styled.div`
 const Select = styled.select`
   height: 36px;
   border-radius: 8px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   padding: 0 10px;
   font-size: 14px;
 `;
@@ -67,13 +68,16 @@ const Select = styled.select`
 const SearchBox = styled.input`
   padding: 8px 12px;
   font-size: 14px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   outline: none;
   width: 220px;
   background: #ffffff;
   color: #111827;
-  &:focus { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12); }
+  &:focus {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+  }
 
   &::placeholder {
     color: #94a3b8;
@@ -91,7 +95,7 @@ const Table = styled.table`
 `;
 
 const Thead = styled.thead`
-  background: #F9FAFB;
+  background: #f9fafb;
 `;
 
 const Th = styled.th`
@@ -101,14 +105,16 @@ const Th = styled.th`
   color: #374151;
   padding: 16px;
   text-align: left;
-  border-bottom: 1px solid #F3F4F6;
+  border-bottom: 1px solid #f3f4f6;
 `;
 
 const Tr = styled.tr`
   height: 80px;
   background: #ffffff;
-  border-bottom: 1px solid #F3F4F6;
-  &:hover { background: #F9FAFB; }
+  border-bottom: 1px solid #f3f4f6;
+  &:hover {
+    background: #f9fafb;
+  }
 `;
 
 const Td = styled.td`
@@ -148,7 +154,7 @@ const StatusDot = styled.span<{ $color: string }>`
   height: 10px;
   border: 2px solid #ffffff;
   border-radius: 50%;
-  background: ${p => p.$color};
+  background: ${(p) => p.$color};
 `;
 
 const UserInfo = styled.div`
@@ -162,7 +168,7 @@ const UserName = styled.span`
 
 const UserEmail = styled.span`
   font-size: 12px;
-  color: #6B7280;
+  color: #6b7280;
 `;
 
 const RoleText = styled.span`
@@ -177,18 +183,18 @@ const StatusBadge = styled.span<{ $type: UserStatus }>`
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  ${p =>
-    p.$type === 'active'
-      ? 'background:#D1FAE5;color:#047857;'
-      : p.$type === 'pending'
-      ? 'background:#FEF3C7;color:#B45309;'
-      : p.$type === 'suspended'
-      ? 'background:#FEE2E2;color:#B91C1C;'
-      : 'background:#E5E7EB;color:#374151;'}
+  ${(p) =>
+    p.$type === "active"
+      ? "background:#D1FAE5;color:#047857;"
+      : p.$type === "pending"
+      ? "background:#FEF3C7;color:#B45309;"
+      : p.$type === "suspended"
+      ? "background:#FEE2E2;color:#B91C1C;"
+      : "background:#E5E7EB;color:#374151;"}
 `;
 
 const Muted = styled.div`
-  color: #6B7280;
+  color: #6b7280;
   font-size: 12px;
 `;
 
@@ -200,22 +206,25 @@ const Actions = styled.div`
 
 const IconButton = styled.button`
   background: transparent;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 6px;
-  color: #6B7280;
+  color: #6b7280;
   cursor: pointer;
   display: inline-flex;
-  &:hover { color: #2563EB; border-color: #BFDBFE; }
+  &:hover {
+    color: #2563eb;
+    border-color: #bfdbfe;
+  }
 `;
 
 export const UsersTable: React.FC<UsersTableProps> = ({ rows }) => {
-  const [roleFilter, setRoleFilter] = useState<'all' | Role>('all');
-  const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState<"all" | Role>("all");
+  const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
-    return rows.filter(r => {
-      const matchesRole = roleFilter === 'all' ? true : r.role === roleFilter;
+    return rows.filter((r) => {
+      const matchesRole = roleFilter === "all" ? true : r.role === roleFilter;
       const q = search.trim().toLowerCase();
       const matchesSearch = !q || r.name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q);
       return matchesRole && matchesSearch;
@@ -227,14 +236,14 @@ export const UsersTable: React.FC<UsersTableProps> = ({ rows }) => {
       <Header>
         <Title>Người dùng & hoạt động gần đây</Title>
         <Controls>
-          <Select value={roleFilter} onChange={e => setRoleFilter(e.target.value as any)}>
+          <Select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value as any)}>
             <option value="all">Tất cả vai trò</option>
-            <option value="Administrator">Administrator</option>
-            <option value="Laboratory Manager">Laboratory Manager</option>
-            <option value="Service">Service</option>
-            <option value="Lab User">Lab User</option>
+            <option value="Administrator">{translateRole("Administrator")}</option>
+            <option value="Laboratory Manager">{translateRole("Laboratory Manager")}</option>
+            <option value="Service">{translateRole("Service")}</option>
+            <option value="Lab User">{translateRole("Lab User")}</option>
           </Select>
-          <SearchBox placeholder="Tìm kiếm..." value={search} onChange={e => setSearch(e.target.value)} />
+          <SearchBox placeholder="Tìm kiếm..." value={search} onChange={(e) => setSearch(e.target.value)} />
         </Controls>
       </Header>
 
@@ -251,13 +260,23 @@ export const UsersTable: React.FC<UsersTableProps> = ({ rows }) => {
             </tr>
           </Thead>
           <tbody>
-            {filtered.map(u => (
+            {filtered.map((u) => (
               <Tr key={u.id}>
                 <Td>
                   <UserCell>
                     <AvatarWrap>
                       <Avatar>{u.name.charAt(0)}</Avatar>
-                      <StatusDot $color={u.status === 'active' ? '#10B981' : u.status === 'pending' ? '#F59E0B' : u.status === 'suspended' ? '#EF4444' : '#6B7280'} />
+                      <StatusDot
+                        $color={
+                          u.status === "active"
+                            ? "#10B981"
+                            : u.status === "pending"
+                            ? "#F59E0B"
+                            : u.status === "suspended"
+                            ? "#EF4444"
+                            : "#6B7280"
+                        }
+                      />
                     </AvatarWrap>
                     <UserInfo>
                       <UserName>{u.name}</UserName>
@@ -266,19 +285,40 @@ export const UsersTable: React.FC<UsersTableProps> = ({ rows }) => {
                   </UserCell>
                 </Td>
                 <Td>
-                  <RoleText>{u.role}</RoleText>
+                  <RoleText>{translateRole(u.role)}</RoleText>
                 </Td>
                 <Td>
                   <StatusBadge $type={u.status}>
-                    <span style={{ width: 8, height: 8, borderRadius: 999, background: u.status === 'active' ? '#10B981' : u.status === 'pending' ? '#F59E0B' : u.status === 'suspended' ? '#EF4444' : '#6B7280', display: 'inline-block' }} />
-                    {u.status === 'active' ? 'Hoạt động' : u.status === 'pending' ? 'Chưa kích hoạt' : u.status === 'suspended' ? 'Tạm khóa' : 'Không hoạt động'}
+                    <span
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: 999,
+                        background:
+                          u.status === "active"
+                            ? "#10B981"
+                            : u.status === "pending"
+                            ? "#F59E0B"
+                            : u.status === "suspended"
+                            ? "#EF4444"
+                            : "#6B7280",
+                        display: "inline-block",
+                      }}
+                    />
+                    {u.status === "active"
+                      ? "Hoạt động"
+                      : u.status === "pending"
+                      ? "Chưa kích hoạt"
+                      : u.status === "suspended"
+                      ? "Tạm khóa"
+                      : "Không hoạt động"}
                   </StatusBadge>
                 </Td>
                 <Td>
-                  <div style={{ fontSize: 14 }}>{u.activity.split('\n')[0]}</div>
-                  {u.activity.includes('\n') && <Muted>{u.activity.split('\n')[1]}</Muted>}
+                  <div style={{ fontSize: 14 }}>{u.activity.split("\n")[0]}</div>
+                  {u.activity.includes("\n") && <Muted>{u.activity.split("\n")[1]}</Muted>}
                 </Td>
-                <Td style={{ color: '#6B7280' }}>{u.createdAt}</Td>
+                <Td style={{ color: "#6B7280" }}>{u.createdAt}</Td>
                 <Td>
                   <Actions>
                     <IconButton aria-label="Edit">
@@ -299,5 +339,3 @@ export const UsersTable: React.FC<UsersTableProps> = ({ rows }) => {
 };
 
 export default UsersTable;
-
-

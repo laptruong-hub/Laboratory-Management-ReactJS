@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import {
-  FaSearch,
-  FaCheck,
-  FaTimes,
-  FaEye,
-  FaTrash,
-} from "react-icons/fa";
+import { FaSearch, FaCheck, FaTimes, FaEye, FaTrash } from "react-icons/fa";
 import {
   getAllPatientRequests,
   approvePatientRequest,
@@ -369,6 +363,27 @@ const Button = styled.button<{ $variant?: "primary" | "danger" | "secondary" }>`
   }}
 `;
 
+const ConfirmModal = styled(Modal)`
+  max-width: 450px;
+`;
+
+const ConfirmModalBody = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const ConfirmMessage = styled.p`
+  font-size: 0.9375rem;
+  color: #374151;
+  line-height: 1.6;
+  margin: 0;
+`;
+
+const ConfirmModalFooter = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+`;
+
 /* ---------- Component ---------- */
 export default function PatientRequestManage() {
   const [requests, setRequests] = useState<PatientRequestDto[]>([]);
@@ -378,6 +393,8 @@ export default function PatientRequestManage() {
   const [selectedRequest, setSelectedRequest] = useState<PatientRequestDto | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmRequestId, setConfirmRequestId] = useState<number | null>(null);
 
   const fetchData = async () => {
     try {
@@ -425,7 +442,7 @@ export default function PatientRequestManage() {
     );
   });
 
-  const handleApprove = async (id: number) => {
+  const handleApprove = (id: number) => {
     // Prevent double click - check if already processing
     if (processingId !== null) {
       toast.warning("Đang xử lý một yêu cầu khác, vui lòng đợi...");
@@ -433,16 +450,24 @@ export default function PatientRequestManage() {
     }
 
     // Check if request is already approved
-    const request = requests.find(r => r.patientRequestId === id);
+    const request = requests.find((r) => r.patientRequestId === id);
     if (request && request.status !== "PENDING") {
       toast.warning("Yêu cầu này đã được xử lý rồi.");
-      await fetchData();
+      fetchData();
       return;
     }
 
-    if (!window.confirm("Bạn có chắc muốn duyệt yêu cầu này? Tài khoản sẽ được tạo tự động với mật khẩu mặc định.")) {
-      return;
-    }
+    // Open confirm modal
+    setConfirmRequestId(id);
+    setShowConfirmModal(true);
+  };
+
+  const confirmApprove = async () => {
+    if (!confirmRequestId) return;
+
+    const id = confirmRequestId;
+    setShowConfirmModal(false);
+    setConfirmRequestId(null);
 
     // Set processing immediately to prevent double click (before async call)
     setProcessingId(id);
@@ -475,7 +500,7 @@ export default function PatientRequestManage() {
     }
 
     // Check if request is already processed
-    const request = requests.find(r => r.patientRequestId === id);
+    const request = requests.find((r) => r.patientRequestId === id);
     if (request && request.status !== "PENDING") {
       toast.warning("Yêu cầu này đã được xử lý rồi.");
       await fetchData();
@@ -566,28 +591,16 @@ export default function PatientRequestManage() {
         </SearchBox>
 
         <FilterButtons>
-          <FilterButton
-            $active={statusFilter === "ALL"}
-            onClick={() => setStatusFilter("ALL")}
-          >
+          <FilterButton $active={statusFilter === "ALL"} onClick={() => setStatusFilter("ALL")}>
             Tất cả
           </FilterButton>
-          <FilterButton
-            $active={statusFilter === "PENDING"}
-            onClick={() => setStatusFilter("PENDING")}
-          >
+          <FilterButton $active={statusFilter === "PENDING"} onClick={() => setStatusFilter("PENDING")}>
             Chờ duyệt
           </FilterButton>
-          <FilterButton
-            $active={statusFilter === "ACTIVE"}
-            onClick={() => setStatusFilter("ACTIVE")}
-          >
+          <FilterButton $active={statusFilter === "ACTIVE"} onClick={() => setStatusFilter("ACTIVE")}>
             Đã duyệt
           </FilterButton>
-          <FilterButton
-            $active={statusFilter === "REJECT"}
-            onClick={() => setStatusFilter("REJECT")}
-          >
+          <FilterButton $active={statusFilter === "REJECT"} onClick={() => setStatusFilter("REJECT")}>
             Đã từ chối
           </FilterButton>
         </FilterButtons>
@@ -614,9 +627,7 @@ export default function PatientRequestManage() {
                     <CardSubTitle>{request.email}</CardSubTitle>
                   </div>
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                    <StatusBadge $status={request.status}>
-                      {getStatusText(request.status)}
-                    </StatusBadge>
+                    <StatusBadge $status={request.status}>{getStatusText(request.status)}</StatusBadge>
                     <CreatedAtBadge>{formatDate(request.createdAt)}</CreatedAtBadge>
                   </div>
                 </CardHeader>
@@ -691,9 +702,7 @@ export default function PatientRequestManage() {
               <ModalField>
                 <label>Trạng thái</label>
                 <div className="value">
-                  <StatusBadge $status={selectedRequest.status}>
-                    {getStatusText(selectedRequest.status)}
-                  </StatusBadge>
+                  <StatusBadge $status={selectedRequest.status}>{getStatusText(selectedRequest.status)}</StatusBadge>
                 </div>
               </ModalField>
               <ModalField>
@@ -739,7 +748,33 @@ export default function PatientRequestManage() {
           </Modal>
         </ModalOverlay>
       )}
+
+      {/* Confirm Approve Modal */}
+      {showConfirmModal && (
+        <ModalOverlay onClick={() => setShowConfirmModal(false)}>
+          <ConfirmModal onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>Xác nhận duyệt yêu cầu</ModalHeader>
+            <ConfirmModalBody>
+              <ConfirmMessage>
+                Bạn có chắc muốn duyệt yêu cầu này? Tài khoản sẽ được tạo tự động với mật khẩu mặc định.
+              </ConfirmMessage>
+            </ConfirmModalBody>
+            <ConfirmModalFooter>
+              <Button
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  setConfirmRequestId(null);
+                }}
+              >
+                Hủy
+              </Button>
+              <Button $variant="primary" onClick={confirmApprove}>
+                <FaCheck /> Xác nhận duyệt
+              </Button>
+            </ConfirmModalFooter>
+          </ConfirmModal>
+        </ModalOverlay>
+      )}
     </PageContainer>
   );
 }
-

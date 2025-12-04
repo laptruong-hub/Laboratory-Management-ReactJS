@@ -2,7 +2,19 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
-import { FaHome, FaUser, FaTimes, FaBars } from "react-icons/fa";
+import {
+  FaHome,
+  FaUser,
+  FaTimes,
+  FaBars,
+  FaChartBar,
+  FaEnvelope,
+  FaCalendarCheck,
+  FaUsers,
+  FaVial,
+  FaCalendarAlt,
+  FaHistory,
+} from "react-icons/fa";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +23,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { translateRole } from "@/utils/translations";
 
 const Header: React.FC = () => {
   const { user, loading, logout } = useAuth();
@@ -20,9 +33,19 @@ const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
+  const normalizedRole = user?.roleName?.trim().toUpperCase() || "";
+
+  // Check if role should hide navbar items
+  const shouldHideNavItems =
+    !user || // Guest (no user)
+    normalizedRole === "PATIENT" ||
+    normalizedRole === "USER" ||
+    normalizedRole === "GUEST" ||
+    normalizedRole === "";
+
   // Main color in OKLCH format
   const primaryColor = "oklch(0.52 0.2 23.22)";
-  const primaryColorHover = "oklch(0.47 0.2 23.22)"; // Slightly darker for hover
+  const primaryColorHover = "oklch(0.58 0.2 23.22)"; // Lighter for hover
   const primaryColorLight = "oklch(0.95 0.05 23.22)"; // Light version for backgrounds
 
   useEffect(() => {
@@ -96,10 +119,10 @@ const Header: React.FC = () => {
     <>
       <header
         className={cn(
-          "fixed left-1/2 top-6 z-50 transition-all duration-300 mb-10 mx-auto -translate-x-1/2 flex items-center justify-between",
+          "fixed left-1/2 top-4 z-50 transition-all duration-300 mb-10 mx-auto -translate-x-1/2 flex items-center justify-between",
           scrolled
-            ? "max-w-5xl w-[98vw] py-3 px-6 h-[60px] md:h-[70px] shadow-xl bg-white/80 backdrop-blur-xl border border-gray-100 rounded-lg md:rounded-xl"
-            : "max-w-6xl w-[99vw] py-5 px-8 md:px-16 h-[70px] md:h-[80px] shadow-md bg-white backdrop-blur-xl border border-gray-200 rounded-lg md:rounded-2xl"
+            ? "max-w-5xl w-[98vw] py-2 px-4 h-[50px] md:h-[56px] shadow-xl bg-white/80 backdrop-blur-xl border border-gray-100 rounded-lg md:rounded-xl"
+            : "max-w-6xl w-[99vw] py-2.5 px-6 md:px-10 h-[56px] md:h-[64px] shadow-md bg-white backdrop-blur-xl border border-gray-200 rounded-lg md:rounded-xl"
         )}
       >
         {/* Logo */}
@@ -110,15 +133,15 @@ const Header: React.FC = () => {
             style={{ textDecoration: "none" }}
           >
             <div
-              className="w-12 h-12 rounded-full flex items-center justify-center border-2 border-white"
+              className={cn("rounded-full flex items-center justify-center", scrolled ? "w-9 h-9" : "w-10 h-10")}
               style={{ backgroundColor: primaryColor }}
             >
-              <span className="text-white font-bold text-sm">LM</span>
+              <span className={cn("text-white font-bold", scrolled ? "text-xs" : "text-sm")}>LM</span>
             </div>
             <span
               className={cn(
-                "font-bold drop-shadow-sm transition-all duration-300",
-                scrolled ? "text-base hidden md:inline" : "text-lg hidden md:inline"
+                "font-bold transition-all duration-300",
+                scrolled ? "text-sm hidden md:inline" : "text-base hidden md:inline"
               )}
               style={{ color: primaryColor }}
             >
@@ -127,47 +150,329 @@ const Header: React.FC = () => {
           </Link>
         </div>
 
-        {/* Navigation Menu - Left aligned */}
-        <nav className="nav-menu hidden md:flex items-center flex-1 ml-8">
-          <ul className="flex items-center gap-3 list-none m-0 p-0">
-            <li>
-              <Link
-                to="/"
-                className={cn(
-                  "flex items-center gap-2 px-5 py-3 rounded-full font-semibold text-base transition-all duration-300 cursor-pointer drop-shadow-sm h-12",
-                  scrolled
-                    ? `w-12 rounded-full hover:scale-110 flex items-center justify-center ${
-                        isActive("/") ? "text-white" : ""
-                      }`
-                    : `px-5 py-3 rounded-full ${isActive("/") ? "text-white shadow-lg ring-2" : ""}`
-                )}
-                style={{
-                  backgroundColor: isActive("/") ? primaryColor : scrolled ? primaryColorLight : "transparent",
-                  color: isActive("/") ? "white" : primaryColor,
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive("/")) {
-                    e.currentTarget.style.backgroundColor = primaryColor;
-                    e.currentTarget.style.color = "white";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive("/")) {
-                    e.currentTarget.style.backgroundColor = scrolled ? primaryColorLight : "transparent";
-                    e.currentTarget.style.color = primaryColor;
-                  }
-                }}
-              >
-                <FaHome className={scrolled ? "w-5 h-5" : "w-5 h-5"} />
-                {!scrolled && <span className="ml-2">Trang chủ</span>}
-              </Link>
-            </li>
-            {/* Thêm các liên kết điều hướng khác khi cần */}
-          </ul>
-        </nav>
+        {/* Navigation Menu - Centered */}
+        {!shouldHideNavItems && (
+          <nav className="nav-menu hidden md:flex items-center justify-center flex-1">
+            <ul className="flex items-center justify-center gap-2 list-none m-0 p-0">
+              <li>
+                <Link
+                  to="/"
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
+                    scrolled ? "drop-shadow-sm" : "",
+                    scrolled
+                      ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
+                          isActive("/") ? "text-white" : ""
+                        }`
+                      : `px-3 py-1.5 rounded-full ${isActive("/") ? "text-white ring-2" : ""}`
+                  )}
+                  style={{
+                    backgroundColor: isActive("/") ? primaryColor : scrolled ? primaryColorLight : "transparent",
+                    color: isActive("/") ? "white" : primaryColor,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive("/")) {
+                      e.currentTarget.style.backgroundColor = primaryColorHover;
+                      e.currentTarget.style.color = "white";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive("/")) {
+                      e.currentTarget.style.backgroundColor = scrolled ? primaryColorLight : "transparent";
+                      e.currentTarget.style.color = primaryColor;
+                    }
+                  }}
+                >
+                  <FaHome className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
+                  {!scrolled && <span className="ml-1.5">Trang chủ</span>}
+                </Link>
+              </li>
+
+              {/* Role-based navigation items */}
+              {/* Receptionist navigation */}
+              {normalizedRole === "RECEPTIONIST" && (
+                <>
+                  <li>
+                    <Link
+                      to="/receptionist/dashboard"
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
+                        scrolled ? "drop-shadow-sm" : "",
+                        scrolled
+                          ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
+                              isActive("/receptionist/dashboard") ? "text-white" : ""
+                            }`
+                          : `px-3 py-1.5 rounded-full ${isActive("/receptionist/dashboard") ? "text-white ring-2" : ""}`
+                      )}
+                      style={{
+                        backgroundColor: isActive("/receptionist/dashboard")
+                          ? primaryColor
+                          : scrolled
+                          ? primaryColorLight
+                          : "transparent",
+                        color: isActive("/receptionist/dashboard") ? "white" : primaryColor,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive("/receptionist/dashboard")) {
+                          e.currentTarget.style.backgroundColor = primaryColorHover;
+                          e.currentTarget.style.color = "white";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive("/receptionist/dashboard")) {
+                          e.currentTarget.style.backgroundColor = scrolled ? primaryColorLight : "transparent";
+                          e.currentTarget.style.color = primaryColor;
+                        }
+                      }}
+                    >
+                      <FaChartBar className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
+                      {!scrolled && <span className="ml-1.5">Bảng điều khiển</span>}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/receptionist/patient-requests"
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
+                        scrolled ? "drop-shadow-sm" : "",
+                        scrolled
+                          ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
+                              isActive("/receptionist/patient-requests") ? "text-white" : ""
+                            }`
+                          : `px-3 py-1.5 rounded-full ${
+                              isActive("/receptionist/patient-requests") ? "text-white ring-2" : ""
+                            }`
+                      )}
+                      style={{
+                        backgroundColor: isActive("/receptionist/patient-requests")
+                          ? primaryColor
+                          : scrolled
+                          ? primaryColorLight
+                          : "transparent",
+                        color: isActive("/receptionist/patient-requests") ? "white" : primaryColor,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive("/receptionist/patient-requests")) {
+                          e.currentTarget.style.backgroundColor = primaryColorHover;
+                          e.currentTarget.style.color = "white";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive("/receptionist/patient-requests")) {
+                          e.currentTarget.style.backgroundColor = scrolled ? primaryColorLight : "transparent";
+                          e.currentTarget.style.color = primaryColor;
+                        }
+                      }}
+                    >
+                      <FaEnvelope className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
+                      {!scrolled && <span className="ml-1.5">Yêu cầu</span>}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/receptionist/schedule-appointment"
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
+                        scrolled ? "drop-shadow-sm" : "",
+                        scrolled
+                          ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
+                              isActive("/receptionist/schedule-appointment") ? "text-white" : ""
+                            }`
+                          : `px-3 py-1.5 rounded-full ${
+                              isActive("/receptionist/schedule-appointment") ? "text-white ring-2" : ""
+                            }`
+                      )}
+                      style={{
+                        backgroundColor: isActive("/receptionist/schedule-appointment")
+                          ? primaryColor
+                          : scrolled
+                          ? primaryColorLight
+                          : "transparent",
+                        color: isActive("/receptionist/schedule-appointment") ? "white" : primaryColor,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive("/receptionist/schedule-appointment")) {
+                          e.currentTarget.style.backgroundColor = primaryColorHover;
+                          e.currentTarget.style.color = "white";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive("/receptionist/schedule-appointment")) {
+                          e.currentTarget.style.backgroundColor = scrolled ? primaryColorLight : "transparent";
+                          e.currentTarget.style.color = primaryColor;
+                        }
+                      }}
+                    >
+                      <FaCalendarCheck className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
+                      {!scrolled && <span className="ml-1.5">Đặt lịch</span>}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/receptionist/patients"
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
+                        scrolled ? "drop-shadow-sm" : "",
+                        scrolled
+                          ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
+                              isActive("/receptionist/patients") ? "text-white" : ""
+                            }`
+                          : `px-3 py-1.5 rounded-full ${isActive("/receptionist/patients") ? "text-white ring-2" : ""}`
+                      )}
+                      style={{
+                        backgroundColor: isActive("/receptionist/patients")
+                          ? primaryColor
+                          : scrolled
+                          ? primaryColorLight
+                          : "transparent",
+                        color: isActive("/receptionist/patients") ? "white" : primaryColor,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive("/receptionist/patients")) {
+                          e.currentTarget.style.backgroundColor = primaryColorHover;
+                          e.currentTarget.style.color = "white";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive("/receptionist/patients")) {
+                          e.currentTarget.style.backgroundColor = scrolled ? primaryColorLight : "transparent";
+                          e.currentTarget.style.color = primaryColor;
+                        }
+                      }}
+                    >
+                      <FaUsers className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
+                      {!scrolled && <span className="ml-1.5">Bệnh nhân</span>}
+                    </Link>
+                  </li>
+                </>
+              )}
+
+              {/* Lab User navigation */}
+              {(normalizedRole === "LAB USER" ||
+                normalizedRole === "TECHNICIAN" ||
+                normalizedRole === "LABUSER" ||
+                normalizedRole === "LABORATORY MANAGER" ||
+                normalizedRole === "LAB MANAGER") && (
+                <>
+                  <li>
+                    <Link
+                      to="/lab-user/dashboard"
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
+                        scrolled ? "drop-shadow-sm" : "",
+                        scrolled
+                          ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
+                              isActive("/lab-user/dashboard") ? "text-white" : ""
+                            }`
+                          : `px-3 py-1.5 rounded-full ${isActive("/lab-user/dashboard") ? "text-white ring-2" : ""}`
+                      )}
+                      style={{
+                        backgroundColor: isActive("/lab-user/dashboard")
+                          ? primaryColor
+                          : scrolled
+                          ? primaryColorLight
+                          : "transparent",
+                        color: isActive("/lab-user/dashboard") ? "white" : primaryColor,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive("/lab-user/dashboard")) {
+                          e.currentTarget.style.backgroundColor = primaryColorHover;
+                          e.currentTarget.style.color = "white";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive("/lab-user/dashboard")) {
+                          e.currentTarget.style.backgroundColor = scrolled ? primaryColorLight : "transparent";
+                          e.currentTarget.style.color = primaryColor;
+                        }
+                      }}
+                    >
+                      <FaVial className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
+                      {!scrolled && <span className="ml-1.5">Xét nghiệm</span>}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/lab-user/work-schedule"
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
+                        scrolled ? "drop-shadow-sm" : "",
+                        scrolled
+                          ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
+                              isActive("/lab-user/work-schedule") ? "text-white" : ""
+                            }`
+                          : `px-3 py-1.5 rounded-full ${isActive("/lab-user/work-schedule") ? "text-white ring-2" : ""}`
+                      )}
+                      style={{
+                        backgroundColor: isActive("/lab-user/work-schedule")
+                          ? primaryColor
+                          : scrolled
+                          ? primaryColorLight
+                          : "transparent",
+                        color: isActive("/lab-user/work-schedule") ? "white" : primaryColor,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive("/lab-user/work-schedule")) {
+                          e.currentTarget.style.backgroundColor = primaryColorHover;
+                          e.currentTarget.style.color = "white";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive("/lab-user/work-schedule")) {
+                          e.currentTarget.style.backgroundColor = scrolled ? primaryColorLight : "transparent";
+                          e.currentTarget.style.color = primaryColor;
+                        }
+                      }}
+                    >
+                      <FaCalendarAlt className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
+                      {!scrolled && <span className="ml-1.5">Lịch làm việc</span>}
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/lab-user/history"
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-sm transition-all duration-300 cursor-pointer",
+                        scrolled ? "drop-shadow-sm" : "",
+                        scrolled
+                          ? `w-10 h-10 rounded-full hover:scale-110 flex items-center justify-center ${
+                              isActive("/lab-user/history") ? "text-white" : ""
+                            }`
+                          : `px-3 py-1.5 rounded-full ${isActive("/lab-user/history") ? "text-white ring-2" : ""}`
+                      )}
+                      style={{
+                        backgroundColor: isActive("/lab-user/history")
+                          ? primaryColor
+                          : scrolled
+                          ? primaryColorLight
+                          : "transparent",
+                        color: isActive("/lab-user/history") ? "white" : primaryColor,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive("/lab-user/history")) {
+                          e.currentTarget.style.backgroundColor = primaryColorHover;
+                          e.currentTarget.style.color = "white";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive("/lab-user/history")) {
+                          e.currentTarget.style.backgroundColor = scrolled ? primaryColorLight : "transparent";
+                          e.currentTarget.style.color = primaryColor;
+                        }
+                      }}
+                    >
+                      <FaHistory className={scrolled ? "w-5 h-5" : "w-4 h-4"} />
+                      {!scrolled && <span className="ml-1.5">Lịch sử</span>}
+                    </Link>
+                  </li>
+                </>
+              )}
+            </ul>
+          </nav>
+        )}
 
         {/* User Menu */}
-        <div className="user-menu flex items-center gap-3 ml-auto">
+        <div className="user-menu flex items-center gap-2 ml-auto">
           {loading ? (
             <span className="text-sm" style={{ color: primaryColor }}>
               Đang tải...
@@ -177,8 +482,8 @@ const Header: React.FC = () => {
               <DropdownMenuTrigger asChild>
                 <button
                   className={cn(
-                    "rounded-full border-2 border-white text-white flex items-center justify-center transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 relative group cursor-pointer drop-shadow-sm",
-                    scrolled ? "w-12 h-12" : "w-14 h-14"
+                    "rounded-full  text-white flex items-center justify-center transition-all duration-200 hover:scale-105 focus:outline-none relative group cursor-pointer",
+                    scrolled ? "w-9 h-9" : "w-10 h-10"
                   )}
                   style={{
                     backgroundColor: primaryColor,
@@ -191,7 +496,7 @@ const Header: React.FC = () => {
                     e.currentTarget.style.backgroundColor = primaryColor;
                   }}
                 >
-                  <FaUser className={scrolled ? "w-6 h-6" : "w-7 h-7"} />
+                  <FaUser className={scrolled ? "w-4 h-4" : "w-5 h-5"} />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
@@ -222,6 +527,9 @@ const Header: React.FC = () => {
                         {user.fullName || "Người dùng"}
                       </span>
                       <span className="text-xs text-gray-500 truncate">{user.email}</span>
+                      <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full w-fit mt-1">
+                        {translateRole(user.roleName)}
+                      </span>
                     </div>
                   </div>
 
@@ -251,26 +559,8 @@ const Header: React.FC = () => {
               <Link
                 to="/auth/login"
                 className={cn(
-                  "px-5 py-3 rounded-lg font-medium bg-transparent transition-all duration-200 h-12 flex items-center",
-                  scrolled ? "text-sm px-4 py-2.5" : "text-base"
-                )}
-                style={{
-                  color: primaryColor,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = primaryColorLight;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                Đăng nhập
-              </Link>
-              <Link
-                to="/auth/signup"
-                className={cn(
-                  "px-5 py-3 rounded-lg text-white font-semibold transition-all duration-200 shadow-sm hover:shadow-md h-12 flex items-center",
-                  scrolled ? "text-sm px-4 py-2.5" : "text-base"
+                  "rounded-lg text-white font-semibold transition-all duration-200 shadow-sm hover:shadow-md flex items-center",
+                  scrolled ? "px-2.5 py-1 text-sm" : "px-3 py-2 text-md"
                 )}
                 style={{
                   backgroundColor: primaryColor,
@@ -282,28 +572,30 @@ const Header: React.FC = () => {
                   e.currentTarget.style.backgroundColor = primaryColor;
                 }}
               >
-                Đăng ký
+                Đăng nhập
               </Link>
             </div>
           )}
 
           {/* Mobile Menu Toggle */}
-          <button
-            onClick={() => setMobileMenuOpen(true)}
-            className="md:hidden p-3 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 h-12 flex items-center justify-center"
-            style={{
-              color: primaryColor,
-            }}
-            aria-label="Mở menu"
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = primaryColorLight;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
-          >
-            <FaBars className="w-6 h-6" />
-          </button>
+          {!shouldHideNavItems && (
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden p-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 h-9 flex items-center justify-center"
+              style={{
+                color: primaryColor,
+              }}
+              aria-label="Mở menu"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = primaryColorLight;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
+            >
+              <FaBars className="w-6 h-6" />
+            </button>
+          )}
         </div>
       </header>
 
@@ -352,32 +644,34 @@ const Header: React.FC = () => {
 
               {/* Menu Items */}
               <div className="flex flex-col flex-1">
-                <Link
-                  to="/"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-6 py-5 text-gray-900 font-medium border-b border-gray-100 transition-all duration-200",
-                    isActive("/") ? "border-l-4" : "hover:bg-gray-50"
-                  )}
-                  style={{
-                    backgroundColor: isActive("/") ? primaryColorLight : undefined,
-                    color: isActive("/") ? primaryColor : undefined,
-                    borderLeftColor: isActive("/") ? primaryColor : undefined,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive("/")) {
-                      e.currentTarget.style.color = primaryColor;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive("/")) {
-                      e.currentTarget.style.color = "#111827";
-                    }
-                  }}
-                >
-                  <FaHome className="w-5 h-5" />
-                  <span>Trang chủ</span>
-                </Link>
+                {!shouldHideNavItems && (
+                  <Link
+                    to="/"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-6 py-5 text-gray-900 font-medium border-b border-gray-100 transition-all duration-200",
+                      isActive("/") ? "border-l-4" : "hover:bg-gray-50"
+                    )}
+                    style={{
+                      backgroundColor: isActive("/") ? primaryColorLight : undefined,
+                      color: isActive("/") ? primaryColor : undefined,
+                      borderLeftColor: isActive("/") ? primaryColor : undefined,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive("/")) {
+                        e.currentTarget.style.color = primaryColor;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive("/")) {
+                        e.currentTarget.style.color = "#111827";
+                      }
+                    }}
+                  >
+                    <FaHome className="w-5 h-5" />
+                    <span>Trang chủ</span>
+                  </Link>
+                )}
 
                 {user ? (
                   <>

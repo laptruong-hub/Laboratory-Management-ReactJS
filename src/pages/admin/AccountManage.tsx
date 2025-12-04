@@ -1,18 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  FaSearch,
-  FaPlus,
-  FaTrash,
-  FaFilter,
-  FaEdit,
-  FaSave,
-  FaTimes,
-  FaDownload,
-} from "react-icons/fa";
+import { FaSearch, FaPlus, FaTrash, FaFilter, FaEdit, FaSave, FaTimes, FaDownload } from "react-icons/fa";
 import "../../components/admin/account-manage.css"; // (File CSS gốc)
 import { apiClient } from "../../api/apiClient";
 import { createPatient } from "../../api/apiPatient";
 import { toast } from "react-toastify";
+import { translateRole } from "../../utils/translations";
 
 /* ---------- Types ---------- */
 type Role = "ADMIN" | "LAB MANAGER" | "SERVICE" | "LAB USER";
@@ -538,11 +530,9 @@ const LayoutStyles = () => (
 );
 
 /* ---------- Helpers / UI ---------- */
-const formatDate = (iso?: string) =>
-  iso ? new Intl.DateTimeFormat("vi-VN").format(new Date(iso)) : "—";
+const formatDate = (iso?: string) => (iso ? new Intl.DateTimeFormat("vi-VN").format(new Date(iso)) : "—");
 
-const formatGender = (g?: boolean) =>
-  g === true ? "Nam" : g === false ? "Nữ" : "Không rõ";
+const formatGender = (g?: boolean) => (g === true ? "Nam" : g === false ? "Nữ" : "Không rõ");
 
 const tone = {
   primary: { bg: "#eef2ff", fg: "#4f46e5" },
@@ -583,17 +573,8 @@ const statusTone = (s: Status) =>
     suspended: tone.danger,
   }[s] ?? tone.secondary);
 
-const Badge = ({
-  children,
-  colors,
-}: {
-  children: React.ReactNode;
-  colors: { bg: string; fg: string };
-}) => (
-  <span
-    className="badge-pill"
-    style={{ backgroundColor: colors.bg, color: colors.fg }}
-  >
+const Badge = ({ children, colors }: { children: React.ReactNode; colors: { bg: string; fg: string } }) => (
+  <span className="badge-pill" style={{ backgroundColor: colors.bg, color: colors.fg }}>
     {children}
   </span>
 );
@@ -741,10 +722,7 @@ export default function AccountManage() {
   /* --- Click outside to close filter --- */
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        filterRef.current &&
-        !filterRef.current.contains(event.target as Node)
-      ) {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
         setIsFilterOpen(false);
       }
     }
@@ -773,8 +751,7 @@ export default function AccountManage() {
 
     // 1. Lọc danh sách trước
     const filteredRows = rows.filter((u) => {
-      if (kw && !normalize(`${u.name} ${u.email} ${u.role}`).includes(kw))
-        return false;
+      if (kw && !normalize(`${u.name} ${u.email} ${u.role}`).includes(kw)) return false;
       if (role !== "all" && u.role !== role) return false;
       if (status !== "all" && u.status !== status) return false;
       if (u.joinedAt) {
@@ -794,10 +771,7 @@ export default function AccountManage() {
   const pages = Math.max(1, Math.ceil(total / pageSize));
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  const selectedUser = useMemo(
-    () => rows.find((u) => u.id === selectedId),
-    [rows, selectedId]
-  );
+  const selectedUser = useMemo(() => rows.find((u) => u.id === selectedId), [rows, selectedId]);
 
   useEffect(() => {
     if (!selectedId && filtered.length > 0) {
@@ -846,12 +820,7 @@ export default function AccountManage() {
       roleId: currentRole ? currentRole.id.toString() : "",
       rhFactor: selectedUser.rhFactor || "Không rõ",
       status: selectedUser.status,
-      gender:
-        selectedUser.gender === true
-          ? "true"
-          : selectedUser.gender === false
-          ? "false"
-          : "",
+      gender: selectedUser.gender === true ? "true" : selectedUser.gender === false ? "false" : "",
       bloodType: selectedUser.bloodType || "—",
       medicalHistory: selectedUser.medicalHistory || "—",
     });
@@ -862,11 +831,7 @@ export default function AccountManage() {
     setIsEditing(false);
   };
 
-  const handleEditFormChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => {
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setEditDetailData((prev) => ({
       ...prev,
@@ -882,12 +847,7 @@ export default function AccountManage() {
         dob: selectedUser?.dob ? new Date(selectedUser.dob) : null,
         phone: editDetailData.phone || null,
         roleId: editDetailData.roleId ? Number(editDetailData.roleId) : null,
-        gender:
-          editDetailData.gender === "true"
-            ? true
-            : editDetailData.gender === "false"
-            ? false
-            : null,
+        gender: editDetailData.gender === "true" ? true : editDetailData.gender === "false" ? false : null,
         rhFactor: editDetailData.rhFactor,
         bloodType: editDetailData.bloodType,
         medicalHistory: editDetailData.medicalHistory,
@@ -907,9 +867,7 @@ export default function AccountManage() {
   const openCreateModal = () => {
     // Tìm role "readonly" để set làm mặc định
     const readonlyRole = allRoles.find(
-      (r) =>
-        r.name.trim().toUpperCase() === "READONLY" ||
-        r.name.trim().toUpperCase() === "READ-ONLY"
+      (r) => r.name.trim().toUpperCase() === "READONLY" || r.name.trim().toUpperCase() === "READ-ONLY"
     );
     const defaultRoleId = readonlyRole ? readonlyRole.id.toString() : "";
 
@@ -925,9 +883,7 @@ export default function AccountManage() {
     setShowCreateModal(true);
   };
 
-  const handleCreateFormChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleCreateFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setCreateFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -938,9 +894,7 @@ export default function AccountManage() {
       let defaultRoleId = createFormData.roleId;
       if (!defaultRoleId || defaultRoleId === "") {
         const readonlyRole = allRoles.find(
-          (r) =>
-            r.name.trim().toUpperCase() === "READONLY" ||
-            r.name.trim().toUpperCase() === "READ-ONLY"
+          (r) => r.name.trim().toUpperCase() === "READONLY" || r.name.trim().toUpperCase() === "READ-ONLY"
         );
         if (readonlyRole) {
           defaultRoleId = readonlyRole.id.toString();
@@ -956,12 +910,7 @@ export default function AccountManage() {
         password: createFormData.password,
         roleId: Number(defaultRoleId),
         phone: createFormData.phone || null,
-        gender:
-          createFormData.gender === "true"
-            ? true
-            : createFormData.gender === "false"
-            ? false
-            : null,
+        gender: createFormData.gender === "true" ? true : createFormData.gender === "false" ? false : null,
         dob: createFormData.dob ? new Date(createFormData.dob) : null,
         // Set status mặc định là pending (isActive = false cho pending status)
         isActive: false,
@@ -975,28 +924,20 @@ export default function AccountManage() {
         try {
           // Tìm roleId từ roleName nếu backend không trả về roleId
           const userRoleId =
-            newUserDto.roleId ||
-            allRoles.find((r) => r.name === newUserDto.roleName)?.id ||
-            Number(defaultRoleId);
+            newUserDto.roleId || allRoles.find((r) => r.name === newUserDto.roleName)?.id || Number(defaultRoleId);
 
-          const updateResponse = await apiClient.put(
-            `/api/users/${newUserDto.id}`,
-            {
-              fullName: newUserDto.fullName,
-              email: newUserDto.email,
-              phone: newUserDto.phone || null,
-              dob: newUserDto.dob ? new Date(newUserDto.dob) : null,
-              roleId: userRoleId,
-              gender: newUserDto.gender,
-              isActive: false, // Đặt về pending (chờ duyệt)
-            }
-          );
+          const updateResponse = await apiClient.put(`/api/users/${newUserDto.id}`, {
+            fullName: newUserDto.fullName,
+            email: newUserDto.email,
+            phone: newUserDto.phone || null,
+            dob: newUserDto.dob ? new Date(newUserDto.dob) : null,
+            roleId: userRoleId,
+            gender: newUserDto.gender,
+            isActive: false, // Đặt về pending (chờ duyệt)
+          });
           newUserDto = updateResponse.data;
         } catch (updateErr) {
-          console.warn(
-            "Không thể cập nhật trạng thái user sau khi tạo:",
-            updateErr
-          );
+          console.warn("Không thể cập nhật trạng thái user sau khi tạo:", updateErr);
           // Nếu không thể cập nhật, vẫn tiếp tục với dữ liệu từ response tạo user
         }
       }
@@ -1075,9 +1016,7 @@ export default function AccountManage() {
       const report = response.data;
 
       if (report.failureCount > 0) {
-        toast.warning(
-          `Hoàn thành: ${report.successCount} thành công, ${report.failureCount} thất bại.`
-        );
+        toast.warning(`Hoàn thành: ${report.successCount} thành công, ${report.failureCount} thất bại.`);
       } else {
         toast.success(`Upload thành công ${report.successCount} user!`);
       }
@@ -1087,8 +1026,7 @@ export default function AccountManage() {
       await fetchData();
     } catch (err: any) {
       console.error("Lỗi khi upload file:", err);
-      const errorMessage =
-        err.response?.data?.errors?.[0] || "Upload thất bại nghiêm trọng";
+      const errorMessage = err.response?.data?.errors?.[0] || "Upload thất bại nghiêm trọng";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -1097,9 +1035,7 @@ export default function AccountManage() {
   };
 
   /* --- UPDATED: Filter Handlers --- */
-  const handleFilterChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     // Cập nhật thẳng vào 'appliedFilters'
     setAppliedFilters((prev) => ({ ...prev, [name]: value }));
@@ -1210,9 +1146,7 @@ export default function AccountManage() {
                     <label>Trạng thái</label>
                     <select
                       name="status"
-                      value={
-                        appliedFilters.status
-                      } /* (Đọc từ appliedFilters) */
+                      value={appliedFilters.status} /* (Đọc từ appliedFilters) */
                       onChange={handleFilterChange}
                       className="am-form-input"
                     >
@@ -1229,18 +1163,14 @@ export default function AccountManage() {
                       <input
                         type="date"
                         name="startDate"
-                        value={
-                          appliedFilters.startDate
-                        } /* (Đọc từ appliedFilters) */
+                        value={appliedFilters.startDate} /* (Đọc từ appliedFilters) */
                         onChange={handleFilterChange}
                         className="am-form-input"
                       />
                       <input
                         type="date"
                         name="endDate"
-                        value={
-                          appliedFilters.endDate
-                        } /* (Đọc từ appliedFilters) */
+                        value={appliedFilters.endDate} /* (Đọc từ appliedFilters) */
                         onChange={handleFilterChange}
                         className="am-form-input"
                       />
@@ -1286,9 +1216,7 @@ export default function AccountManage() {
             {paged.map((u) => (
               <div
                 key={u.id}
-                className={`am-list-item ${
-                  u.id === selectedId ? "active" : ""
-                }`}
+                className={`am-list-item ${u.id === selectedId ? "active" : ""}`}
                 onClick={() => handleSelectUser(u.id)}
               >
                 <div className="am-list-item-avatar">
@@ -1302,11 +1230,7 @@ export default function AccountManage() {
                         target.style.display = "none";
                         const parent = target.parentElement;
                         if (parent) {
-                          parent.textContent =
-                            u.name
-                              .split(" ")
-                              .slice(-1)[0]?.[0]
-                              ?.toUpperCase() ?? "U";
+                          parent.textContent = u.name.split(" ").slice(-1)[0]?.[0]?.toUpperCase() ?? "U";
                         }
                       }}
                     />
@@ -1319,19 +1243,13 @@ export default function AccountManage() {
                   <div className="am-list-item-email">{u.email}</div>
                   <div className="am-list-item-badges">
                     <Badge colors={roleTone(u.role)}>{u.role}</Badge>
-                    <Badge colors={statusTone(u.status)}>
-                      {statusText(u.status)}
-                    </Badge>
+                    <Badge colors={statusTone(u.status)}>{statusText(u.status)}</Badge>
                   </div>
                 </div>
               </div>
             ))}
             {!paged.length && (
-              <div
-                style={{ padding: 24, textAlign: "center", color: "#64748b" }}
-              >
-                Không tìm thấy kết quả.
-              </div>
+              <div style={{ padding: 24, textAlign: "center", color: "#64748b" }}>Không tìm thấy kết quả.</div>
             )}
           </div>
 
@@ -1361,9 +1279,7 @@ export default function AccountManage() {
         <div className="am-detail-pane">
           {!selectedUser ? (
             <div className="am-detail-card">
-              <div className="am-detail-placeholder">
-                Chọn một người dùng từ danh sách để xem chi tiết
-              </div>
+              <div className="am-detail-placeholder">Chọn một người dùng từ danh sách để xem chi tiết</div>
             </div>
           ) : (
             <div className="am-detail-card">
@@ -1402,10 +1318,7 @@ export default function AccountManage() {
               <div className="am-detail-grid">
                 <DetailField label="Họ và Tên" value={selectedUser.name} />
 
-                <DetailField
-                  label="Ngày sinh"
-                  value={formatDate(selectedUser.dob)}
-                />
+                <DetailField label="Ngày sinh" value={formatDate(selectedUser.dob)} />
 
                 <DetailField label="Giới tính">
                   {isEditing ? (
@@ -1420,9 +1333,7 @@ export default function AccountManage() {
                       <option value="false">Nữ</option>
                     </select>
                   ) : (
-                    <div className="value">
-                      {formatGender(selectedUser.gender)}
-                    </div>
+                    <div className="value">{formatGender(selectedUser.gender)}</div>
                   )}
                 </DetailField>
 
@@ -1476,14 +1387,12 @@ export default function AccountManage() {
                       <option value="">[Chọn vai trò]</option>
                       {allRoles.map((role) => (
                         <option key={role.id} value={role.id}>
-                          {role.name}
+                          {translateRole(role.name)}
                         </option>
                       ))}
                     </select>
                   ) : (
-                    <Badge colors={roleTone(selectedUser.role)}>
-                      {selectedUser.role}
-                    </Badge>
+                    <Badge colors={roleTone(selectedUser.role)}>{selectedUser.role}</Badge>
                   )}
                 </DetailField>
 
@@ -1520,9 +1429,7 @@ export default function AccountManage() {
                       <option value="suspended">Tạm ngưng</option>
                     </select>
                   ) : (
-                    <Badge colors={statusTone(selectedUser.status)}>
-                      {statusText(selectedUser.status)}
-                    </Badge>
+                    <Badge colors={statusTone(selectedUser.status)}>{statusText(selectedUser.status)}</Badge>
                   )}
                 </DetailField>
 
@@ -1537,9 +1444,7 @@ export default function AccountManage() {
                       rows={3}
                     />
                   ) : (
-                    <div className="value">
-                      {selectedUser.medicalHistory || "—"}
-                    </div>
+                    <div className="value">{selectedUser.medicalHistory || "—"}</div>
                   )}
                 </DetailField>
               </div>
@@ -1627,15 +1532,8 @@ export default function AccountManage() {
         </div>
       )}
       {showCreateModal && (
-        <div
-          className="am-modal-overlay"
-          onClick={() => setShowCreateModal(false)}
-        >
-          <div
-            className="am-modal am-confirm"
-            style={{ maxWidth: "700px" }}
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="am-modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="am-modal am-confirm" style={{ maxWidth: "700px" }} onClick={(e) => e.stopPropagation()}>
             <div className="am-modal__header">
               <h2 className="title">Thêm người dùng mới</h2>
             </div>
@@ -1747,10 +1645,7 @@ export default function AccountManage() {
         </div>
       )}
       {showImportModal && (
-        <div
-          className="am-modal-overlay"
-          onClick={() => setShowImportModal(false)}
-        >
+        <div className="am-modal-overlay" onClick={() => setShowImportModal(false)}>
           <div
             className="am-modal am-confirm" // (Tái sử dụng style modal)
             style={{ maxWidth: "600px" }} // (Cho nó rộng hơn 1 chút)
@@ -1770,8 +1665,7 @@ export default function AccountManage() {
                     margin: "4px 0",
                   }}
                 >
-                  Tải file mẫu về, điền thông tin user và lưu lại. (Lưu ý: Role
-                  để trống sẽ tự động gán là "USER")
+                  Tải file mẫu về, điền thông tin user và lưu lại. (Lưu ý: Role để trống sẽ tự động gán là "USER")
                 </p>
                 <a
                   href="/files/Template-add-user.xlsx"
@@ -1808,10 +1702,7 @@ export default function AccountManage() {
               {/* Bước 3: Báo cáo lỗi (Như bạn yêu cầu) */}
               {/* (Nó chỉ hiển thị nếu 'uploadReport' có nội dung) */}
               {uploadReport && (
-                <div
-                  className="am-import-report"
-                  style={{ marginTop: "1.5rem" }}
-                >
+                <div className="am-import-report" style={{ marginTop: "1.5rem" }}>
                   <strong>Chi tiết lỗi (từ file Excel):</strong>
                   <pre>{uploadReport}</pre>
                 </div>

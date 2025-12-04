@@ -1,18 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import {
-  FaSearch,
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaFilter,
-  FaDownload,
-  FaCheck,
-  FaChevronDown,
-} from "react-icons/fa";
+import { FaSearch, FaPlus, FaEdit, FaTrash, FaFilter, FaDownload, FaCheck, FaChevronDown } from "react-icons/fa";
 
 // 1. IMPORT TRẠM API
 import { apiClient } from "../../api/apiClient";
+import { translateRole } from "../../utils/translations";
 import { useAuth } from "../../context/AuthContext";
 
 // --- (STYLED-COMPONENTS CỦA BẠN) ---
@@ -891,22 +883,8 @@ interface Member {
 const MEMBERS_PER_PAGE = 5;
 // Default roles sẽ hiển thị tất cả, không phân trang
 // ROLES_PER_PAGE sẽ được tính động dựa trên không gian có sẵn
-const DEFAULT_ROLE_NAMES = new Set([
-  "ADMIN",
-  "LAB MANAGER",
-  "SERVICE",
-  "LAB USER",
-  "READONLY",
-]);
-const ROLE_COLORS = [
-  "#5865F2",
-  "#43B581",
-  "#FAA61A",
-  "#EB459E",
-  "#1ABC9C",
-  "#E91E63",
-  "#F1C40F",
-];
+const DEFAULT_ROLE_NAMES = new Set(["ADMIN", "LAB MANAGER", "SERVICE", "LAB USER", "READONLY"]);
+const ROLE_COLORS = ["#5865F2", "#43B581", "#FAA61A", "#EB459E", "#1ABC9C", "#E91E63", "#F1C40F"];
 
 type CustomRoleFilter = "all" | "createdAsc" | "createdDesc" | "membersDesc";
 
@@ -939,24 +917,17 @@ const RolesPage: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [customRoleFilter, setCustomRoleFilter] =
-    useState<CustomRoleFilter>("all");
+  const [customRoleFilter, setCustomRoleFilter] = useState<CustomRoleFilter>("all");
 
   // (State cho Modal Create)
   const [roleNameInput, setRoleNameInput] = useState("");
   const [roleColorInput, setRoleColorInput] = useState("#5865F2"); // (Chỉ dùng cho UI)
-  const [newRolePermissions, setNewRolePermissions] = useState<Set<number>>(
-    new Set()
-  );
+  const [newRolePermissions, setNewRolePermissions] = useState<Set<number>>(new Set());
 
   // (State cho Modal Edit)
   const [editRoleName, setEditRoleName] = useState("");
-  const [modalPermissions, setModalPermissions] = useState<Set<number>>(
-    new Set()
-  );
-  const [openPermissionGroups, setOpenPermissionGroups] = useState<Set<string>>(
-    new Set()
-  );
+  const [modalPermissions, setModalPermissions] = useState<Set<number>>(new Set());
+  const [openPermissionGroups, setOpenPermissionGroups] = useState<Set<string>>(new Set());
 
   // (State cho Pagination)
   const [customRolesPage, setCustomRolesPage] = useState(0);
@@ -1007,9 +978,7 @@ const RolesPage: React.FC = () => {
       });
 
       // Tự động chọn Role đầu tiên (hoặc giữ nguyên selection, nhưng không chọn READONLY)
-      const currentSelectedRole = adaptedRoles.find(
-        (r) => r.id === selectedRoleId
-      );
+      const currentSelectedRole = adaptedRoles.find((r) => r.id === selectedRoleId);
       const isCurrentSelectedReadOnly = currentSelectedRole
         ? currentSelectedRole.name.trim().toUpperCase() === "READONLY" ||
           currentSelectedRole.name.trim().toUpperCase() === "READ-ONLY"
@@ -1018,8 +987,7 @@ const RolesPage: React.FC = () => {
       if (selectedRoleId === null && visibleRoles.length > 0) {
         setSelectedRoleId(visibleRoles[0].id);
       } else if (
-        (isCurrentSelectedReadOnly ||
-          !adaptedRoles.some((r) => r.id === selectedRoleId)) &&
+        (isCurrentSelectedReadOnly || !adaptedRoles.some((r) => r.id === selectedRoleId)) &&
         visibleRoles.length > 0
       ) {
         setSelectedRoleId(visibleRoles[0].id);
@@ -1045,9 +1013,7 @@ const RolesPage: React.FC = () => {
         setLoadingMembers(true); // Bật loading cho bảng Members
 
         // GỌI API MỚI (đã thêm ở Backend)
-        const response = await apiClient.get(
-          `/api/users?roleId=${selectedRoleId}`
-        );
+        const response = await apiClient.get(`/api/users?roleId=${selectedRoleId}`);
 
         // (Backend trả về UserDto, chúng ta cần "chuyển đổi" nó)
         const adaptedMembers = response.data.map((user: any) => ({
@@ -1098,10 +1064,7 @@ const RolesPage: React.FC = () => {
         categories.config.permissions.push(perm);
       } else if (action.startsWith("comment:")) {
         categories.comment.permissions.push(perm);
-      } else if (
-        action.startsWith("testrequest:") ||
-        action.startsWith("test:")
-      ) {
+      } else if (action.startsWith("testrequest:") || action.startsWith("test:")) {
         categories.testrequest.permissions.push(perm);
       } else {
         categories.other.permissions.push(perm);
@@ -1109,18 +1072,8 @@ const RolesPage: React.FC = () => {
     });
 
     // Return only categories that have permissions, in specific order
-    const order = [
-      "readonly",
-      "user",
-      "role",
-      "config",
-      "comment",
-      "testrequest",
-      "other",
-    ];
-    return order
-      .map((key) => categories[key])
-      .filter((cat) => cat.permissions.length > 0);
+    const order = ["readonly", "user", "role", "config", "comment", "testrequest", "other"];
+    return order.map((key) => categories[key]).filter((cat) => cat.permissions.length > 0);
   };
 
   // --- CREATE ---
@@ -1130,9 +1083,7 @@ const RolesPage: React.FC = () => {
     setRoleColorInput("#5865F2");
 
     // Tự động gán quyền "readonly" (bắt buộc)
-    const readOnlyPerm = allPermissions.find(
-      (p) => p.action.toLowerCase() === "readonly"
-    );
+    const readOnlyPerm = allPermissions.find((p) => p.action.toLowerCase() === "readonly");
     if (readOnlyPerm) {
       setNewRolePermissions(new Set([readOnlyPerm.id]));
     } else {
@@ -1149,9 +1100,7 @@ const RolesPage: React.FC = () => {
     }
     try {
       // Đảm bảo readonly luôn có trong danh sách
-      const readOnlyPerm = allPermissions.find(
-        (p) => p.action.toLowerCase() === "readonly"
-      );
+      const readOnlyPerm = allPermissions.find((p) => p.action.toLowerCase() === "readonly");
       const permissionIds = Array.from(newRolePermissions);
       if (readOnlyPerm && !permissionIds.includes(readOnlyPerm.id)) {
         permissionIds.push(readOnlyPerm.id);
@@ -1179,14 +1128,10 @@ const RolesPage: React.FC = () => {
     setEditRoleName(roleData.name); // Dùng state riêng cho "edit name"
 
     // Lấy ID quyền hiện tại của Role
-    const currentPermissionIds = new Set(
-      (roleData.permissions ?? []).map((p) => p.id)
-    );
+    const currentPermissionIds = new Set((roleData.permissions ?? []).map((p) => p.id));
 
     // Đảm bảo readonly luôn được thêm vào
-    const readOnlyPerm = allPermissions.find(
-      (p) => p.action.toLowerCase() === "readonly"
-    );
+    const readOnlyPerm = allPermissions.find((p) => p.action.toLowerCase() === "readonly");
     if (readOnlyPerm) {
       currentPermissionIds.add(readOnlyPerm.id);
     }
@@ -1219,9 +1164,7 @@ const RolesPage: React.FC = () => {
     }
     try {
       // Đảm bảo readonly luôn có trong danh sách
-      const readOnlyPerm = allPermissions.find(
-        (p) => p.action.toLowerCase() === "readonly"
-      );
+      const readOnlyPerm = allPermissions.find((p) => p.action.toLowerCase() === "readonly");
       const permissionIds = Array.from(modalPermissions);
       if (readOnlyPerm && !permissionIds.includes(readOnlyPerm.id)) {
         permissionIds.push(readOnlyPerm.id);
@@ -1237,9 +1180,7 @@ const RolesPage: React.FC = () => {
       await fetchData(); // Tải lại
     } catch (err: any) {
       console.error("Lỗi khi cập nhật role:", err);
-      alert(
-        "Lỗi khi cập nhật: " + (err.response?.data?.message || err.message)
-      );
+      alert("Lỗi khi cập nhật: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -1275,8 +1216,7 @@ const RolesPage: React.FC = () => {
     // Kiểm tra lại trước khi xóa - chỉ check default roles
     if (!canDeleteRole(roleToDelete)) {
       const normalizedName = roleToDelete.name.trim().toUpperCase();
-      const isDefault =
-        DEFAULT_ROLE_NAMES.has(normalizedName) || roleToDelete.isDefault;
+      const isDefault = DEFAULT_ROLE_NAMES.has(normalizedName) || roleToDelete.isDefault;
 
       if (isDefault) {
         alert("Không thể xóa role mặc định.");
@@ -1299,8 +1239,7 @@ const RolesPage: React.FC = () => {
         usersToUpdate = allUsers.filter((user: any) => {
           // Kiểm tra nhiều trường hợp để đảm bảo tìm đúng users
           const userRoleId = user.roleId || (user.role && user.role.id) || null;
-          const userRoleName =
-            user.roleName || (user.role && user.role.name) || null;
+          const userRoleName = user.roleName || (user.role && user.role.name) || null;
 
           // So sánh bằng ID
           if (userRoleId === selectedRoleId || userRoleId === roleToDelete.id) {
@@ -1310,9 +1249,7 @@ const RolesPage: React.FC = () => {
           // So sánh bằng tên (case-insensitive)
           if (userRoleName) {
             const normalizedUserRoleName = userRoleName.trim().toUpperCase();
-            const normalizedRoleToDeleteName = roleToDelete.name
-              .trim()
-              .toUpperCase();
+            const normalizedRoleToDeleteName = roleToDelete.name.trim().toUpperCase();
             if (normalizedUserRoleName === normalizedRoleToDeleteName) {
               return true;
             }
@@ -1332,9 +1269,7 @@ const RolesPage: React.FC = () => {
       });
 
       if (!readOnlyRole) {
-        alert(
-          "Không tìm thấy role 'Read Only'. Vui lòng đảm bảo role này tồn tại trong hệ thống."
-        );
+        alert("Không tìm thấy role 'Read Only'. Vui lòng đảm bảo role này tồn tại trong hệ thống.");
         setShowDeleteConfirm(false);
         return;
       }
@@ -1346,9 +1281,7 @@ const RolesPage: React.FC = () => {
           const updatePromises = usersToUpdate.map(async (user: any) => {
             try {
               // Lấy thông tin đầy đủ của user
-              const userDetailResponse = await apiClient.get(
-                `/api/users/${user.id}`
-              );
+              const userDetailResponse = await apiClient.get(`/api/users/${user.id}`);
               const userDetail = userDetailResponse.data;
 
               // Cập nhật user với roleId = readOnlyRole.id
@@ -1362,16 +1295,11 @@ const RolesPage: React.FC = () => {
                 rhFactor: userDetail.rhFactor || null,
                 bloodType: userDetail.bloodType || null,
                 medicalHistory: userDetail.medicalHistory || null,
-                isActive:
-                  userDetail.isActive !== undefined
-                    ? userDetail.isActive
-                    : true,
+                isActive: userDetail.isActive !== undefined ? userDetail.isActive : true,
               });
             } catch (detailErr: any) {
               // Nếu không lấy được detail, thử cập nhật với thông tin có sẵn
-              console.warn(
-                `Không thể lấy chi tiết user ${user.id}, thử cập nhật với thông tin có sẵn`
-              );
+              console.warn(`Không thể lấy chi tiết user ${user.id}, thử cập nhật với thông tin có sẵn`);
               return apiClient.put(`/api/users/${user.id}`, {
                 fullName: user.fullName,
                 email: user.email,
@@ -1406,9 +1334,7 @@ const RolesPage: React.FC = () => {
       setSelectedRoleId(null); // Reset selection
 
       if (usersToUpdate.length > 0) {
-        alert(
-          `Đã chuyển ${usersToUpdate.length} tài khoản về role 'Read Only' và xóa role thành công.`
-        );
+        alert(`Đã chuyển ${usersToUpdate.length} tài khoản về role 'Read Only' và xóa role thành công.`);
       } else {
         alert("Xóa role thành công.");
       }
@@ -1416,8 +1342,7 @@ const RolesPage: React.FC = () => {
       await fetchData(); // Tải lại
     } catch (err: any) {
       console.error("Lỗi khi xóa role:", err);
-      const errorMessage =
-        err.response?.data?.message || err.message || "Lỗi không xác định";
+      const errorMessage = err.response?.data?.message || err.message || "Lỗi không xác định";
       alert("Lỗi khi xóa role: " + errorMessage);
       setShowDeleteConfirm(false);
     }
@@ -1461,10 +1386,7 @@ const RolesPage: React.FC = () => {
 
   const processedCustomRoles = (() => {
     const list = [...customRolesFiltered];
-    const toTime = (role: RoleForUI) =>
-      role.createdAt
-        ? new Date(role.createdAt).getTime()
-        : Number.MIN_SAFE_INTEGER;
+    const toTime = (role: RoleForUI) => (role.createdAt ? new Date(role.createdAt).getTime() : Number.MIN_SAFE_INTEGER);
 
     switch (customRoleFilter) {
       case "createdAsc":
@@ -1475,16 +1397,11 @@ const RolesPage: React.FC = () => {
         return list.sort((a, b) => b.members - a.members);
       case "all":
       default:
-        return list.sort((a, b) =>
-          a.name.localeCompare(b.name, "vi", { sensitivity: "base" })
-        );
+        return list.sort((a, b) => a.name.localeCompare(b.name, "vi", { sensitivity: "base" }));
     }
   })();
 
-  const visibleRolesForSelection = [
-    ...sortedDefaultRoles,
-    ...processedCustomRoles,
-  ];
+  const visibleRolesForSelection = [...sortedDefaultRoles, ...processedCustomRoles];
 
   const selectedRoleData =
     visibleRolesForSelection.find((r) => r.id === selectedRoleId) ??
@@ -1506,28 +1423,18 @@ const RolesPage: React.FC = () => {
       return false;
     }
 
-   
     return true;
   };
-  const totalCustomPages = Math.max(
-    1,
-    Math.ceil(processedCustomRoles.length / Math.max(1, customRolesPerPage))
-  );
+  const totalCustomPages = Math.max(1, Math.ceil(processedCustomRoles.length / Math.max(1, customRolesPerPage)));
   // Đảm bảo customRolesPage không vượt quá totalCustomPages
-  const safeCustomRolesPage = Math.min(
-    customRolesPage,
-    Math.max(0, totalCustomPages - 1)
-  );
+  const safeCustomRolesPage = Math.min(customRolesPage, Math.max(0, totalCustomPages - 1));
   const paginatedCustomRoles = processedCustomRoles.slice(
     safeCustomRolesPage * customRolesPerPage,
     (safeCustomRolesPage + 1) * customRolesPerPage
   );
 
   const totalMemberPages = Math.ceil(members.length / MEMBERS_PER_PAGE);
-  const paginatedMembers = members.slice(
-    membersPage * MEMBERS_PER_PAGE,
-    (membersPage + 1) * MEMBERS_PER_PAGE
-  );
+  const paginatedMembers = members.slice(membersPage * MEMBERS_PER_PAGE, (membersPage + 1) * MEMBERS_PER_PAGE);
 
   const handleRoleSelect = (roleId: number) => {
     setSelectedRoleId(roleId);
@@ -1564,9 +1471,7 @@ const RolesPage: React.FC = () => {
 
       // Chiều cao của một RoleItem (khoảng 48px + gap 4px = ~52px)
       // Lấy từ một item mẫu nếu có, hoặc dùng giá trị mặc định
-      const sampleItem = listElement.querySelector(
-        "[data-role-item]"
-      ) as HTMLElement;
+      const sampleItem = listElement.querySelector("[data-role-item]") as HTMLElement;
       let itemHeight = 52; // Giá trị mặc định
 
       if (sampleItem) {
@@ -1582,10 +1487,7 @@ const RolesPage: React.FC = () => {
 
       // Tính số lượng items có thể fit (trừ đi một chút để đảm bảo không bị cắt)
       // Công thức: (availableHeight - gap) / (itemHeight + gap)
-      const itemsPerPage = Math.max(
-        1,
-        Math.floor((availableHeight - gap) / (itemHeight + gap))
-      );
+      const itemsPerPage = Math.max(1, Math.floor((availableHeight - gap) / (itemHeight + gap)));
 
       // Nếu page size thay đổi, reset về trang đầu để tránh glitch
       if (itemsPerPage !== previousPageSize && previousPageSize > 0) {
@@ -1686,14 +1588,9 @@ const RolesPage: React.FC = () => {
         <ActionButtons>
           {/* (Filter Dropdown giữ nguyên) */}
           <FilterWrapper ref={filterRef}>
-            <Button
-              $variant="secondary"
-              onClick={() => setShowFilterDropdown((s) => !s)}
-            >
+            <Button $variant="secondary" onClick={() => setShowFilterDropdown((s) => !s)}>
               <FaFilter />
-              {CUSTOM_ROLE_FILTER_OPTIONS.find(
-                (item) => item.value === customRoleFilter
-              )?.label ?? "Lọc custom role"}
+              {CUSTOM_ROLE_FILTER_OPTIONS.find((item) => item.value === customRoleFilter)?.label ?? "Lọc custom role"}
             </Button>
             {showFilterDropdown && (
               <FilterDropdown>
@@ -1737,7 +1634,7 @@ const RolesPage: React.FC = () => {
                 >
                   <RoleLeftStripe style={{ backgroundColor: role.color }} />
                   <RoleLabel>
-                    <RoleName>{role.name}</RoleName>
+                    <RoleName>{translateRole(role.name)}</RoleName>
                     <RoleMeta>{role.members} thành viên</RoleMeta>
                   </RoleLabel>
                 </RoleItem>
@@ -1749,9 +1646,7 @@ const RolesPage: React.FC = () => {
           <SidebarSection ref={customRolesRef}>
             <SidebarHeader>
               Vai Trò Tùy Chỉnh
-              <div
-                style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}
-              >
+              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
                 <CountBadge>{customRolesFiltered.length}</CountBadge>
                 <AddRoleButton onClick={handleOpenCreateModal}>
                   <FaPlus />
@@ -1772,14 +1667,14 @@ const RolesPage: React.FC = () => {
                   >
                     <RoleLeftStripe style={{ backgroundColor: role.color }} />
                     <RoleLabel>
-                      <RoleName>{role.name}</RoleName>
+                      <RoleName>{translateRole(role.name)}</RoleName>
                       <RoleMeta>{role.members} thành viên</RoleMeta>
                     </RoleLabel>
                   </RoleItem>
                 ))
               )}
             </RoleList>
-     
+
             {customRolesFiltered.length > 0 && totalCustomPages > 1 && (
               <PaginationControls>
                 <PaginationButton
@@ -1792,11 +1687,7 @@ const RolesPage: React.FC = () => {
                   Trang {safeCustomRolesPage + 1}/{totalCustomPages}
                 </PageInfo>
                 <PaginationButton
-                  onClick={() =>
-                    setCustomRolesPage((p) =>
-                      Math.min(totalCustomPages - 1, p + 1)
-                    )
-                  }
+                  onClick={() => setCustomRolesPage((p) => Math.min(totalCustomPages - 1, p + 1))}
                   disabled={safeCustomRolesPage >= totalCustomPages - 1}
                 >
                   Tiếp →
@@ -1812,11 +1703,7 @@ const RolesPage: React.FC = () => {
             <>
               <ContentHeader>
                 <div>
-                  <h2
-                    style={{ margin: 0, fontSize: "1.5rem", fontWeight: 700 }}
-                  >
-                    {selectedRoleData.name}
-                  </h2>
+                  <h2 style={{ margin: 0, fontSize: "1.5rem", fontWeight: 700 }}>{selectedRoleData.name}</h2>
                   <div style={{ color: "#6b7280", fontSize: 14, marginTop: 4 }}>
                     {selectedRoleData.members} thành viên
                   </div>
@@ -1829,10 +1716,7 @@ const RolesPage: React.FC = () => {
 
                   {/* NÚT "XÓA" CHỈ HIỆN KHI ROLE CÓ THỂ XÓA ĐƯỢC */}
                   {canDeleteRole(selectedRoleData) && (
-                    <Button
-                      $variant="secondary"
-                      onClick={() => setShowDeleteConfirm(true)}
-                    >
+                    <Button $variant="secondary" onClick={() => setShowDeleteConfirm(true)}>
                       <FaTrash /> Xóa
                     </Button>
                   )}
@@ -1846,22 +1730,13 @@ const RolesPage: React.FC = () => {
                   <EmptyState>Đang tải thành viên...</EmptyState>
                 ) : (
                   <MemberList>
-                    {members.length === 0 && (
-                      <EmptyState>Không có thành viên</EmptyState>
-                    )}
+                    {members.length === 0 && <EmptyState>Không có thành viên</EmptyState>}
                     {paginatedMembers.map((m) => (
                       <MemberRow key={m.id}>
-                        <Avatar>
-                          {m.fullName.split(" ").pop()?.charAt(0) ??
-                            m.fullName.charAt(0)}
-                        </Avatar>
+                        <Avatar>{m.fullName.split(" ").pop()?.charAt(0) ?? m.fullName.charAt(0)}</Avatar>
                         <div>
                           <div style={{ fontWeight: 600 }}>{m.fullName}</div>
-                          {m.email && (
-                            <div style={{ color: "#6b7280", fontSize: 13 }}>
-                              {m.email}
-                            </div>
-                          )}
+                          {m.email && <div style={{ color: "#6b7280", fontSize: 13 }}>{m.email}</div>}
                         </div>
                       </MemberRow>
                     ))}
@@ -1881,11 +1756,7 @@ const RolesPage: React.FC = () => {
                       Trang {membersPage + 1}/{totalMemberPages}
                     </PageInfo>
                     <PaginationButton
-                      onClick={() =>
-                        setMembersPage((p) =>
-                          Math.min(totalMemberPages - 1, p + 1)
-                        )
-                      }
+                      onClick={() => setMembersPage((p) => Math.min(totalMemberPages - 1, p + 1))}
                       disabled={membersPage >= totalMemberPages - 1}
                     >
                       Tiếp →
@@ -1905,9 +1776,7 @@ const RolesPage: React.FC = () => {
       {showModal && (
         <ModalOverlay onClick={() => setShowModal(false)}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              Chỉnh sửa quyền hạn - {selectedRoleData?.name}
-            </ModalHeader>
+            <ModalHeader>Chỉnh sửa quyền hạn - {selectedRoleData?.name}</ModalHeader>
             <ModalBody>
               {/* (Sửa: Dùng state 'editRoleName') */}
               <FormGroup>
@@ -1929,70 +1798,58 @@ const RolesPage: React.FC = () => {
                       gap: "0.75rem",
                     }}
                   >
-                    {groupPermissionsByCategory(allPermissions).map(
-                      (category) => {
-                        const isOpen = openPermissionGroups.has(category.name);
-                        const selectedCount = category.permissions.filter((p) =>
-                          modalPermissions.has(p.id)
-                        ).length;
-                        return (
-                          <PermissionGroup key={category.name}>
-                            <GroupDropdownWrapper>
-                              <GroupDropdownButton
-                                type="button"
-                                onClick={() =>
-                                  togglePermissionGroup(category.name)
-                                }
-                                data-open={isOpen}
-                              >
-                                <span>
-                                  {category.name}
-                                  {selectedCount > 0 && (
-                                    <span
-                                      style={{
-                                        marginLeft: "0.5rem",
-                                        color: "#dc2626",
-                                        fontSize: "0.85rem",
-                                      }}
-                                    >
-                                      ({selectedCount}/
-                                      {category.permissions.length})
-                                    </span>
-                                  )}
-                                </span>
-                                <FaChevronDown />
-                              </GroupDropdownButton>
-                              <GroupDropdownContent $isOpen={isOpen}>
-                                {category.permissions.map((item) => {
-                                  const isReadOnly =
-                                    item.action.toLowerCase() === "readonly";
-                                  return (
-                                    <PermissionRow key={item.id}>
-                                      <div>
-                                        {item.name} ({item.action})
-                                      </div>
-                                      <ToggleSwitch>
-                                        <input
-                                          type="checkbox"
-                                          checked={modalPermissions.has(
-                                            item.id
-                                          )}
-                                          onChange={() =>
-                                            handleModalPermissionToggle(item.id)
-                                          }
-                                          disabled={isReadOnly}
-                                        />
-                                        <span />
-                                      </ToggleSwitch>
-                                    </PermissionRow>
-                                  );
-                                })}
-                              </GroupDropdownContent>
-                            </GroupDropdownWrapper>
-                          </PermissionGroup>
-                        );
-                      }
-                    )}
+                    {groupPermissionsByCategory(allPermissions).map((category) => {
+                      const isOpen = openPermissionGroups.has(category.name);
+                      const selectedCount = category.permissions.filter((p) => modalPermissions.has(p.id)).length;
+                      return (
+                        <PermissionGroup key={category.name}>
+                          <GroupDropdownWrapper>
+                            <GroupDropdownButton
+                              type="button"
+                              onClick={() => togglePermissionGroup(category.name)}
+                              data-open={isOpen}
+                            >
+                              <span>
+                                {category.name}
+                                {selectedCount > 0 && (
+                                  <span
+                                    style={{
+                                      marginLeft: "0.5rem",
+                                      color: "#dc2626",
+                                      fontSize: "0.85rem",
+                                    }}
+                                  >
+                                    ({selectedCount}/{category.permissions.length})
+                                  </span>
+                                )}
+                              </span>
+                              <FaChevronDown />
+                            </GroupDropdownButton>
+                            <GroupDropdownContent $isOpen={isOpen}>
+                              {category.permissions.map((item) => {
+                                const isReadOnly = item.action.toLowerCase() === "readonly";
+                                return (
+                                  <PermissionRow key={item.id}>
+                                    <div>
+                                      {item.name} ({item.action})
+                                    </div>
+                                    <ToggleSwitch>
+                                      <input
+                                        type="checkbox"
+                                        checked={modalPermissions.has(item.id)}
+                                        onChange={() => handleModalPermissionToggle(item.id)}
+                                        disabled={isReadOnly}
+                                      />
+                                      <span />
+                                    </ToggleSwitch>
+                                  </PermissionRow>
+                                );
+                              })}
+                            </GroupDropdownContent>
+                          </GroupDropdownWrapper>
+                        </PermissionGroup>
+                      );
+                    })}
                   </div>
                 </PermissionsColumn>
               </FormGroup>
@@ -2010,37 +1867,30 @@ const RolesPage: React.FC = () => {
       )}
 
       {/* --- MODAL XÁC NHẬN XÓA (DELETE) --- */}
-      {showDeleteConfirm &&
-        selectedRoleData &&
-        canDeleteRole(selectedRoleData) && (
-          <ModalOverlay onClick={() => setShowDeleteConfirm(false)}>
-            <ModalContent onClick={(e) => e.stopPropagation()}>
-              <ModalHeader>Xác nhận xóa</ModalHeader>
-              <ModalBody>
-                <div style={{ marginBottom: 12 }}>
-                  Bạn có chắc muốn xóa vai trò "{selectedRoleData?.name}"?
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    gap: 8,
-                  }}
-                >
-                  <Button
-                    $variant="secondary"
-                    onClick={() => setShowDeleteConfirm(false)}
-                  >
-                    Hủy
-                  </Button>
-                  <Button $variant="primary" onClick={handleDeleteRole}>
-                    Xóa
-                  </Button>
-                </div>
-              </ModalBody>
-            </ModalContent>
-          </ModalOverlay>
-        )}
+      {showDeleteConfirm && selectedRoleData && canDeleteRole(selectedRoleData) && (
+        <ModalOverlay onClick={() => setShowDeleteConfirm(false)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>Xác nhận xóa</ModalHeader>
+            <ModalBody>
+              <div style={{ marginBottom: 12 }}>Bạn có chắc muốn xóa vai trò "{selectedRoleData?.name}"?</div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: 8,
+                }}
+              >
+                <Button $variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
+                  Hủy
+                </Button>
+                <Button $variant="primary" onClick={handleDeleteRole}>
+                  Xóa
+                </Button>
+              </div>
+            </ModalBody>
+          </ModalContent>
+        </ModalOverlay>
+      )}
 
       {/* --- MODAL TẠO MỚI (CREATE) --- */}
       {showCreateModal && (
@@ -2060,63 +1910,52 @@ const RolesPage: React.FC = () => {
               {/* (Phần chọn màu (UI-only) giữ nguyên) */}
               <FormGroup>
                 <Label>Màu vai trò</Label>
-                <ColorInput
-                  type="color"
-                  value={roleColorInput}
-                  onChange={(e) => setRoleColorInput(e.target.value)}
-                />
+                <ColorInput type="color" value={roleColorInput} onChange={(e) => setRoleColorInput(e.target.value)} />
               </FormGroup>
 
               {/* (Sửa: Hiển thị Permissions thật) */}
               <FormGroup>
                 <Label>Quyền hạn</Label>
                 <PermissionsColumn>
-                  {groupPermissionsByCategory(allPermissions).map(
-                    (category) => (
-                      <PermissionGroup key={category.name}>
-                        <GroupTitle>{category.name}</GroupTitle>
-                        {category.permissions.map((item) => {
-                          const isReadOnly =
-                            item.action.toLowerCase() === "readonly";
-                          return (
-                            <PermissionRow key={item.id}>
-                              <div>
-                                {item.name} ({item.action})
-                              </div>
-                              <ToggleSwitch>
-                                <input
-                                  type="checkbox"
-                                  checked={newRolePermissions.has(item.id)}
-                                  onChange={() => {
-                                    // (Không cho phép bỏ check 'readonly')
-                                    if (!isReadOnly) {
-                                      setNewRolePermissions((prev) => {
-                                        const newSet = new Set(prev);
-                                        if (newSet.has(item.id))
-                                          newSet.delete(item.id);
-                                        else newSet.add(item.id);
-                                        return newSet;
-                                      });
-                                    }
-                                  }}
-                                  disabled={isReadOnly}
-                                />
-                                <span />
-                              </ToggleSwitch>
-                            </PermissionRow>
-                          );
-                        })}
-                      </PermissionGroup>
-                    )
-                  )}
+                  {groupPermissionsByCategory(allPermissions).map((category) => (
+                    <PermissionGroup key={category.name}>
+                      <GroupTitle>{category.name}</GroupTitle>
+                      {category.permissions.map((item) => {
+                        const isReadOnly = item.action.toLowerCase() === "readonly";
+                        return (
+                          <PermissionRow key={item.id}>
+                            <div>
+                              {item.name} ({item.action})
+                            </div>
+                            <ToggleSwitch>
+                              <input
+                                type="checkbox"
+                                checked={newRolePermissions.has(item.id)}
+                                onChange={() => {
+                                  // (Không cho phép bỏ check 'readonly')
+                                  if (!isReadOnly) {
+                                    setNewRolePermissions((prev) => {
+                                      const newSet = new Set(prev);
+                                      if (newSet.has(item.id)) newSet.delete(item.id);
+                                      else newSet.add(item.id);
+                                      return newSet;
+                                    });
+                                  }
+                                }}
+                                disabled={isReadOnly}
+                              />
+                              <span />
+                            </ToggleSwitch>
+                          </PermissionRow>
+                        );
+                      })}
+                    </PermissionGroup>
+                  ))}
                 </PermissionsColumn>
               </FormGroup>
             </ModalBody>
             <ModalFooter>
-              <Button
-                $variant="secondary"
-                onClick={() => setShowCreateModal(false)}
-              >
+              <Button $variant="secondary" onClick={() => setShowCreateModal(false)}>
                 Hủy
               </Button>
               <Button $variant="primary" onClick={handleCreateRole}>

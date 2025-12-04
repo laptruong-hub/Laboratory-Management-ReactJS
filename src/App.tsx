@@ -115,6 +115,7 @@ const router = createBrowserRouter([
                 index: true,
                 element: <Navigate to="/admin/admin-dashboard" replace />,
               },
+              // Admin specific pages
               {
                 path: "admin-dashboard",
                 element: <AdminDashboardPage />,
@@ -143,16 +144,50 @@ const router = createBrowserRouter([
                 path: "patient-requests",
                 element: <PatientRequestManage />,
               },
+              // Receptionist pages
+              {
+                path: "receptionist-dashboard",
+                element: <ReceptionistDashboard />,
+              },
+              {
+                path: "receptionist-patient-requests",
+                element: <PatientRequestList />,
+              },
+              {
+                path: "receptionist-schedule-appointment",
+                element: <ReceptionistScheduleAppointment />,
+              },
+              {
+                path: "receptionist-patients",
+                element: <ReceptionistPatientList />,
+              },
+              // Lab User pages
+              {
+                path: "lab-user-dashboard",
+                element: <LabUserDashboard />,
+              },
+              {
+                path: "lab-user-work-schedule",
+                element: <LabUserWorkSchedule />,
+              },
+              {
+                path: "lab-user-history",
+                element: <LabUserHistory />,
+              },
             ],
           },
         ],
       },
       {
         path: "/receptionist",
-        element: <RoleBasedRoute allowedRoles={["Receptionist", "RECEPTIONIST", "Reception", "RECEPTION", "Admin", "Administrator", "ADMIN"]} />,
+        element: (
+          <RoleBasedRoute
+            allowedRoles={["Receptionist", "RECEPTIONIST", "Reception", "RECEPTION", "Admin", "Administrator", "ADMIN"]}
+          />
+        ),
         children: [
           {
-            element: <WorkingLayout />,
+            element: <MainLayout />,
             children: [
               {
                 index: true,
@@ -182,12 +217,21 @@ const router = createBrowserRouter([
         path: "/lab-user",
         element: (
           <RoleBasedRoute
-            allowedRoles={["Lab User", "LAB USER", "Technician", "TECHNICIAN", "Admin", "Administrator"]}
+            allowedRoles={[
+              "Lab User",
+              "LAB USER",
+              "Technician",
+              "TECHNICIAN",
+              "Laboratory Manager",
+              "LAB MANAGER",
+              "Admin",
+              "Administrator",
+            ]}
           />
         ),
         children: [
           {
-            element: <WorkingLayout />,
+            element: <MainLayout />,
             children: [
               {
                 index: true,
