@@ -1,8 +1,7 @@
 import axios, { type AxiosError } from "axios";
 import { getToken, setToken, getRememberMe, clearAllAuthData } from "../utils/storage";
 
-const BASE_URL = 'http://localhost:8000';
-
+const BASE_URL = "https://lab-management-api-gateway-8kq3h.ondigitalocean.app";
 
 const apiPublic = axios.create({
   baseURL: BASE_URL,
