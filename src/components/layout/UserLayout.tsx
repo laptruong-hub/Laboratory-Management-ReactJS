@@ -21,6 +21,7 @@ const UserLayout = () => {
         style={{
           flex: 1,
           padding: isProfilePage ? "0" : "32px",
+          paddingTop: isProfilePage ? "0" : "100px",
           backgroundColor: "#FAFAFA",
           width: "100%",
           boxSizing: "border-box",

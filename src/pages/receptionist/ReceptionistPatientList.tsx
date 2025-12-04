@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
-import { FaSearch, FaMars, FaVenus } from "react-icons/fa";
+import { FaSearch, FaMars, FaVenus, FaPlus } from "react-icons/fa";
 import { getAllPatients, type PatientDto } from "../../api/apiPatient";
 import { toast } from "react-toastify";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
+import CreateOrderModal from "../../components/receptionist/CreateOrderModal";
 
 /* ---------- Types ---------- */
 
 interface Patient {
+  patientId: number;
   fullName: string;
   email: string;
   phone?: string;
@@ -226,8 +228,37 @@ const EmptyState = styled.div`
   color: #6b7280;
 `;
 
+const ActionButton = styled.button`
+  padding: 0.5rem 1rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover {
+    background: #b91c1c;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const ActionCell = styled(TableCell)`
+  text-align: center;
+`;
+
 const adaptPatientFromDto = (dto: PatientDto): Patient => {
   return {
+    patientId: dto.patientId,
     fullName: dto.fullName || "",
     email: dto.email || "",
     phone: dto.phone,
@@ -269,6 +300,8 @@ export default function ReceptionistPatientList() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [showCreateOrderModal, setShowCreateOrderModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -344,12 +377,13 @@ export default function ReceptionistPatientList() {
                 <TableHeaderCell>Email</TableHeaderCell>
                 <TableHeaderCell>Số điện thoại</TableHeaderCell>
                 <TableHeaderCell>Địa chỉ</TableHeaderCell>
+                <TableHeaderCell style={{ width: "150px" }}>Thao tác</TableHeaderCell>
               </TableHeaderRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <tr>
-                  <TableCell colSpan={7}>
+                  <TableCell colSpan={8}>
                     <EmptyState>Không tìm thấy bệnh nhân nào.</EmptyState>
                   </TableCell>
                 </tr>
@@ -379,6 +413,17 @@ export default function ReceptionistPatientList() {
                     <TableCell>{patient.email || "—"}</TableCell>
                     <TableCell>{patient.phone || "—"}</TableCell>
                     <TableCell>{patient.address || "—"}</TableCell>
+                    <ActionCell>
+                      <ActionButton
+                        onClick={() => {
+                          setSelectedPatient(patient);
+                          setShowCreateOrderModal(true);
+                        }}
+                      >
+                        <FaPlus size={12} />
+                        Tạo đơn
+                      </ActionButton>
+                    </ActionCell>
                   </TableRow>
                 ))
               )}
@@ -386,6 +431,22 @@ export default function ReceptionistPatientList() {
           </Table>
         </TableWrapper>
       </TableContainer>
+
+      {showCreateOrderModal && selectedPatient && (
+        <CreateOrderModal
+          open={showCreateOrderModal}
+          onClose={() => {
+            setShowCreateOrderModal(false);
+            setSelectedPatient(null);
+          }}
+          patient={selectedPatient}
+          onSuccess={() => {
+            setShowCreateOrderModal(false);
+            setSelectedPatient(null);
+            toast.success("Tạo đơn xét nghiệm thành công!");
+          }}
+        />
+      )}
     </PageContainer>
   );
 }

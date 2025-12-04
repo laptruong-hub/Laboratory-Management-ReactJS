@@ -7,7 +7,6 @@ import {
   FaChartBar,
   FaCalendarAlt,
   FaEnvelope,
-  FaFlask,
   FaCalendarCheck,
   FaVial,
   FaHistory,
@@ -29,6 +28,7 @@ const WorkingSidebar: React.FC = () => {
     normalizedRole === "LAB USER" ||
     normalizedRole === "TECHNICIAN" ||
     normalizedRole === "LABUSER";
+  const isLabManager = normalizedRole === "LABORATORY MANAGER" || normalizedRole === "LAB MANAGER";
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + "/");
@@ -107,6 +107,22 @@ const WorkingSidebar: React.FC = () => {
         </>
       )}
 
+      {/* Lab Manager Menu */}
+      {isLabManager && (
+        <>
+          {/* Divider */}
+          <div className="h-px bg-gray-200 my-3" />
+
+          {/* Quản lý lịch làm việc */}
+          <h4 className="px-6 py-2 m-0 text-xs uppercase text-gray-400 font-semibold tracking-wider">
+            Quản lý lịch làm việc
+          </h4>
+          <nav className="flex flex-col gap-1 p-2">
+            {createNavLink("/admin/work-slots", <FaCalendarAlt />, "Lịch làm việc bác sĩ")}
+          </nav>
+        </>
+      )}
+
       {/* Admin Menu */}
       {isAdmin && (
         <>
@@ -120,17 +136,6 @@ const WorkingSidebar: React.FC = () => {
             {createNavLink("/admin/roles", <FaUserShield />, "Quản lý vai trò")}
             {createNavLink("/admin/patients", <FaUsers />, "Danh sách bệnh nhân")}
             {createNavLink("/admin/patient-requests", <FaEnvelope />, "Danh sách yêu cầu")}
-          </nav>
-
-          {/* Divider */}
-          <div className="h-px bg-gray-200 my-3" />
-
-          {/* Quản lý xét nghiệm */}
-          <h4 className="px-6 py-2 m-0 text-xs uppercase text-gray-400 font-semibold tracking-wider">
-            Quản lý xét nghiệm
-          </h4>
-          <nav className="flex flex-col gap-1 p-2">
-            {createNavLink("/admin/test-order", <FaFlask />, "Danh sách xét nghiệm")}
           </nav>
 
           {/* Divider */}

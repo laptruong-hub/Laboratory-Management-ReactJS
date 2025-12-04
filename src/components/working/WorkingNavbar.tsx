@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaUser, FaTimes, FaChartBar, FaUsers, FaUserShield, FaFlask, FaCalendarAlt, FaCog } from "react-icons/fa";
+import { FaUser, FaTimes, FaChartBar, FaUsers, FaUserShield, FaCalendarAlt, FaCog } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import {
   DropdownMenu,
@@ -53,10 +53,6 @@ const WorkingNavbar: React.FC = () => {
       "/admin/patients": {
         title: "Quản lý bệnh nhân",
         icon: <FaUsers className="w-8 h-8" />,
-      },
-      "/admin/test-order": {
-        title: "Quản lý xét nghiệm",
-        icon: <FaFlask className="w-8 h-8" />,
       },
       "/admin/work-slots": {
         title: "Quản lý lịch làm việc",

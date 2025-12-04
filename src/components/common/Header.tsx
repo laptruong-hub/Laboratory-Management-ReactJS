@@ -427,6 +427,46 @@ const Header: React.FC = () => {
                       {!scrolled && <span className="ml-2">Lịch sử</span>}
                     </Link>
                   </li>
+                  {/* Lab Manager specific: Quản lý lịch làm việc */}
+                  {(normalizedRole === "LABORATORY MANAGER" || normalizedRole === "LAB MANAGER") && (
+                    <li>
+                      <Link
+                        to="/admin/work-slots"
+                        className={cn(
+                          "flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-base transition-all duration-300 cursor-pointer",
+                          scrolled ? "drop-shadow-sm" : "",
+                          scrolled
+                            ? `w-12 h-12 rounded-full hover:scale-110 flex items-center justify-center ${
+                                isActive("/admin/work-slots") ? "text-white" : ""
+                              }`
+                            : `px-4 py-2.5 rounded-full ${isActive("/admin/work-slots") ? "text-white ring-2" : ""}`
+                        )}
+                        style={{
+                          backgroundColor: isActive("/admin/work-slots")
+                            ? primaryColor
+                            : scrolled
+                            ? primaryColorLight
+                            : "transparent",
+                          color: isActive("/admin/work-slots") ? "white" : primaryColor,
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isActive("/admin/work-slots")) {
+                            e.currentTarget.style.backgroundColor = primaryColorHover;
+                            e.currentTarget.style.color = "white";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isActive("/admin/work-slots")) {
+                            e.currentTarget.style.backgroundColor = scrolled ? primaryColorLight : "transparent";
+                            e.currentTarget.style.color = primaryColor;
+                          }
+                        }}
+                      >
+                        <FaCalendarAlt className={scrolled ? "w-6 h-6" : "w-5 h-5"} />
+                        {!scrolled && <span className="ml-2">Quản lý lịch làm việc</span>}
+                      </Link>
+                    </li>
+                  )}
                 </>
               )}
             </ul>
