@@ -1,0 +1,521 @@
+/* ===== Page & Toolbar ===== */
+.am-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  min-height: 0;
+  margin: 0;
+}
+
+.am-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+  min-height: 0;
+}
+
+.am-title {
+  flex: 0 0 100%;
+}
+
+.am-title .title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.am-title .muted {
+  color: #64748b;
+  margin-top: 6px;
+}
+
+.am-tools {
+  width: 100%;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.am-search-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  min-width: 360px;
+}
+
+.am-search-input input {
+  border: none;
+  outline: none;
+  width: 260px;
+  font-size: 14px;
+  background: #fff;
+  color: #0f172a;
+}
+
+.am-search-input input::placeholder {
+  color: #94a3b8;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #0f172a;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.08s ease, background 0.15s ease;
+}
+
+.btn:hover {
+  background: #f8fafc;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn.outline {
+  background: #fff;
+}
+
+.btn.primary {
+  background: linear-gradient(90deg, #6366f1, #4f46e5);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 10px 24px -12px rgba(79, 70, 229, 0.45);
+}
+
+.btn.primary:hover {
+  box-shadow: 0 14px 32px -12px rgba(79, 70, 229, 0.55);
+}
+
+.btn.danger {
+  color: #fff;
+  background: #dc2626;
+  border-color: #dc2626;
+  box-shadow: 0 10px 24px -14px rgba(220, 38, 38, 0.45);
+}
+
+/* ===== Table ===== */
+.card {
+  background: #fff;
+  border: 1px solid #eef2f7;
+  border-radius: 14px;
+}
+
+.am-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.am-table th,
+.am-table td {
+  text-align: left;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.am-user-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.am-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4f46e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.am-user-name {
+  font-weight: 700;
+}
+
+.am-user-email {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.badge-pill {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.03) inset;
+}
+
+/* ===== Row actions ===== */
+.am-actions-inline {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #475569;
+  font-size: 16px;
+}
+
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.icon-btn:hover {
+  background: #0e3052;
+}
+
+.icon-btn.danger {
+  color: #f40000;
+}
+
+/* ===== Pagination ===== */
+.am-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* ===== Modal (detail & confirm) ===== */
+.am-modal {
+  padding: 0;
+  border: none;
+  width: min(980px, 92vw);
+  max-height: min(86vh, 760px);
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 28px 80px -28px rgba(2, 6, 23, 0.35),
+    0 16px 32px -16px rgba(2, 6, 23, 0.15);
+}
+
+.am-modal::backdrop {
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.am-modal__header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
+  border-bottom: 1px solid #eef2f7;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  row-gap: 6px;
+  align-items: center;
+  padding: 14px 18px;
+}
+
+.am-modal__header .breadcrumb {
+  grid-column: 1/-1;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.am-modal__header .title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.am-modal__header .actions {
+  display: flex;
+  gap: 8px;
+}
+
+.am-modal__body {
+  padding: 18px;
+  overflow: auto;
+  scroll-behavior: smooth;
+}
+
+.am-modal .card {
+  border: 1px solid #eef2f7;
+  border-radius: 14px;
+  box-shadow: 0 1px 0 0 #f1f5f9 inset;
+}
+
+.am-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 32px;
+}
+
+.field-label {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.field-value {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.muted {
+  color: #64748b;
+}
+
+/* Confirm modal footer */
+.am-confirm {
+  width: min(520px, 94vw);
+}
+
+.am-modal__footer {
+  padding: 12px 16px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 720px) {
+  .am-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .am-tools {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .am-search-input {
+    min-width: 240px;
+  }
+}
+
+/* body của modal dùng màu chữ tối mặc định */
+.am-modal__body {
+  color: #0f172a;
+}
+
+/* dòng xác nhận xoá */
+.am-confirm .am-confirm-text {
+  margin: 6px 2px 0;
+  font-weight: 600;
+}
+
+/* --- SỬA LỖI HIỂN THỊ ICON THAO TÁC --- */
+
+.am-actions-inline {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  /* Cần thiết cho căn giữa icon */
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+/* Đặt màu mặc định cho icon */
+.icon-btn svg {
+  color: #6b7280;
+  /* Màu xám (Giống text) */
+  font-size: 16px;
+  /* Kích thước icon */
+  opacity: 0.8;
+  transition: color 0.2s, opacity 0.2s;
+}
+
+/* Khi hover (di chuột) vào nút */
+.icon-btn:hover svg {
+  opacity: 1;
+  color: #1f2937;
+  /* Đậm hơn */
+}
+
+/* Riêng nút "danger" (Xóa) */
+.icon-btn.danger:hover svg {
+  color: #dc2626;
+  /* Màu đỏ (màu primary của bạn) */
+}
+
+/* --- Thêm CSS cho Modal Overlay --- */
+.am-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* (Sửa lại style 'am-modal' một chút để nó hoạt động) */
+.am-modal.am-confirm {
+  width: 100%;
+  max-width: 400px;
+  background: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0;
+  /* Xóa padding mặc định */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.am-modal__header {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.am-modal__header .title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.am-modal__body {
+  padding: 1rem;
+}
+
+.am-modal__footer {
+  padding: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  border-top: 1px solid #eee;
+}
+
+.am-form-group {
+  margin-bottom: 1rem;
+}
+
+.am-form-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.am-form-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.am-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* Chia làm 2 cột bằng nhau */
+  gap: 1rem 1.5rem;
+  /* 1rem (dọc) 1.5rem (ngang) */
+}
+
+.am-import-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* (Cái bảng nhỏ) */
+.am-import-dropdown {
+  position: absolute;
+  top: 100%;
+  /* (Hiển thị ngay dưới nút) */
+  right: 0;
+  /* (Căn lề phải) */
+  z-index: 10;
+  width: 350px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  margin-top: 8px;
+}
+
+/* (Các phần bên trong bảng nhỏ) */
+.am-import-section {
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 1rem;
+}
+
+.am-import-section:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.am-import-section label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #374151;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* (CSS cho ô báo cáo lỗi, như bạn yêu cầu) */
+.am-import-report {
+  margin-top: 1rem;
+  background: #fffbeb;
+  /* (Màu vàng nhạt) */
+  border: 1px solid #fde68a;
+  /* (Viền vàng) */
+  padding: 0.75rem;
+  border-radius: 8px;
+  max-height: 150px;
+  /* (Giới hạn chiều cao và cho phép cuộn) */
+  overflow-y: auto;
+  white-space: pre-wrap;
+  /* (Giữ các dấu xuống dòng "\n") */
+}
+
+.am-import-report strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #d97706;
+  /* (Màu cam đậm) */
+}
+
+.am-import-report pre {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #b45309;
+  /* (Màu cam đậm hơn) */
+}
